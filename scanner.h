@@ -7,18 +7,19 @@ IFJ Project
 */
 
 #include <stdio.h>
-#include <ctype.h>
 #include <string.h>
+#include <stdlib.h>
+#include <ctype.h>
 #include "error.h"
 
 // Stavy -> Vsechny krome uplne konecnych stavu (pouze "pruchozi")
-#define S_WHITESPACE            100
+// #define S_WHITESPACE            100
 #define S_START                 101
 #define S_MINUS                 102
 #define S_QUESTION_MARK         103
 #define S_UNDERSCORE            104
 #define S_ID                    105
-#define S_EXCLAM_MARK           106
+#define S_EXCLAMATION_MARK      106
 #define S_ASSIGN                107
 #define S_GT                    108
 #define S_LT                    109
@@ -67,8 +68,10 @@ typedef enum {
 } T_keyword;
 
 // Tokeny (Konecne stavy)
-// ?? Pridat EOF, EOL, WHITESPACE, KOMENT_END????
+// ?? Pridat EOL, WHITESPACE, KOMENT_END????
 typedef enum {
+    TOKEN_ERROR,
+    TOKEN_EOF,                          // EOF
     TOKEN_COMMA,                        // , 
     TOKEN_COLON,                        // :
     TOKEN_PLUS,                         // +
@@ -80,14 +83,14 @@ typedef enum {
     TOKEN_UNDERSCORE,                   // _
     TOKEN_ID,                           // ID
     TOKEN_TYPE_ID,                      // ? - type id
-    TOKEN_EXCLAM_MARK,                  // !
-    TOKEN_NOT_EQ,                       // != 
+    TOKEN_EXCLAMATION_MARK,             // !
+    TOKEN_NOT_EQUAL,                    // != 
     TOKEN_ASSIGN,                       // =
     TOKEN_EQUAL,                        // == 
     TOKEN_GT,                           // >
-    TOKEN_GE,                           // >=
+    TOKEN_GTE,                          // >=
     TOKEN_LT,                           // < less than
-    TOKEN_LE,                           // <= less than or equal
+    TOKEN_LTE,                          // <= less than or equal
     TOKEN_L_CURL,                       // {
     TOKEN_R_CURL,                       // }
     TOKEN_L_SQR,                        // [
@@ -96,8 +99,8 @@ typedef enum {
     TOKEN_L_RND,                        // (
     TOKEN_SINGLE_QUOTE,                 // '
     TOKEN_SLASH,                        // /      
-    TOKEN_LINE_CMT,                     // //
-    TOKEN_BLOCK_CMT,                    // /* */
+    // TOKEN_LINE_CMT,                     // //
+    // TOKEN_BLOCK_CMT,                    // /* */
     TOKEN_BSLASH,                       // \ 
     TOKEN_STRING,                       // ""
     TOKEN_ML_STRING,                    // """ """
@@ -115,20 +118,10 @@ typedef enum {
 } T_token_type;
 
 typedef struct {
-    T_token_type type;                // typ tokenu
-    //string attribute;               // hodnota tokenu
-    char *attribute;
+    T_token_type type;                  // typ tokenu
+    char *value;
+    uint32_t valueLength;               // Bude vyuzito pouze u stringu, var, cisel, ...
 } T_token;
-
-/*
- * Fills token given in an argument
- *
- * Returns:
- * 0 -> no error
- * 1 -> lexical error (error_caller prints error message)
-*/
-int get_tokens(T_token *token, FILE *file);
-
 
 // TOHLE JESTE PREDELAM, nevim proc to je takhle bruh
 /*
@@ -188,4 +181,437 @@ void error_caller(int error_code){
             printf("Error: %d -> Compilator error (allocation error, ...).\n", error_code);
             break;
     }
+}
+
+
+
+
+
+// TODO =============
+// Dynamicky string + alokace
+// ??? Zkontrolovat u ID klicova slova
+
+/*
+Funkce vraci token.
+V pripade chyby vraci TOKEN_ERROR, a bude to muset byt osetreno volajicim jako LEX_ERROR
+file je pripraveno v scanner.c
+*/
+T_token get_token(FILE* file){
+
+    T_token token;
+    token.value = "\0";
+    token.valueLength = 0;
+
+    // Pomocne promenne pro naplnenni tokenu
+    char value[1024] = "\0";                             // Tady to upravit na promennou delku nejak
+    uint32_t length = 0;
+
+    char c = getc(file);
+
+    // Loop pro ziskani tokenu
+    int state = S_START;
+    while(c != EOF){
+
+        switch(state){
+            case(S_START):      
+            // Tady se to rozdeli podle toho jestli je to konecny stav nebo ne
+            // Pokud z toho to stavu nelze uz nikam prejit, naplni a returnne se token
+
+                    if(c == ' ') break;               // whitespaces
+                    
+                    if(c == ','){
+                        token.type = TOKEN_COMMA;
+                        return token;
+                    }
+
+                    if(c == ':'){
+                        token.type = TOKEN_COLON;
+                        return token;
+                    }
+
+                    if(c == '+'){
+                        token.type = TOKEN_PLUS;
+                        return token;
+                    }
+
+                    if(c == '-'){
+                        state = S_MINUS;
+                        break;
+                    }
+
+                    if(c == '*'){
+                        token.type = TOKEN_MUL;
+                        return token;
+                    }
+
+                    if(c == ':'){
+                        token.type = TOKEN_COLON;
+                        return token;
+                    }
+
+                    if(c == '?'){
+                        state = S_QUESTION_MARK;
+                        break;
+                    }
+
+                    if(c == '_'){
+                        state = S_UNDERSCORE;
+                        break;
+                    }
+
+                    if(isalpha(c)){
+                        state = S_ID;
+                        value[length] = c;
+                        length++;
+                        break;
+                    }
+
+                    if(c == '!'){
+                        state = S_EXCLAMATION_MARK;
+                        break;
+                    }
+
+                    if(c == '='){
+                        state = S_ASSIGN;
+                        break;
+                    }
+
+                    if(c == '>'){
+                        state = S_GT;
+                        break;
+                    }
+
+                    if(c == '<'){
+                        state = S_LT;
+                        break;
+                    }
+
+                    if(c == '}'){
+                        token.type = TOKEN_R_CURL;
+                        return token;
+                    }
+
+                    if(c == '{'){
+                        token.type = TOKEN_L_CURL;
+                        return token;
+                    }
+
+                    if(c == ']'){
+                        token.type = TOKEN_R_SQR;
+                        return token;
+                    }
+
+                    if(c == '['){
+                        token.type = TOKEN_L_SQR;
+                        return token;
+                    }
+
+                    if(c == ')'){
+                        token.type = TOKEN_R_RND;
+                        return token;
+                    }
+
+                    if(c == '('){
+                        token.type = TOKEN_L_RND;
+                        return token;
+                    }
+
+                    if(c == 39){        // Uvozovka ASCII
+                        token.type = TOKEN_SINGLE_QUOTE;
+                        return token;
+                    }
+
+                    if(c == '/'){
+                        state = S_SLASH;
+                        break;
+                    }
+
+                    if(isdigit(c)){
+                        state = S_INT;
+                        value[length] = c;
+                        length++;
+                        break;
+                    }
+
+                break; 
+
+            case(S_MINUS):
+                if(c == '>'){
+                    token.type = TOKEN_FUNCTION_TYPE;
+                    return token;
+                } else {
+                    putc(c, file);
+                    token.type = TOKEN_MINUS;
+                    return token;
+                }
+                break;
+
+            case(S_QUESTION_MARK):
+                if(c == '?'){
+                    token.type = TOKEN_DOUBLE_QUESTION_MARK;
+                    return token;
+                } else {
+                    putc(c, file);
+                    token.type = TOKEN_QUESTION_MARK;
+                    return token;
+                }
+                break; 
+            
+            case(S_UNDERSCORE):
+                putc(c, file);
+                if(!isalnum(c) || c != '_'){        // Nemuze to byt ID, je to jen podtrzitko
+                    token.type = TOKEN_UNDERSCORE;
+                    return token;
+                } else {                            // ID - 
+                    state = S_ID;
+                    value[length] = c;
+                    length++;
+                }
+                break; 
+            
+            case(S_ID):
+                if(c == '?'){   
+                    value[length] = c;
+                    length++;
+                    token.type        = TOKEN_ID;
+                    token.value       = value;
+                    token.valueLength = length; 
+                    return token;
+                } else if(!isalnum(c) || c != '_'){
+                    putc(c, file);
+                    token.type        = TOKEN_ID;
+                    token.value       = value;
+                    token.valueLength = length; 
+                    return token;
+                } else {
+                    value[length] = c;
+                    length++;
+                }
+                break; 
+            
+            case(S_EXCLAMATION_MARK):
+                if(c == '='){
+                    token.type = TOKEN_NOT_EQUAL;
+                    return token;
+                } else {
+                    putc(c, file);
+                    token.type = TOKEN_EXCLAMATION_MARK;
+                    return token;
+                }
+                break; 
+            
+            case(S_ASSIGN):
+                if(c == '='){
+                    token.type = TOKEN_EQUAL;
+                    return token;
+                } else {
+                    putc(c, file);
+                    token.type = TOKEN_ASSIGN;
+                    return token;
+                }
+                break; 
+                
+            case(S_GT):
+                if(c == '='){
+                    token.type = TOKEN_GTE;
+                    return token;
+                } else {
+                    putc(c, file);
+                    token.type = TOKEN_GT;
+                    return token;
+                }
+                break; 
+
+            case(S_LT):
+                if(c == '='){
+                    token.type = TOKEN_LTE;
+                    return token;
+                } else {
+                    putc(c, file);
+                    token.type = TOKEN_LT;
+                    return token;
+                }
+                break; 
+// KOMENTARE
+            case(S_SLASH):
+                if(c == '/'){
+                    state = S_LINE_COMMENT;
+                    break;
+                } else if(c == '*'){
+                    state = S_BLOCK_COMMENT;
+                    break;
+                } else {
+                    putc(c, file);
+                    token.type = TOKEN_SLASH;
+                    return token;
+                }
+                break; 
+
+            case(S_LINE_COMMENT):                   // Dojed na konec radku nebo souboru
+                while(c != EOF || c != '\n'){
+                    c = getc(file);
+                }
+
+                if(c == EOF){
+                    token.type = TOKEN_EOF;
+                    return token;
+                }
+                break; 
+
+            case(S_BLOCK_COMMENT):
+                while(c != EOF || c != '*'){
+                    c = getc(file);
+                }
+
+                if(c == EOF){
+                    token.type = TOKEN_ERROR;
+                    return token;
+                } else {    // *
+                    state = S_BLOCK_MAYBE_END;
+                    break;
+                }
+                break; 
+
+            case(S_BLOCK_MAYBE_END):
+                if(c == '/') 
+                    state = S_START;
+                else 
+                    state = S_BLOCK_COMMENT;
+                break; 
+// CISLA
+            case(S_INT):
+                if(isdigit(c)){
+                    value[length] = c;
+                    length++;
+                    break;
+                } else if(c == '.'){
+                    state = S_DOUBLE;
+                    value[length] = c;
+                    length++;
+                    break;
+                } else if(c == 'e' || c == 'E'){
+                    state = S_INT_EXP;
+                    value[length] = c;
+                    length++;
+                    break;
+                } else {
+                    putc(c, file);
+                    token.type = S_INT;
+                    token.value = value;
+                    token.valueLength = length;
+                    return token;
+                }
+                break;
+
+            case(S_INT_EXP):
+                if(isdigit(c)){
+                    value[length] = c;
+                    length++;
+                    break;
+                } else if(c == '+' || c == '-'){
+                    state = S_INT_EXP_PM;
+                    value[length] = c;
+                    length++;
+                    break;
+                } else {
+                    putc(c, file);
+                    token.type = S_INT_EXP;
+                    token.value = value;
+                    token.valueLength = length;
+                    return token;
+                }
+                break; 
+                
+    // !!!!!!!!! tady mozna upravit jeste aby na konci nemohlo by jen +/- 
+            case(S_INT_EXP_PM):
+                if(isdigit(c)){
+                    value[length] = c;
+                    length++;
+                    break;
+                } else {
+                    putc(c, file);
+                    token.type = S_INT_EXP_PM;
+                    token.value = value;
+                    token.valueLength = length;
+                    return token;
+                }
+                break; 
+
+            case(S_DOUBLE):
+                if(isdigit(c)){
+                    value[length] = c;
+                    length++;
+                    break;
+                } else if(c == 'e' || c == 'E') {
+                    state = S_DOUBLE_EXP;
+                    value[length] = c;
+                    length++;
+                    break;
+                } else {
+                    putc(c, file);
+                    token.type = S_DOUBLE;
+                    token.value = value;
+                    token.valueLength = length;
+                    return token;
+                }
+                break; 
+
+            case(S_DOUBLE_EXP):
+                if(isdigit(c)){
+                    value[length] = c;
+                    length++;
+                    break;
+                } else if(c == '+' || c == '-'){
+                    state = S_DOUBLE_EXP_PM;
+                    value[length] = c;
+                    length++;
+                    break;
+                } else {
+                    putc(c, file);
+                    token.type = S_DOUBLE_EXP;
+                    token.value = value;
+                    token.valueLength = length;
+                    return token;
+                }
+                break;
+
+    // !!!!!!!!! tady mozna upravit jeste aby na konci nemohlo by jen +/-             
+            case(S_DOUBLE_EXP_PM):
+                if(isdigit(c)){
+                    value[length] = c;
+                    length++;
+                    break;
+                } else {
+                    putc(c, file);
+                    token.type = S_DOUBLE_EXP_PM;
+                    token.value = value;
+                    token.valueLength = length;
+                    return token;
+                }
+                break; 
+
+// STRING
+            /*
+            case():
+                break; 
+            case():
+                break; 
+            */
+
+
+
+
+
+
+            default:  // Vsechno ostatni by mela byt chyba
+                token.type = TOKEN_ERROR;
+                token.value = c;
+                token.valueLength = 1;
+                return token;
+        }
+    }
+
+    // EOF - Konec souboru
+    token.type = TOKEN_EOF;
+    return token;
 }
