@@ -12,7 +12,7 @@ fills it and returns NO_ERROR. In case of an error, the return value is LEX_ERRO
 */
 
 #include "scanner.h"
-#include <unistd.h>
+// #include <unistd.h>
 
 /*
 Priprav soubor jako statickou globalni promennou - kvuli tomu ze by se jinak musel passovat i soubor,
@@ -22,19 +22,36 @@ tokenu, ne ze se to natokenizuje cele najednou (kvuli pameti pri obrovskych soub
 
 //static FILE* file = NULL;
 
-int main() {
+int main(int argc, char *argv[]) {
+    
+    if(argc < 2){
+        fprintf(stderr, "ERROR: Too few arguments.\n");
+        return 1;
+    }
+
+    printf("NAZEV: %s\n", argv[1]);
+
     FILE* file = stdin;
+    //file = fopen("test.txt", "r+");
+    
     T_token token;
 
-    // ty tokeny si pak stejne bude volat parser, tak jen pro testování jsem dal, aby se načetlo prvních 10 tokenů
-    for(int i = 0; i < 10; i++)
-    {
-        token = get_token(file);
-        printf("%d\n", token.type);
-    }
-    //while ((token = getNextToken()).type != EOF) {
-          
-    //}
 
+    // ty tokeny si pak stejne bude volat parser, tak jen pro testování jsem dal, aby se načetlo prvních 10 tokenů
+    // for(int i = 0; i < 10; i++)
+    // {
+    //     token = get_token(file);
+    //     printf("%d\n", token.type);
+    // }
+
+    while ((token = getNextToken(file)).type != TOKEN_EOF) {
+        if(token.type == TOKEN_ERROR){
+            printf("chyba\n");
+        } else {
+            printf("%d\n", token.type);
+        }
+    }
+
+    // fclose(file);
     return 0;
 }

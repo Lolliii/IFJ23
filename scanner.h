@@ -14,7 +14,7 @@ IFJ Project
 #include "error.h"
 
 // Stavy -> Vsechny krome uplne konecnych stavu (pouze "pruchozi")
-// #define S_WHITESPACE            100
+#define S_ERROR                 100
 #define S_START                 101
 #define S_MINUS                 102
 #define S_QUESTION_MARK         103
@@ -51,7 +51,7 @@ IFJ Project
 #define S_BLOCK_COMMENT         134
 #define S_LINE_COMMENT          135
 #define S_BLOCK_MAYBE_END       136
-#define S_BLOCK_COMMENT_END     137
+//#define S_BLOCK_COMMENT_END     137
 
 // Klicova slova
 typedef enum {
@@ -197,12 +197,11 @@ Funkce vraci token.
 V pripade chyby vraci TOKEN_ERROR, a bude to muset byt osetreno volajicim jako LEX_ERROR
 file je pripraveno v scanner.c
 */
-T_token get_token(FILE* file){
+T_token getNextToken(FILE* file){
 
     T_token token;
     token.value = "\0";
     token.valueLength = 0;
-
     // Pomocne promenne pro naplnenni tokenu
     char value[1024] = "\0";                             // Tady to upravit na promennou delku nejak
     uint32_t length = 0;
@@ -214,128 +213,109 @@ T_token get_token(FILE* file){
     while(c != EOF){
         if(state != S_START)
             c = getc(file);         // pokud znak nedostane po prvnim projiti finalni stav, je potreba nacist novy
-
+  
         switch(state){
-            case(S_START):      
+            case(S_START): 
             // Tady se to rozdeli podle toho jestli je to konecny stav nebo ne
             // Pokud z toho to stavu nelze uz nikam prejit, naplni a returnne se token
 
-                    if(isspace(c)){         // bere i EOL
+                    if(isspace(c)){         // whitespaces - bere i EOL
                         c = getc(file);     // při whitespace se to seklo v endless loopu
                         break;
-                    }                // whitespaces
-                    
-                    if(c == ','){
+                    } 
+                    else if(c == ','){
                         token.type = TOKEN_COMMA;
                         return token;
-                    }
-
-                    if(c == ':'){
+                    } 
+                    else if(c == ':'){
                         token.type = TOKEN_COLON;
                         return token;
-                    }
-
-                    if(c == '+'){
+                    } 
+                    else if(c == '+'){
                         token.type = TOKEN_PLUS;
                         return token;
-                    }
-
-                    if(c == '-'){
+                    } 
+                    else if(c == '-'){
                         state = S_MINUS;
                         break;
-                    }
-
-                    if(c == '*'){
+                    } 
+                    else if(c == '*'){
                         token.type = TOKEN_MUL;
                         return token;
-                    }
-
-                    if(c == ':'){
+                    } 
+                    else if(c == ':'){
                         token.type = TOKEN_COLON;
                         return token;
-                    }
-
-                    if(c == '?'){
+                    } 
+                    else if(c == '?'){
                         state = S_QUESTION_MARK;
                         break;
-                    }
-
-                    if(c == '_'){
+                    } 
+                    else if(c == '_'){
                         state = S_UNDERSCORE;
                         break;
-                    }
-
-                    if(isalpha(c)){
+                    } 
+                    else if(isalpha(c)){
                         state = S_ID;
                         value[length] = c;
                         length++;
                         break;
-                    }
-
-                    if(c == '!'){
+                    } 
+                    else if(c == '!'){
                         state = S_EXCLAMATION_MARK;
                         break;
-                    }
-
-                    if(c == '='){
+                    } 
+                    else if(c == '='){
                         state = S_ASSIGN;
                         break;
-                    }
-
-                    if(c == '>'){
+                    } 
+                    else if(c == '>'){
                         state = S_GT;
                         break;
-                    }
-
-                    if(c == '<'){
+                    } 
+                    else if(c == '<'){
                         state = S_LT;
                         break;
-                    }
-
-                    if(c == '}'){
+                    } 
+                    else if(c == '}'){
                         token.type = TOKEN_R_CURL;
                         return token;
-                    }
-
-                    if(c == '{'){
+                    } 
+                    else if(c == '{'){
                         token.type = TOKEN_L_CURL;
                         return token;
-                    }
-
-                    if(c == ']'){
+                    } 
+                    else if(c == ']'){
                         token.type = TOKEN_R_SQR;
                         return token;
-                    }
-
-                    if(c == '['){
+                    } 
+                    else if(c == '['){
                         token.type = TOKEN_L_SQR;
                         return token;
-                    }
-
-                    if(c == ')'){
+                    } 
+                    else if(c == ')'){
                         token.type = TOKEN_R_RND;
                         return token;
-                    }
-
-                    if(c == '('){
+                    } 
+                    else if(c == '('){
                         token.type = TOKEN_L_RND;
                         return token;
-                    }
-
-                    if(c == 39){        // Uvozovka ASCII
+                    } 
+                    else if(c == 39){        // Uvozovka ASCII
                         token.type = TOKEN_SINGLE_QUOTE;
                         return token;
-                    }
-
-                    if(c == '/'){
+                    } 
+                    else if(c == '/'){
                         state = S_SLASH;
                         break;
-                    }
-
-                    if(isdigit(c)){
+                    } 
+                    else if(isdigit(c)){
                         state = S_INT;
                         value[length] = c;
                         length++;
+                        break;
+                    } else {
+                        state = S_ERROR;
                         break;
                     }
 
@@ -365,7 +345,7 @@ T_token get_token(FILE* file){
             
             case(S_UNDERSCORE):
                 putc(c, file);
-                if(!isalnum(c) || c != '_'){        // Nemuze to byt ID, je to jen podtrzitko
+                if(!isalnum(c) && c != '_'){        // Nemuze to byt ID, je to jen podtrzitko
                     token.type = TOKEN_UNDERSCORE;
                     return token;
                 } else {                            // ID - 
@@ -454,23 +434,26 @@ T_token get_token(FILE* file){
                 break; 
 
             case(S_LINE_COMMENT):                   // Dojed na konec radku nebo souboru
-                while(c != EOF || c != '\n'){
+                while(c != EOF && c != '\n'){
                     c = getc(file);
                 }
 
                 if(c == EOF){
                     token.type = TOKEN_EOF;
                     return token;
+                } else {        // \n
+                    state = S_START;
+                    break;
                 }
                 break; 
 
             case(S_BLOCK_COMMENT):
-                while(c != EOF || c != '*'){
+                while(c != EOF && c != '*'){
                     c = getc(file);
                 }
 
                 if(c == EOF){
-                    token.type = TOKEN_ERROR;
+                    token.type = TOKEN_EOF;
                     return token;
                 } else {    // *
                     state = S_BLOCK_MAYBE_END;
@@ -479,8 +462,11 @@ T_token get_token(FILE* file){
                 break; 
 
             case(S_BLOCK_MAYBE_END):
-                if(c == '/') 
+                if(c == '/'){
+                    c = getc(file);
                     state = S_START;
+                    break;
+                }
                 else 
                     state = S_BLOCK_COMMENT;
                 break; 
@@ -502,7 +488,7 @@ T_token get_token(FILE* file){
                     break;
                 } else {
                     putc(c, file);
-                    token.type = S_INT;
+                    token.type = TOKEN_INT;
                     token.value = value;
                     token.valueLength = length;
                     return token;
@@ -521,7 +507,7 @@ T_token get_token(FILE* file){
                     break;
                 } else {
                     putc(c, file);
-                    token.type = S_INT_EXP;
+                    token.type = TOKEN_INT_EXP;
                     token.value = value;
                     token.valueLength = length;
                     return token;
@@ -536,7 +522,7 @@ T_token get_token(FILE* file){
                     break;
                 } else {
                     putc(c, file);
-                    token.type = S_INT_EXP_PM;
+                    token.type = TOKEN_INT_EXP_PM;
                     token.value = value;
                     token.valueLength = length;
                     return token;
@@ -555,7 +541,7 @@ T_token get_token(FILE* file){
                     break;
                 } else {
                     putc(c, file);
-                    token.type = S_DOUBLE;
+                    token.type = TOKEN_DOUBLE;
                     token.value = value;
                     token.valueLength = length;
                     return token;
@@ -574,7 +560,7 @@ T_token get_token(FILE* file){
                     break;
                 } else {
                     putc(c, file);
-                    token.type = S_DOUBLE_EXP;
+                    token.type = TOKEN_DOUBLE_EXP;
                     token.value = value;
                     token.valueLength = length;
                     return token;
@@ -589,7 +575,7 @@ T_token get_token(FILE* file){
                     break;
                 } else {
                     putc(c, file);
-                    token.type = S_DOUBLE_EXP_PM;
+                    token.type = TOKEN_DOUBLE_EXP_PM;
                     token.value = value;
                     token.valueLength = length;
                     return token;
@@ -612,7 +598,7 @@ T_token get_token(FILE* file){
             default:  // Vsechno ostatni by mela byt chyba
                 token.type = TOKEN_ERROR;
                 //token.value = c;
-                token.valueLength = 1;
+                //token.valueLength = 1;
                 return token;
         }
     }
