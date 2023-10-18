@@ -20,16 +20,21 @@ a byl by problem s tim kde se skoncilo. Takhle si to bude pamatovat. A parser to
 tokenu, ne ze se to natokenizuje cele najednou (kvuli pameti pri obrovskych souborech)
 */
 
-static FILE* file = NULL;
+//static FILE* file = NULL;
 
-// int main() {
-//     //file = vycucnuto z terminalu
+int main() {
+    FILE* file = stdin;
+    T_token token;
 
-//     Token token;
-//     while ((token = getNextToken()).type != EOF) {
-//         // Process tokens
-//         // ...
-//     }
+    // ty tokeny si pak stejne bude volat parser, tak jen pro testování jsem dal, aby se načetlo prvních 10 tokenů
+    for(int i = 0; i < 10; i++)
+    {
+        token = get_token(file);
+        printf("%d\n", token.type);
+    }
+    //while ((token = getNextToken()).type != EOF) {
+          
+    //}
 
-//     return 0;
-// }
+    return 0;
+}
