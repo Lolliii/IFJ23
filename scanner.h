@@ -379,7 +379,7 @@ T_token get_token(FILE* file){
                 if(c == '?'){   
                     value[length] = c;
                     length++;
-                    token.type        = TOKEN_ID;
+                    token.type        = TOKEN_TYPE_ID;
                     token.value       = value;
                     token.valueLength = length; 
                     return token;
