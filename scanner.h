@@ -10,6 +10,7 @@ IFJ Project
 #include <string.h>
 #include <stdlib.h>
 #include <ctype.h>
+#include <stdint.h> // kvuli uint_32
 #include "error.h"
 
 // Stavy -> Vsechny krome uplne konecnych stavu (pouze "pruchozi")
@@ -28,11 +29,11 @@ IFJ Project
 #define S_BS_U                  112     // \u
 #define S_BS_UC                 113     // \u{
 #define S_BS_UC_DD              114     // \u{dd
-#define S_BS_UC                 115     // \u{
+//#define S_BS_UC                 115     // \u{ duplikace
 #define S_STRING                116
 #define S_ML_BS                 117     // Multi-Line String
 #define S_ML_BS_U               118     // \u
-#define S_ML_BS_UC              119     // \u{
+//#define S_ML_BS_UC              119     // \u{ duplikace
 #define S_ML_BS_UC_DD           120     // \u{dd
 #define S_ML_BS_UC              123     // \u{
 #define S_ML_STRING_1           124
@@ -101,7 +102,7 @@ typedef enum {
     TOKEN_SLASH,                        // /      
     // TOKEN_LINE_CMT,                     // //
     // TOKEN_BLOCK_CMT,                    // /* */
-    TOKEN_BSLASH,                       // \ 
+    TOKEN_BSLASH,                       // backslash 
     TOKEN_STRING,                       // ""
     TOKEN_ML_STRING,                    // """ """
     TOKEN_INT,
@@ -211,13 +212,18 @@ T_token get_token(FILE* file){
     // Loop pro ziskani tokenu
     int state = S_START;
     while(c != EOF){
+        if(state != S_START)
+            c = getc(file);         // pokud znak nedostane po prvnim projiti finalni stav, je potreba nacist novy
 
         switch(state){
             case(S_START):      
             // Tady se to rozdeli podle toho jestli je to konecny stav nebo ne
             // Pokud z toho to stavu nelze uz nikam prejit, naplni a returnne se token
 
-                    if(c == ' ') break;               // whitespaces
+                    if(isspace(c)){         // bere i EOL
+                        c = getc(file);     // při whitespace se to seklo v endless loopu
+                        break;
+                    }                // whitespaces
                     
                     if(c == ','){
                         token.type = TOKEN_COMMA;
@@ -377,7 +383,7 @@ T_token get_token(FILE* file){
                     token.value       = value;
                     token.valueLength = length; 
                     return token;
-                } else if(!isalnum(c) || c != '_'){
+                } else if(!isalnum(c) && c != '_'){     // znema log. operace (bylo || ale nefungovalo to :( )
                     putc(c, file);
                     token.type        = TOKEN_ID;
                     token.value       = value;
@@ -605,7 +611,7 @@ T_token get_token(FILE* file){
 
             default:  // Vsechno ostatni by mela byt chyba
                 token.type = TOKEN_ERROR;
-                token.value = c;
+                //token.value = c;
                 token.valueLength = 1;
                 return token;
         }
