@@ -31,18 +31,10 @@ int main(int argc, char *argv[]) {
 
     printf("NAZEV: %s\n", argv[1]);
 
-    FILE* file = stdin;
-    //file = fopen("test.txt", "r+");
+    //FILE* file = stdin;
+    FILE* file = fopen("test.txt", "r+");
     
     T_token token;
-
-
-    // ty tokeny si pak stejne bude volat parser, tak jen pro testování jsem dal, aby se načetlo prvních 10 tokenů
-    // for(int i = 0; i < 10; i++)
-    // {
-    //     token = get_token(file);
-    //     printf("%d\n", token.type);
-    // }
 
     while ((token = getNextToken(file)).type != TOKEN_EOF) {
         if(token.type == TOKEN_ERROR){
@@ -52,6 +44,6 @@ int main(int argc, char *argv[]) {
         }
     }
 
-    // fclose(file);
+    fclose(file);
     return 0;
 }
