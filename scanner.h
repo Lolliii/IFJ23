@@ -147,6 +147,14 @@ int check_keywords(char *check){
     else return 0;
 }
 
+void return_back(char c, FILE* file)
+{
+    if(c == EOF)
+        fseek(file, 0, SEEK_CUR);
+    else
+        fseek(file, -1, SEEK_CUR);
+}
+
 // TOHLE taky jeste zkontroluju
 // Function prints an error according to given error code 
 void error_caller(int error_code){
@@ -333,7 +341,7 @@ T_token getNextToken(FILE* file){
                     token.type = TOKEN_FUNCTION_TYPE;
                     return token;
                 } else {
-                    fseek(file, -1, SEEK_CUR);  // Misto pouziti putc, fputc, unget tohle posune position pointer o znak zpet
+                    return_back(c, file);  // Misto pouziti putc, fputc, unget tohle posune position pointer o znak zpet
                     token.type = TOKEN_MINUS;
                     return token;
                 }
@@ -344,14 +352,14 @@ T_token getNextToken(FILE* file){
                     token.type = TOKEN_DOUBLE_QUESTION_MARK;
                     return token;
                 } else {
-                    fseek(file, -1, SEEK_CUR);
+                    return_back(c, file);
                     token.type = TOKEN_QUESTION_MARK;
                     return token;
                 }
                 break; 
             
             case(S_UNDERSCORE):
-                fseek(file, -1, SEEK_CUR);
+                return_back(c, file);
                 if(!isalnum(c) && c != '_'){        // Nemuze to byt ID, je to jen podtrzitko
                     token.type = TOKEN_UNDERSCORE;
                     return token;
@@ -372,7 +380,7 @@ T_token getNextToken(FILE* file){
                     return token;
                 } else if(!isalnum(c) && c != '_'){     // znema log. operace (bylo || ale nefungovalo to :( )
                     //fputc(c, file);
-                    fseek(file, -1, SEEK_CUR);
+                    return_back(c, file);
                     token.type        = TOKEN_ID;
                     token.value       = value;
                     token.valueLength = length; 
@@ -388,7 +396,7 @@ T_token getNextToken(FILE* file){
                     token.type = TOKEN_NOT_EQUAL;
                     return token;
                 } else {
-                    fseek(file, -1, SEEK_CUR);
+                    return_back(c, file);
                     token.type = TOKEN_EXCLAMATION_MARK;
                     return token;
                 }
@@ -399,7 +407,7 @@ T_token getNextToken(FILE* file){
                     token.type = TOKEN_EQUAL;
                     return token;
                 } else {
-                    fseek(file, -1, SEEK_CUR);
+                    return_back(c, file);
                     token.type = TOKEN_ASSIGN;
                     return token;
                 }
@@ -410,7 +418,7 @@ T_token getNextToken(FILE* file){
                     token.type = TOKEN_GTE;
                     return token;
                 } else {
-                    fseek(file, -1, SEEK_CUR);
+                    return_back(c, file);
                     token.type = TOKEN_GT;
                     return token;
                 }
@@ -421,7 +429,7 @@ T_token getNextToken(FILE* file){
                     token.type = TOKEN_LTE;
                     return token;
                 } else {
-                    fseek(file, -1, SEEK_CUR);
+                    return_back(c, file);
                     token.type = TOKEN_LT;
                     return token;
                 }
@@ -436,7 +444,7 @@ T_token getNextToken(FILE* file){
                     // blockComms++;
                     break;
                 } else {
-                    fseek(file, -1, SEEK_CUR);
+                    return_back(c, file);
                     token.type = TOKEN_SLASH;
                     return token;
                 }
@@ -496,7 +504,7 @@ T_token getNextToken(FILE* file){
                     length++;
                     break;
                 } else {
-                    fseek(file, -1, SEEK_CUR);
+                    return_back(c, file);
                     token.type = TOKEN_INT;
                     token.value = value;
                     token.valueLength = length;
@@ -515,7 +523,7 @@ T_token getNextToken(FILE* file){
                     length++;
                     break;
                 } else {
-                    fseek(file, -1, SEEK_CUR);
+                    return_back(c, file);
                     token.type = TOKEN_INT_EXP;
                     token.value = value;
                     token.valueLength = length;
@@ -542,7 +550,7 @@ T_token getNextToken(FILE* file){
                     length++;
                     break;
                 } else {
-                    fseek(file, -1, SEEK_CUR);
+                    return_back(c, file);
                     token.type = TOKEN_INT_EXP_PM;
                     token.value = value;
                     token.valueLength = length;
@@ -561,7 +569,7 @@ T_token getNextToken(FILE* file){
                     length++;
                     break;
                 } else {
-                    fseek(file, -1, SEEK_CUR);
+                    return_back(c, file);
                     token.type = TOKEN_DOUBLE;
                     token.value = value;
                     token.valueLength = length;
@@ -580,7 +588,7 @@ T_token getNextToken(FILE* file){
                     length++;
                     break;
                 } else {
-                    fseek(file, -1, SEEK_CUR);
+                    return_back(c, file);
                     token.type = TOKEN_DOUBLE_EXP;
                     token.value = value;
                     token.valueLength = length;
@@ -607,7 +615,7 @@ T_token getNextToken(FILE* file){
                     length++;
                     break;
                 } else {
-                    fseek(file, -1, SEEK_CUR);
+                    return_back(c, file);
                     token.type = TOKEN_DOUBLE_EXP_PM;
                     token.value = value;
                     token.valueLength = length;
@@ -740,7 +748,7 @@ T_token getNextToken(FILE* file){
                     state = S_ML_STRING_FILL;
                     break;
                 } else {
-                    fseek(file, -1, SEEK_CUR);
+                    return_back(c, file);
                     token.type = TOKEN_STRING;
                     token.value = value;
                     token.valueLength = length;
