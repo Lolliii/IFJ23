@@ -29,28 +29,28 @@ IFJ Project
 #define S_BS_U                  112     // \u
 #define S_BS_UC                 113     // \u{
 #define S_BS_UC_DD              114     // \u{dd
-//#define S_BS_UC                 115     // \u{ duplikace
 #define S_STRING                116
+#define S_STRING_FILL           99
 #define S_ML_BS                 117     // Multi-Line String
 #define S_ML_BS_U               118     // \u
-//#define S_ML_BS_UC              119     // \u{ duplikace
+#define S_ML_BS_UC              119     // \u{ duplikace
 #define S_ML_BS_UC_DD           120     // \u{dd
-#define S_ML_BS_UC              123     // \u{
+#define S_ML_STRING_FILL        123
 #define S_ML_STRING_1           124
 #define S_ML_STRING_2           125
 #define S_ML_STRING             126
 #define S_INT                   127
 #define S_INT_EXP               128
 #define S_INT_EXP_PM            129
-// ?? Pridat jeste jeden stav ?
-#define S_DOUBLE                130
-#define S_DOUBLE_EXP            131
-#define S_DOUBLE_EXP_PM         132
-// ?? Pridat jeste jeden stav ?
-#define S_SLASH                 133
-#define S_BLOCK_COMMENT         134
-#define S_LINE_COMMENT          135
-#define S_BLOCK_MAYBE_END       136
+#define S_INT_EXP_PM_OK         130
+#define S_DOUBLE                131
+#define S_DOUBLE_EXP            132
+#define S_DOUBLE_EXP_PM         133
+#define S_DOUBLE_EXP_PM_OK      134
+#define S_SLASH                 135
+#define S_BLOCK_COMMENT         136
+#define S_LINE_COMMENT          137
+#define S_BLOCK_MAYBE_END       138
 //#define S_BLOCK_COMMENT_END     137
 
 // Klicova slova
@@ -205,9 +205,11 @@ T_token getNextToken(FILE* file){
     // Pomocne promenne pro naplnenni tokenu
     char value[1024] = "\0";                             // Tady to upravit na promennou delku nejak
     uint32_t length = 0;
+    int hexLength = 0;
     // int blockComms = 0;
 
     char c = fgetc(file);
+    //char c = '\0';
 
     // Loop pro ziskani tokenu
     int state = S_START;
@@ -315,7 +317,11 @@ T_token getNextToken(FILE* file){
                         value[length] = c;
                         length++;
                         break;
-                    } else {
+                    } else if(c == '"') {
+                        state = S_STRING_START;
+                        break;
+                    } 
+                    else{
                         state = S_ERROR;
                         break;
                     }
@@ -365,6 +371,7 @@ T_token getNextToken(FILE* file){
                     token.valueLength = length; 
                     return token;
                 } else if(!isalnum(c) && c != '_'){     // znema log. operace (bylo || ale nefungovalo to :( )
+                    //fputc(c, file);
                     fseek(file, -1, SEEK_CUR);
                     token.type        = TOKEN_ID;
                     token.value       = value;
@@ -521,6 +528,18 @@ T_token getNextToken(FILE* file){
                 if(isdigit(c)){
                     value[length] = c;
                     length++;
+                    state = S_INT_EXP_PM_OK;
+                    break;
+                } else {
+                    token.type = TOKEN_ERROR;
+                    return token;
+                }
+                break; 
+
+            case(S_INT_EXP_PM_OK):
+                if(isdigit(c)){
+                    value[length] = c;
+                    length++;
                     break;
                 } else {
                     fseek(file, -1, SEEK_CUR);
@@ -574,6 +593,18 @@ T_token getNextToken(FILE* file){
                 if(isdigit(c)){
                     value[length] = c;
                     length++;
+                    state = S_DOUBLE_EXP_PM_OK;
+                    break;
+                } else {
+                    token.type = TOKEN_ERROR;
+                    return token;
+                }
+                break; 
+
+            case(S_DOUBLE_EXP_PM_OK):
+                if(isdigit(c)){
+                    value[length] = c;
+                    length++;
                     break;
                 } else {
                     fseek(file, -1, SEEK_CUR);
@@ -585,17 +616,244 @@ T_token getNextToken(FILE* file){
                 break; 
 
 // STRING
-            /*
-            case():
+            case(S_STRING_START):
+                while(c != '"' && c != '\\' && c != EOF && c != '\n'){
+                    value[length] = c;
+                    length++;
+                    c = fgetc(file);
+                }
+
+                if(c == '"'){
+                    state = S_STRING;
+                    break;
+                } else if(c == '\\'){       // ESCAPE sekvence
+                    state = S_BS;
+                    value[length] = c;
+                    length++;
+                    break;
+                } else if (c == EOF || c == '\n'){  
+                    token.type = TOKEN_ERROR;
+                    return token;
+                } else {
+                    state = S_STRING_FILL;
+                    break;
+                }
                 break; 
-            case():
+
+            case(S_STRING_FILL):
+                while(c != '"' && c != '\\' && c != EOF && c != '\n'){
+                    value[length] = c;
+                    length++;
+                    c = fgetc(file);
+                }
+
+                if(c == '"'){
+                    token.type = TOKEN_STRING;
+                    token.value = value;
+                    token.valueLength = length;
+                    return token;
+                } else if(c == '\\'){       // ESCAPE sekvence
+                    state = S_BS;
+                    value[length] = c;
+                    length++;
+                    break;
+                } else if (c == EOF || c == '\n'){  
+                    token.type = TOKEN_ERROR;
+                    return token;
+                } 
+                break;
+
+            case(S_BS):
+                if (c == 'u'){
+                    state = S_BS_U;
+                    break;
+                }
+                else if(c == 'n'){
+                    state = S_STRING_START;
+                    break;
+                }
+                else if(c == 'r'){
+                    state = S_STRING_START;
+                    break;
+                }
+                else if(c == 't'){
+                    state = S_STRING_START;
+                    break;
+                }
+                else if(c == '\\'){
+                    state = S_STRING_START;
+                    break;
+                }
+                else if(c == '"'){
+                    state = S_STRING_START;
+                    break;
+                }
+                else {
+                    token.type = TOKEN_ERROR;
+                    return token;
+                }
+                break;
+
+            case(S_BS_U):
+                if(c == '{'){
+                    state = S_BS_UC;
+                    break;
+                } else {
+                    token.type = TOKEN_ERROR;
+                    return token;
+                }
+
+            case(S_BS_UC):
+                if((c >= 'a' && c <= 'f') || (c >= 'A' && c <= 'F') || (c >= '0' && c <= '9')){
+                    value[length] = c;
+                    length++;
+                    hexLength++;
+                    state = S_BS_UC_DD;
+                    break;
+                } else {
+                    token.type = TOKEN_ERROR;
+                    return token;
+                }
+                break;
+
+            case(S_BS_UC_DD):
+                while(c != '}'){   // 8???? <= ????
+                    if((c >= 'a' && c <= 'f') || (c >= 'A' && c <= 'F') || (c >= '0' && c <= '9')){
+                        value[length] = c;
+                        length++;
+                        hexLength++;
+                        c = fgetc(file);
+                    } else {
+                        token.type = TOKEN_ERROR;
+                        return token;
+                    }
+                    if(hexLength > 8){
+                        token.type = TOKEN_ERROR;
+                        return token;
+                    }
+                }
+                state = S_STRING_FILL; // Tady uz to nasbiralo co potrebuje, nebo hodilo chybu
+                break;
+
+            case(S_STRING):
+                if(c == '"'){
+                    state = S_ML_STRING_FILL;
+                    break;
+                } else {
+                    fseek(file, -1, SEEK_CUR);
+                    token.type = TOKEN_STRING;
+                    token.value = value;
+                    token.valueLength = length;
+                    return token;
+                }
                 break; 
-            */
 
+// ML STRINGY
+            case(S_ML_STRING_FILL):
+                while(c != '"' && c != '\\' && c != EOF){
+                    value[length] = c;
+                    length++;
+                    c = fgetc(file);
+                }
 
+                if(c == '"'){
+                    state = S_ML_STRING_1;
+                    break;
+                } else if(c == '\\'){       // ESCAPE sekvence - tady muze byt \t, \n, \r normalne
+                    state = S_ML_BS;
+                    value[length] = c;
+                    length++;
+                    break;
+                } else if (c == EOF){  
+                    token.type = TOKEN_ERROR;
+                    return token;
+                }
+                break; 
 
+            case(S_ML_BS):
+                if(c == '\\'){
+                    state = S_ML_STRING_FILL;
+                    value[length] = c;
+                    length++;
+                    break;
+                } else if(c == 'u'){
+                    state = S_ML_BS_U;
+                    value[length] = c;
+                    length++;
+                    break;
+                } else {
+                    token.type = TOKEN_ERROR;
+                    return token;
+                }
+                break;
 
+            case(S_ML_BS_U):
+                if(c == '{'){
+                    state = S_ML_BS_UC;
+                    value[length] = c;
+                    length++;
+                    break;
+                } else {
+                    token.type = TOKEN_ERROR;
+                    return token;
+                }
+                break;
+//-----------
+            case(S_ML_BS_UC):
+                if((c >= 'a' && c <= 'f') || (c >= 'A' && c <= 'F') || (c >= '0' && c <= '9')){
+                    value[length] = c;
+                    length++;
+                    hexLength++;
+                    state = S_ML_BS_UC_DD;
+                    break;
+                } else {
+                    token.type = TOKEN_ERROR;
+                    return token;
+                }
+                break;
 
+            case(S_ML_BS_UC_DD):
+                while(c != '}' || hexLength < 8){   // 8???? <= ????
+                    if((c >= 'a' && c <= 'f') || (c >= 'A' && c <= 'F') || (c >= '0' && c <= '9')){
+                        value[length] = c;
+                        length++;
+                        hexLength++;
+                        c = fgetc(file);
+                    } else {
+                        token.type = TOKEN_ERROR;
+                        return token;
+                    }
+                }
+                state = S_ML_STRING_FILL; // Tady uz to nasbiralo co potrebuje, nebo hodilo chybu
+                break;
+
+            case(S_ML_STRING_1):
+                if (c == '"'){
+                    state = S_ML_STRING_2;
+                    break;
+                } else {
+                    value[length] = '"';
+                    value[length + 1] = c;
+                    length += 2;
+                    state = S_ML_STRING_FILL;
+                    break;
+                }
+                break;  
+
+            case(S_ML_STRING_2):
+                if (c == '"'){
+                    token.type = TOKEN_ML_STRING;
+                    token.value = value;
+                    token.valueLength = length;
+                    return token;
+                } else {
+                    value[length] = '"';
+                    value[length + 1] = c;
+                    length += 2;
+                    state = S_ML_STRING_FILL;
+                    break;
+                }
+                break; 
 
             default:  // Vsechno ostatni by mela byt chyba
                 token.type = TOKEN_ERROR;
