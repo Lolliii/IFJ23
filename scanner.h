@@ -201,22 +201,19 @@ T_token getNextToken(FILE* file){
     token.value = "\0";
     token.valueLength = 0;
 
-
     // Pomocne promenne pro naplnenni tokenu
     char value[1024] = "\0";                             // Tady to upravit na promennou delku nejak
     uint32_t length = 0;
     int hexLength = 0;
     int blockComms = 0;
 
-    char c = fgetc(file);
-    //char c = '\0';
-
     // Loop pro ziskani tokenu
+    char c = fgetc(file);
     int state = S_START;
     while(c != EOF){
         if(state != S_START)
-            c = fgetc(file);         // pokud znak nedostane po prvnim projiti finalni stav, je potreba nacist novy
-  
+           c = fgetc(file);         // pokud znak nedostane po prvnim projiti finalni stav, je potreba nacist novy
+    
         switch(state){
             case(S_START): 
             // Tady se to rozdeli podle toho jestli je to konecny stav nebo ne
@@ -371,7 +368,6 @@ T_token getNextToken(FILE* file){
                     token.valueLength = length; 
                     return token;
                 } else if(!isalnum(c) && c != '_'){     // znema log. operace (bylo || ale nefungovalo to :( )
-                    //fputc(c, file);
                     fseek(file, -1, SEEK_CUR);
                     token.type        = TOKEN_ID;
                     token.value       = value;
@@ -870,6 +866,7 @@ T_token getNextToken(FILE* file){
                 //token.value = c;
                 //token.valueLength = 1;
                 return token;
+
         }
     }
 
