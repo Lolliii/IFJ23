@@ -206,7 +206,7 @@ T_token getNextToken(FILE* file){
     char value[1024] = "\0";                             // Tady to upravit na promennou delku nejak
     uint32_t length = 0;
     int hexLength = 0;
-    // int blockComms = 0;
+    int blockComms = 0;
 
     char c = fgetc(file);
     //char c = '\0';
@@ -433,7 +433,7 @@ T_token getNextToken(FILE* file){
                     break;
                 } else if(c == '*'){
                     state = S_BLOCK_COMMENT;
-                    // blockComms++;
+                    blockComms++;
                     break;
                 } else {
                     fseek(file, -1, SEEK_CUR);
@@ -458,6 +458,12 @@ T_token getNextToken(FILE* file){
 
             case(S_BLOCK_COMMENT):
                 while(c != EOF && c != '*'){
+                    if(c == '/'){               // Vnoreny komentar
+                        c = fgetc(file);
+                        if(c == '*'){
+                            blockComms++;
+                        }
+                    }
                     c = fgetc(file);
                 }
 
@@ -472,9 +478,15 @@ T_token getNextToken(FILE* file){
 
             case(S_BLOCK_MAYBE_END):
                 if(c == '/'){
-                    c = fgetc(file);
-                    state = S_START;
-                    break;
+                    blockComms--;
+                    if(!blockComms){    // Pokud skoncily vnorene komentare/byl samotny
+                        c = fgetc(file);
+                        state = S_START;
+                        break;
+                    } else {
+                        state = S_BLOCK_COMMENT;
+                        break;
+                    }
                 }
                 else 
                     state = S_BLOCK_COMMENT;
@@ -523,7 +535,6 @@ T_token getNextToken(FILE* file){
                 }
                 break; 
                 
-    // !!!!!!!!! tady mozna upravit jeste aby na konci nemohlo by jen +/- 
             case(S_INT_EXP_PM):
                 if(isdigit(c)){
                     value[length] = c;
@@ -587,8 +598,7 @@ T_token getNextToken(FILE* file){
                     return token;
                 }
                 break;
-
-    // !!!!!!!!! tady mozna upravit jeste aby na konci nemohlo by jen +/-             
+         
             case(S_DOUBLE_EXP_PM):
                 if(isdigit(c)){
                     value[length] = c;
