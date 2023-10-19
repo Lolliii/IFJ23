@@ -209,22 +209,19 @@ T_token getNextToken(FILE* file){
     token.value = "\0";
     token.valueLength = 0;
 
-
     // Pomocne promenne pro naplnenni tokenu
     char value[1024] = "\0";                             // Tady to upravit na promennou delku nejak
     uint32_t length = 0;
     int hexLength = 0;
-    // int blockComms = 0;
-
-    char c = fgetc(file);
-    //char c = '\0';
+    int blockComms = 0;
 
     // Loop pro ziskani tokenu
+    char c = fgetc(file);
     int state = S_START;
     while(c != EOF){
         if(state != S_START)
-            c = fgetc(file);         // pokud znak nedostane po prvnim projiti finalni stav, je potreba nacist novy
-  
+           c = fgetc(file);         // pokud znak nedostane po prvnim projiti finalni stav, je potreba nacist novy
+    
         switch(state){
             case(S_START): 
             // Tady se to rozdeli podle toho jestli je to konecny stav nebo ne
@@ -381,6 +378,7 @@ T_token getNextToken(FILE* file){
                 } else if(!isalnum(c) && c != '_'){     // znema log. operace (bylo || ale nefungovalo to :( )
                     //fputc(c, file);
                     return_back(c, file);
+                    fseek(file, -1, SEEK_CUR);
                     token.type        = TOKEN_ID;
                     token.value       = value;
                     token.valueLength = length; 
@@ -441,7 +439,7 @@ T_token getNextToken(FILE* file){
                     break;
                 } else if(c == '*'){
                     state = S_BLOCK_COMMENT;
-                    // blockComms++;
+                    blockComms++;
                     break;
                 } else {
                     return_back(c, file);
@@ -466,6 +464,12 @@ T_token getNextToken(FILE* file){
 
             case(S_BLOCK_COMMENT):
                 while(c != EOF && c != '*'){
+                    if(c == '/'){               // Vnoreny komentar
+                        c = fgetc(file);
+                        if(c == '*'){
+                            blockComms++;
+                        }
+                    }
                     c = fgetc(file);
                 }
 
@@ -480,9 +484,15 @@ T_token getNextToken(FILE* file){
 
             case(S_BLOCK_MAYBE_END):
                 if(c == '/'){
-                    c = fgetc(file);
-                    state = S_START;
-                    break;
+                    blockComms--;
+                    if(!blockComms){    // Pokud skoncily vnorene komentare/byl samotny
+                        c = fgetc(file);
+                        state = S_START;
+                        break;
+                    } else {
+                        state = S_BLOCK_COMMENT;
+                        break;
+                    }
                 }
                 else 
                     state = S_BLOCK_COMMENT;
@@ -531,7 +541,6 @@ T_token getNextToken(FILE* file){
                 }
                 break; 
                 
-    // !!!!!!!!! tady mozna upravit jeste aby na konci nemohlo by jen +/- 
             case(S_INT_EXP_PM):
                 if(isdigit(c)){
                     value[length] = c;
@@ -595,8 +604,7 @@ T_token getNextToken(FILE* file){
                     return token;
                 }
                 break;
-
-    // !!!!!!!!! tady mozna upravit jeste aby na konci nemohlo by jen +/-             
+         
             case(S_DOUBLE_EXP_PM):
                 if(isdigit(c)){
                     value[length] = c;
@@ -868,6 +876,7 @@ T_token getNextToken(FILE* file){
                 //token.value = c;
                 //token.valueLength = 1;
                 return token;
+
         }
     }
 
