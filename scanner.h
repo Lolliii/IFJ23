@@ -376,9 +376,7 @@ T_token getNextToken(FILE* file){
                     token.valueLength = length; 
                     return token;
                 } else if(!isalnum(c) && c != '_'){     // znema log. operace (bylo || ale nefungovalo to :( )
-                    //fputc(c, file);
                     return_back(c, file);
-                    fseek(file, -1, SEEK_CUR);
                     token.type        = TOKEN_ID;
                     token.value       = value;
                     token.valueLength = length; 
