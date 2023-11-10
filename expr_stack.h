@@ -1,8 +1,18 @@
+/*
+IFJ Projekt 2023
+
+@author Jakub Valeš
+@author Milan Takáč
+@author Jakub Dyrčík
+@author Thu Tra Phamová
+*/
+
 #ifndef EXPR_STACK_H
 #define EXPR_STACK_H
 
 #include "scanner.h"
 
+// indexace tokenů v precedenční tabulce (+ je na indexu 0 atd...)
 typedef enum {
     prec_add,
     prec_sub,
@@ -42,12 +52,11 @@ typedef struct telem
 typedef struct tstack
 {
     T_elem *top;
-    int size;
 }T_stack;
 
 T_stack *stack_init();
 
-void stack_push(T_stack *stack, T_token token, prec_symb term);
+void stack_push(T_stack *stack, T_token token, prec_symb idx);
 
 void stack_pop(T_stack *stack);
 
