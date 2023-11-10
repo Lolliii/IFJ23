@@ -1,3 +1,12 @@
+/*
+IFJ Projekt 2023
+
+@author Jakub Valeš
+@author Milan Takáč
+@author Jakub Dyrčík
+@author Thu Tra Phamová
+*/
+
 #include "scanner.h"
 #include "error.h"
 #include "expr_stack.h"
