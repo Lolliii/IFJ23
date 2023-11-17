@@ -6,12 +6,13 @@ IFJ Project
 @author Thu Tra Phamová
 */
 
-#include <stdio.h>
-#include <string.h>
-#include <stdlib.h>
-#include <ctype.h>
-#include <stdint.h> // kvuli uint_32
+// #ifndef SCANNER_H
+// #define SCANNER_H
+
 #include "error.h"
+#include <stdio.h>
+#include <stdlib.h>
+#include <stdint.h> // kvuli uint_32
 
 // Stavy -> Vsechny krome uplne konecnych stavu (pouze "pruchozi")
 #define S_ERROR                 100
@@ -211,8 +212,8 @@ T_token getNextToken(FILE* file){
     token.valueLength = 0;
 
     // Pomocne promenne pro naplnenni tokenu
-    char value[1024] = {0};                             // Tady to upravit na promennou delku nejak
-    int length = 0;
+    char value[1024] = "\0";                             // Tady to upravit na promennou delku nejak
+    uint32_t length = 0;
     int hexLength = 0;
     int blockComms = 0;
 
@@ -229,10 +230,6 @@ T_token getNextToken(FILE* file){
             // Pokud z toho to stavu nelze uz nikam prejit, naplni a returnne se token
 
                     if(isspace(c)){         // whitespaces - bere i EOL
-                        if(c == '\n'){
-                            token.type = TOKEN_LINE_FEED;
-                            return token;
-                        }
                         c = fgetc(file);     // při whitespace se to seklo v endless loopu
                         break;
                     } 
@@ -767,14 +764,13 @@ T_token getNextToken(FILE* file){
                 }
                 break; 
 
-// MultiLine STRINGY
+// ML STRINGY
             case(S_ML_STRING_FILL):
                 while(c != '"' && c != '\\' && c != EOF){
                     value[length] = c;
                     length++;
                     c = fgetc(file);
                 }
-                
 
                 if(c == '"'){
                     state = S_ML_STRING_1;
@@ -864,7 +860,6 @@ T_token getNextToken(FILE* file){
                 if (c == '"'){
                     token.type = TOKEN_ML_STRING;
                     token.value = value;
-                    // token.value = strdup(value);
                     token.valueLength = length;
                     return token;
                 } else {

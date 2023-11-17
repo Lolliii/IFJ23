@@ -12,7 +12,11 @@ fills it and returns NO_ERROR. In case of an error, the return value is LEX_ERRO
 */
 
 #include "scanner.h"
-// #include <unistd.h>
+#include <stdio.h>
+#include <string.h>
+#include <stdlib.h>
+#include <ctype.h>
+#include <stdint.h> // kvuli uint_32
 
 void printTokenName(T_token token) {
     switch (token.type) {
@@ -144,36 +148,88 @@ void printTokenName(T_token token) {
 
 }
 
-int main(int argc, char *argv[]) {
-    
-    if(argc < 2){
-        fprintf(stderr, "ERROR: Too few arguments.\n");
-        return 1;
+int check_keywords(char *check){
+    //strcmp return values -> 0 = equal, 1 = first doesnt match, 2 = second doesnt match
+    if((strcmp(check, "else")) == 0) return 1;
+    else if((strcmp(check, "float")) == 0) return 2;
+    else if((strcmp(check, "function")) == 0) return 1;
+    else if((strcmp(check, "if")) == 0) return 1;
+    else if((strcmp(check, "int")) == 0) return 3;
+    else if((strcmp(check, "null")) == 0) return 1;
+    else if((strcmp(check, "return")) == 0) return 1;
+    else if((strcmp(check, "string")) == 0) return 4;
+    else if((strcmp(check, "void")) == 0) return 1;
+    else if((strcmp(check, "while")) == 0) return 1;
+    else return 0;
+}
+
+void return_back(char c, FILE* file)
+{
+    if(c == EOF)
+        fseek(file, 0, SEEK_CUR);
+    else
+        fseek(file, -1, SEEK_CUR);
+}
+
+// TOHLE taky jeste zkontroluju
+// Function prints an error according to given error code 
+void error_caller(int error_code){
+    printf("\n");
+    switch(error_code){
+        case LEX_ERROR:
+            printf("Error: %d -> Wrong lexem structure on line %d.\n", error_code, __LINE__);
+            break;
+        case SYN_ERROR:
+            printf("Error: %d -> Wrong syntax on line %d.\n", error_code, __LINE__);
+            break;
+        case UNDEF_FUNCTION_ERROR:
+            printf("Error: %d -> Undefined function or redefining attempt on line %d.\n", error_code, __LINE__);
+            break;
+        case PARAM_ERROR:
+            printf("Error: %d -> Wrong type, number of parameters or return type on line %d.\n", error_code, __LINE__);
+            break;
+        case UNDEF_UNINIT_VARIABLE_ERROR:
+            printf("Error: %d -> Using undefined variable on line %d.\n", error_code, __LINE__);
+            break;
+        case EXPRESSION_ERROR:
+            printf("Error: %d -> Too little or too many expressions in return command on line %d.\n", error_code, __LINE__);
+            break;
+        case TYPE_COMP_ERROR:
+            printf("Error: %d -> Wrong type in aritmetics, string, and relation expressions on line %d.\n", error_code, __LINE__);
+            break;
+        case OTHER_ERROR:
+            printf("Error: %d -> Other semantic error on line %d.\n", error_code, __LINE__);
+            break;
+        case INTER_ERROR:
+            printf("Error: %d -> Compilator error (allocation error, ...).\n", error_code);
+            break;
     }
+}
 
-    printf("NAZEV: %s\n", argv[1]);
+// TODO =============
+// Dynamicky string + alokace
+// ??? Zkontrolovat u ID klicova slova
 
-    // TODO:
-    // zkontrolovat spravne otevreni souboru
-    FILE* file = fopen("test.txt", "r+");
-    
+/*
+Funkce vraci token.
+V pripade chyby vraci TOKEN_ERROR, a bude to muset byt osetreno volajicim jako LEX_ERROR
+file je pripraveno v scanner.c
+*/
+T_token getNextToken(FILE* file){
+
     T_token token;
 
     while ((token = getNextToken(file)).type != TOKEN_EOF) {
         if(token.type == TOKEN_ERROR){
-            printf("chyb\n");
+            printf("chyba\n");
         } else {
             //printf("%d\n", token.type);
             printTokenName(token);
             printf("\n");
         }
     }
-    if(token.type == TOKEN_EOF){
-        printf("KONEC\n");
-    }
 
-    fclose(file);
-    file = NULL;
-
-    return 0;
+    // EOF - Konec souboru
+    token.type = TOKEN_EOF;
+    return token;
 }
