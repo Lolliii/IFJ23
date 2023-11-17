@@ -114,7 +114,7 @@ void printTokenName(T_token token) {
             printf("TOKEN_STRING");
             break;
         case TOKEN_ML_STRING:
-            printf("TOKEN_ML_STRING, delka: %d", token.valueLength);
+            printf("TOKEN_ML_STRING");
             break;
         case TOKEN_INT:
             printf("TOKEN_INT");
@@ -134,18 +134,12 @@ void printTokenName(T_token token) {
         case TOKEN_DOUBLE_EXP_PM:
             printf("TOKEN_DOUBLE_EXP_PM");
             break;
-        case TOKEN_LINE_FEED:
-            printf("TOKEN_LINE_FEED");
-            break;
         default:
             printf("Unknown Token Type");
             break;
     }
-    if(token.valueLength){
+    if(token.valueLength)
         printf("->%s", token.value);
-        // free(token.value);
-    }
-
 }
 
 int check_keywords(char *check){
@@ -218,14 +212,675 @@ file je pripraveno v scanner.c
 T_token getNextToken(FILE* file){
 
     T_token token;
+    token.value = "\0";
+    token.valueLength = 0;
 
-    while ((token = getNextToken(file)).type != TOKEN_EOF) {
-        if(token.type == TOKEN_ERROR){
-            printf("chyba\n");
-        } else {
-            //printf("%d\n", token.type);
-            printTokenName(token);
-            printf("\n");
+    // Pomocne promenne pro naplnenni tokenu
+    char value[1024] = "\0";                             // Tady to upravit na promennou delku nejak
+    uint32_t length = 0;
+    int hexLength = 0;
+    int blockComms = 0;
+
+    // Loop pro ziskani tokenu
+    char c = fgetc(file);
+    int state = S_START;
+    while(c != EOF){
+        if(state != S_START)
+           c = fgetc(file);         // pokud znak nedostane po prvnim projiti finalni stav, je potreba nacist novy
+    
+        switch(state){
+            case(S_START): 
+            // Tady se to rozdeli podle toho jestli je to konecny stav nebo ne
+            // Pokud z toho to stavu nelze uz nikam prejit, naplni a returnne se token
+
+                    if(isspace(c)){         // whitespaces - bere i EOL
+                        c = fgetc(file);     // při whitespace se to seklo v endless loopu
+                        break;
+                    } 
+                    else if(c == ','){
+                        token.type = TOKEN_COMMA;
+                        return token;
+                    } 
+                    else if(c == ':'){
+                        token.type = TOKEN_COLON;
+                        return token;
+                    } 
+                    else if(c == '+'){
+                        token.type = TOKEN_PLUS;
+                        return token;
+                    } 
+                    else if(c == '-'){
+                        state = S_MINUS;
+                        break;
+                    } 
+                    else if(c == '*'){
+                        token.type = TOKEN_MUL;
+                        return token;
+                    } 
+                    else if(c == ':'){
+                        token.type = TOKEN_COLON;
+                        return token;
+                    } 
+                    else if(c == '?'){
+                        state = S_QUESTION_MARK;
+                        break;
+                    } 
+                    else if(c == '_'){
+                        state = S_UNDERSCORE;
+                        break;
+                    } 
+                    else if(isalpha(c)){
+                        state = S_ID;
+                        value[length] = c;
+                        length++;
+                        break;
+                    } 
+                    else if(c == '!'){
+                        state = S_EXCLAMATION_MARK;
+                        break;
+                    } 
+                    else if(c == '='){
+                        state = S_ASSIGN;
+                        break;
+                    } 
+                    else if(c == '>'){
+                        state = S_GT;
+                        break;
+                    } 
+                    else if(c == '<'){
+                        state = S_LT;
+                        break;
+                    } 
+                    else if(c == '}'){
+                        token.type = TOKEN_R_CURL;
+                        return token;
+                    } 
+                    else if(c == '{'){
+                        token.type = TOKEN_L_CURL;
+                        return token;
+                    } 
+                    else if(c == ']'){
+                        token.type = TOKEN_R_SQR;
+                        return token;
+                    } 
+                    else if(c == '['){
+                        token.type = TOKEN_L_SQR;
+                        return token;
+                    } 
+                    else if(c == ')'){
+                        token.type = TOKEN_R_RND;
+                        return token;
+                    } 
+                    else if(c == '('){
+                        token.type = TOKEN_L_RND;
+                        return token;
+                    } 
+                    else if(c == 39){        // Uvozovka ASCII
+                        token.type = TOKEN_SINGLE_QUOTE;
+                        return token;
+                    } 
+                    else if(c == '/'){
+                        state = S_SLASH;
+                        break;
+                    } 
+                    else if(isdigit(c)){
+                        state = S_INT;
+                        value[length] = c;
+                        length++;
+                        break;
+                    } else if(c == '"') {
+                        state = S_STRING_START;
+                        break;
+                    } 
+                    else{
+                        state = S_ERROR;
+                        break;
+                    }
+
+                break; 
+
+            case(S_MINUS):
+                if(c == '>'){
+                    token.type = TOKEN_FUNCTION_TYPE;
+                    return token;
+                } else {
+                    return_back(c, file);  // Misto pouziti putc, fputc, unget tohle posune position pointer o znak zpet
+                    token.type = TOKEN_MINUS;
+                    return token;
+                }
+                break;
+
+            case(S_QUESTION_MARK):
+                if(c == '?'){
+                    token.type = TOKEN_DOUBLE_QUESTION_MARK;
+                    return token;
+                } else {
+                    return_back(c, file);
+                    token.type = TOKEN_QUESTION_MARK;
+                    return token;
+                }
+                break; 
+            
+            case(S_UNDERSCORE):
+                return_back(c, file);
+                if(!isalnum(c) && c != '_'){        // Nemuze to byt ID, je to jen podtrzitko
+                    token.type = TOKEN_UNDERSCORE;
+                    return token;
+                } else {                            // ID - 
+                    state = S_ID;
+                    value[length] = c;
+                    length++;
+                }
+                break; 
+            
+            case(S_ID):
+                if(c == '?'){   
+                    value[length] = c;
+                    length++;
+                    token.type        = TOKEN_TYPE_ID;
+                    token.value       = value;
+                    token.valueLength = length; 
+                    return token;
+                } else if(!isalnum(c) && c != '_'){     // znema log. operace (bylo || ale nefungovalo to :( )
+                    return_back(c, file);
+                    token.type        = TOKEN_ID;
+                    token.value       = value;
+                    token.valueLength = length; 
+                    return token;
+                } else {
+                    value[length] = c;
+                    length++;
+                }
+                break; 
+            
+            case(S_EXCLAMATION_MARK):
+                if(c == '='){
+                    token.type = TOKEN_NOT_EQUAL;
+                    return token;
+                } else {
+                    return_back(c, file);
+                    token.type = TOKEN_EXCLAMATION_MARK;
+                    return token;
+                }
+                break; 
+            
+            case(S_ASSIGN):
+                if(c == '='){
+                    token.type = TOKEN_EQUAL;
+                    return token;
+                } else {
+                    return_back(c, file);
+                    token.type = TOKEN_ASSIGN;
+                    return token;
+                }
+                break; 
+                
+            case(S_GT):
+                if(c == '='){
+                    token.type = TOKEN_GTE;
+                    return token;
+                } else {
+                    return_back(c, file);
+                    token.type = TOKEN_GT;
+                    return token;
+                }
+                break; 
+
+            case(S_LT):
+                if(c == '='){
+                    token.type = TOKEN_LTE;
+                    return token;
+                } else {
+                    return_back(c, file);
+                    token.type = TOKEN_LT;
+                    return token;
+                }
+                break; 
+// KOMENTARE
+            case(S_SLASH):
+                if(c == '/'){
+                    state = S_LINE_COMMENT;
+                    break;
+                } else if(c == '*'){
+                    state = S_BLOCK_COMMENT;
+                    blockComms++;
+                    break;
+                } else {
+                    return_back(c, file);
+                    token.type = TOKEN_SLASH;
+                    return token;
+                }
+                break; 
+
+            case(S_LINE_COMMENT):                   // Dojed na konec radku nebo souboru
+                while(c != EOF && c != '\n'){
+                    c = fgetc(file);
+                }
+
+                if(c == EOF){
+                    token.type = TOKEN_EOF;
+                    return token;
+                } else {        // \n
+                    state = S_START;
+                    break;
+                }
+                break; 
+
+            case(S_BLOCK_COMMENT):
+                while(c != EOF && c != '*'){
+                    if(c == '/'){               // Vnoreny komentar
+                        c = fgetc(file);
+                        if(c == '*'){
+                            blockComms++;
+                        }
+                    }
+                    c = fgetc(file);
+                }
+
+                if(c == EOF){
+                    token.type = TOKEN_EOF;
+                    return token;
+                } else {    // *
+                    state = S_BLOCK_MAYBE_END;
+                    break;
+                }
+                break; 
+
+            case(S_BLOCK_MAYBE_END):
+                if(c == '/'){
+                    blockComms--;
+                    if(!blockComms){    // Pokud skoncily vnorene komentare/byl samotny
+                        c = fgetc(file);
+                        state = S_START;
+                        break;
+                    } else {
+                        state = S_BLOCK_COMMENT;
+                        break;
+                    }
+                }
+                else 
+                    state = S_BLOCK_COMMENT;
+                break; 
+// CISLA
+            case(S_INT):
+                if(isdigit(c)){
+                    value[length] = c;
+                    length++;
+                    break;
+                } else if(c == '.'){
+                    state = S_DOUBLE;
+                    value[length] = c;
+                    length++;
+                    break;
+                } else if(c == 'e' || c == 'E'){
+                    state = S_INT_EXP;
+                    value[length] = c;
+                    length++;
+                    break;
+                } else {
+                    return_back(c, file);
+                    token.type = TOKEN_INT;
+                    token.value = value;
+                    token.valueLength = length;
+                    return token;
+                }
+                break;
+
+            case(S_INT_EXP):
+                if(isdigit(c)){
+                    value[length] = c;
+                    length++;
+                    break;
+                } else if(c == '+' || c == '-'){
+                    state = S_INT_EXP_PM;
+                    value[length] = c;
+                    length++;
+                    break;
+                } else {
+                    return_back(c, file);
+                    token.type = TOKEN_INT_EXP;
+                    token.value = value;
+                    token.valueLength = length;
+                    return token;
+                }
+                break; 
+                
+            case(S_INT_EXP_PM):
+                if(isdigit(c)){
+                    value[length] = c;
+                    length++;
+                    state = S_INT_EXP_PM_OK;
+                    break;
+                } else {
+                    token.type = TOKEN_ERROR;
+                    return token;
+                }
+                break; 
+
+            case(S_INT_EXP_PM_OK):
+                if(isdigit(c)){
+                    value[length] = c;
+                    length++;
+                    break;
+                } else {
+                    return_back(c, file);
+                    token.type = TOKEN_INT_EXP_PM;
+                    token.value = value;
+                    token.valueLength = length;
+                    return token;
+                }
+                break; 
+
+            case(S_DOUBLE):
+                if(isdigit(c)){
+                    value[length] = c;
+                    length++;
+                    break;
+                } else if(c == 'e' || c == 'E') {
+                    state = S_DOUBLE_EXP;
+                    value[length] = c;
+                    length++;
+                    break;
+                } else {
+                    return_back(c, file);
+                    token.type = TOKEN_DOUBLE;
+                    token.value = value;
+                    token.valueLength = length;
+                    return token;
+                }
+                break; 
+
+            case(S_DOUBLE_EXP):
+                if(isdigit(c)){
+                    value[length] = c;
+                    length++;
+                    break;
+                } else if(c == '+' || c == '-'){
+                    state = S_DOUBLE_EXP_PM;
+                    value[length] = c;
+                    length++;
+                    break;
+                } else {
+                    return_back(c, file);
+                    token.type = TOKEN_DOUBLE_EXP;
+                    token.value = value;
+                    token.valueLength = length;
+                    return token;
+                }
+                break;
+         
+            case(S_DOUBLE_EXP_PM):
+                if(isdigit(c)){
+                    value[length] = c;
+                    length++;
+                    state = S_DOUBLE_EXP_PM_OK;
+                    break;
+                } else {
+                    token.type = TOKEN_ERROR;
+                    return token;
+                }
+                break; 
+
+            case(S_DOUBLE_EXP_PM_OK):
+                if(isdigit(c)){
+                    value[length] = c;
+                    length++;
+                    break;
+                } else {
+                    return_back(c, file);
+                    token.type = TOKEN_DOUBLE_EXP_PM;
+                    token.value = value;
+                    token.valueLength = length;
+                    return token;
+                }
+                break; 
+
+// STRING
+            case(S_STRING_START):
+                while(c != '"' && c != '\\' && c != EOF && c != '\n'){
+                    value[length] = c;
+                    length++;
+                    c = fgetc(file);
+                }
+
+                if(c == '"'){
+                    state = S_STRING;
+                    break;
+                } else if(c == '\\'){       // ESCAPE sekvence
+                    state = S_BS;
+                    value[length] = c;
+                    length++;
+                    break;
+                } else if (c == EOF || c == '\n'){  
+                    token.type = TOKEN_ERROR;
+                    return token;
+                } else {
+                    state = S_STRING_FILL;
+                    break;
+                }
+                break; 
+
+            case(S_STRING_FILL):
+                while(c != '"' && c != '\\' && c != EOF && c != '\n'){
+                    value[length] = c;
+                    length++;
+                    c = fgetc(file);
+                }
+
+                if(c == '"'){
+                    token.type = TOKEN_STRING;
+                    token.value = value;
+                    token.valueLength = length;
+                    return token;
+                } else if(c == '\\'){       // ESCAPE sekvence
+                    state = S_BS;
+                    value[length] = c;
+                    length++;
+                    break;
+                } else if (c == EOF || c == '\n'){  
+                    token.type = TOKEN_ERROR;
+                    return token;
+                } 
+                break;
+
+            case(S_BS):
+                if (c == 'u'){
+                    state = S_BS_U;
+                    break;
+                }
+                else if(c == 'n'){
+                    state = S_STRING_START;
+                    break;
+                }
+                else if(c == 'r'){
+                    state = S_STRING_START;
+                    break;
+                }
+                else if(c == 't'){
+                    state = S_STRING_START;
+                    break;
+                }
+                else if(c == '\\'){
+                    state = S_STRING_START;
+                    break;
+                }
+                else if(c == '"'){
+                    state = S_STRING_START;
+                    break;
+                }
+                else {
+                    token.type = TOKEN_ERROR;
+                    return token;
+                }
+                break;
+
+            case(S_BS_U):
+                if(c == '{'){
+                    state = S_BS_UC;
+                    break;
+                } else {
+                    token.type = TOKEN_ERROR;
+                    return token;
+                }
+
+            case(S_BS_UC):
+                if((c >= 'a' && c <= 'f') || (c >= 'A' && c <= 'F') || (c >= '0' && c <= '9')){
+                    value[length] = c;
+                    length++;
+                    hexLength++;
+                    state = S_BS_UC_DD;
+                    break;
+                } else {
+                    token.type = TOKEN_ERROR;
+                    return token;
+                }
+                break;
+
+            case(S_BS_UC_DD):
+                while(c != '}'){   // 8???? <= ????
+                    if((c >= 'a' && c <= 'f') || (c >= 'A' && c <= 'F') || (c >= '0' && c <= '9')){
+                        value[length] = c;
+                        length++;
+                        hexLength++;
+                        c = fgetc(file);
+                    } else {
+                        token.type = TOKEN_ERROR;
+                        return token;
+                    }
+                    if(hexLength > 8){
+                        token.type = TOKEN_ERROR;
+                        return token;
+                    }
+                }
+                state = S_STRING_FILL; // Tady uz to nasbiralo co potrebuje, nebo hodilo chybu
+                break;
+
+            case(S_STRING):
+                if(c == '"'){
+                    state = S_ML_STRING_FILL;
+                    break;
+                } else {
+                    return_back(c, file);
+                    token.type = TOKEN_STRING;
+                    token.value = value;
+                    token.valueLength = length;
+                    return token;
+                }
+                break; 
+
+// ML STRINGY
+            case(S_ML_STRING_FILL):
+                while(c != '"' && c != '\\' && c != EOF){
+                    value[length] = c;
+                    length++;
+                    c = fgetc(file);
+                }
+
+                if(c == '"'){
+                    state = S_ML_STRING_1;
+                    break;
+                } else if(c == '\\'){       // ESCAPE sekvence - tady muze byt \t, \n, \r normalne
+                    state = S_ML_BS;
+                    value[length] = c;
+                    length++;
+                    break;
+                } else if (c == EOF){  
+                    token.type = TOKEN_ERROR;
+                    return token;
+                }
+                break; 
+
+            case(S_ML_BS):
+                if(c == '\\'){
+                    state = S_ML_STRING_FILL;
+                    value[length] = c;
+                    length++;
+                    break;
+                } else if(c == 'u'){
+                    state = S_ML_BS_U;
+                    value[length] = c;
+                    length++;
+                    break;
+                } else {
+                    token.type = TOKEN_ERROR;
+                    return token;
+                }
+                break;
+
+            case(S_ML_BS_U):
+                if(c == '{'){
+                    state = S_ML_BS_UC;
+                    value[length] = c;
+                    length++;
+                    break;
+                } else {
+                    token.type = TOKEN_ERROR;
+                    return token;
+                }
+                break;
+//-----------
+            case(S_ML_BS_UC):
+                if((c >= 'a' && c <= 'f') || (c >= 'A' && c <= 'F') || (c >= '0' && c <= '9')){
+                    value[length] = c;
+                    length++;
+                    hexLength++;
+                    state = S_ML_BS_UC_DD;
+                    break;
+                } else {
+                    token.type = TOKEN_ERROR;
+                    return token;
+                }
+                break;
+
+            case(S_ML_BS_UC_DD):
+                while(c != '}' || hexLength < 8){   // 8???? <= ????
+                    if((c >= 'a' && c <= 'f') || (c >= 'A' && c <= 'F') || (c >= '0' && c <= '9')){
+                        value[length] = c;
+                        length++;
+                        hexLength++;
+                        c = fgetc(file);
+                    } else {
+                        token.type = TOKEN_ERROR;
+                        return token;
+                    }
+                }
+                state = S_ML_STRING_FILL; // Tady uz to nasbiralo co potrebuje, nebo hodilo chybu
+                break;
+
+            case(S_ML_STRING_1):
+                if (c == '"'){
+                    state = S_ML_STRING_2;
+                    break;
+                } else {
+                    value[length] = '"';
+                    value[length + 1] = c;
+                    length += 2;
+                    state = S_ML_STRING_FILL;
+                    break;
+                }
+                break;  
+
+            case(S_ML_STRING_2):
+                if (c == '"'){
+                    token.type = TOKEN_ML_STRING;
+                    token.value = value;
+                    token.valueLength = length;
+                    return token;
+                } else {
+                    value[length] = '"';
+                    value[length + 1] = c;
+                    length += 2;
+                    state = S_ML_STRING_FILL;
+                    break;
+                }
+                break; 
+
+            default:  // Vsechno ostatni by mela byt chyba
+                token.type = TOKEN_ERROR;
+                //token.value = c;
+                //token.valueLength = 1;
+                return token;
+
         }
     }
 

@@ -54,7 +54,7 @@ typedef struct tstack
     T_elem *top;
 }T_stack;
 
-T_stack *stack_init();
+T_stack *stack_init(void);
 
 void stack_push(T_stack *stack, T_token token, prec_symb idx);
 

@@ -96,6 +96,7 @@ void expr_parser(FILE* file)
 {
     T_stack *stack = stack_init();
     T_token init_tok;
+    init_tok.type = TOKEN_EOF;      // MILAN - zatim takhle, compiler hazel error
 
     // Na vrchol zásobníku vložím počáteční symbol $
     stack_push(stack, init_tok, prec_end);

@@ -15,7 +15,7 @@ Lineárně zřetězený seznam - zásobník (stack)
 #include <stdio.h>
 
 // Inicializace zásobníku = dynamické přiřazení paměti a nastavení vrcholu zásobníku na NULL
-T_stack *stack_init()
+T_stack *stack_init(void)
 {
     T_stack *stack = malloc(sizeof(T_stack));
     if(stack == NULL)
