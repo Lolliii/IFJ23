@@ -114,12 +114,13 @@ typedef enum {
     TOKEN_TYPE_INT,                     // type int
     TOKEN_TYPE_FLOAT,                   // type float
     TOKEN_TYPE_STRING,                  // type string
+    TOKEN_LINE_FEED                     // Line feed (\n)
 } T_token_type;
 
 typedef struct {
     T_token_type type;                  // typ tokenu
     char *value;
-    uint32_t valueLength;               // Bude vyuzito pouze u stringu, var, cisel, ...
+    int valueLength;               // Bude vyuzito pouze u stringu, var, cisel, ...
 } T_token;
 
 // TOHLE JESTE PREDELAM, nevim proc to je takhle bruh
@@ -210,8 +211,8 @@ T_token getNextToken(FILE* file){
     token.valueLength = 0;
 
     // Pomocne promenne pro naplnenni tokenu
-    char value[1024] = "\0";                             // Tady to upravit na promennou delku nejak
-    uint32_t length = 0;
+    char value[1024] = {0};                             // Tady to upravit na promennou delku nejak
+    int length = 0;
     int hexLength = 0;
     int blockComms = 0;
 
@@ -228,6 +229,10 @@ T_token getNextToken(FILE* file){
             // Pokud z toho to stavu nelze uz nikam prejit, naplni a returnne se token
 
                     if(isspace(c)){         // whitespaces - bere i EOL
+                        if(c == '\n'){
+                            token.type = TOKEN_LINE_FEED;
+                            return token;
+                        }
                         c = fgetc(file);     // při whitespace se to seklo v endless loopu
                         break;
                     } 
@@ -762,13 +767,14 @@ T_token getNextToken(FILE* file){
                 }
                 break; 
 
-// ML STRINGY
+// MultiLine STRINGY
             case(S_ML_STRING_FILL):
                 while(c != '"' && c != '\\' && c != EOF){
                     value[length] = c;
                     length++;
                     c = fgetc(file);
                 }
+                
 
                 if(c == '"'){
                     state = S_ML_STRING_1;
@@ -858,6 +864,7 @@ T_token getNextToken(FILE* file){
                 if (c == '"'){
                     token.type = TOKEN_ML_STRING;
                     token.value = value;
+                    // token.value = strdup(value);
                     token.valueLength = length;
                     return token;
                 } else {

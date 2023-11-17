@@ -110,7 +110,7 @@ void printTokenName(T_token token) {
             printf("TOKEN_STRING");
             break;
         case TOKEN_ML_STRING:
-            printf("TOKEN_ML_STRING");
+            printf("TOKEN_ML_STRING, delka: %d", token.valueLength);
             break;
         case TOKEN_INT:
             printf("TOKEN_INT");
@@ -130,12 +130,18 @@ void printTokenName(T_token token) {
         case TOKEN_DOUBLE_EXP_PM:
             printf("TOKEN_DOUBLE_EXP_PM");
             break;
+        case TOKEN_LINE_FEED:
+            printf("TOKEN_LINE_FEED");
+            break;
         default:
             printf("Unknown Token Type");
             break;
     }
-    if(token.valueLength)
+    if(token.valueLength){
         printf("->%s", token.value);
+        // free(token.value);
+    }
+
 }
 
 int main(int argc, char *argv[]) {
@@ -155,7 +161,7 @@ int main(int argc, char *argv[]) {
 
     while ((token = getNextToken(file)).type != TOKEN_EOF) {
         if(token.type == TOKEN_ERROR){
-            printf("chyba\n");
+            printf("chyb\n");
         } else {
             //printf("%d\n", token.type);
             printTokenName(token);
