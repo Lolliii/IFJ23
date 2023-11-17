@@ -1,4 +1,4 @@
-#include <symtable.h>
+#include "symtable.h"
 
 
 int max(int n1, int n2){
