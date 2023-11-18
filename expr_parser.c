@@ -230,9 +230,10 @@ const char preced_tab [20][20] = {
     T_stack *stack = stack_init();
     T_token init_tok;
     init_tok.type = TOKEN_ASSIGN;      // MILAN - zatim takhle, compiler hazel error
+    init_tok.valueLength = 1;
 
     // Na vrchol zásobníku vložím počáteční symbol $
-    stack_push(stack, init_tok, "", prec_end);
+    stack_push(stack, init_tok, "x", prec_end);
     T_elem *stack_top = stack_get_val(stack, 0);
     
     T_token token = getNextToken(file);
