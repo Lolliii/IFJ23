@@ -482,12 +482,17 @@ T_token getNextToken(FILE* file){
                     switch(keyword){
                         case 0:
                             token.type        = TOKEN_ID;
-                            token.value = malloc(sizeof(length));
+                            token.value = malloc(length+1);
+                            if(token.value == NULL)
+                            {
+                                fprintf(stderr, "MALLOC FAIL\n");
+                                exit(INTER_ERROR);
+                            }
                             strcpy(token.value, value);
                             token.valueLength = length; 
                             return token;
                             break;      // Zbytecny, ale whatever
-                        case 1:
+                        case 1: 
                             token.type = TOKEN_KW_DOUBLE;
                             return token;
                             break;
@@ -665,7 +670,12 @@ T_token getNextToken(FILE* file){
                 } else {
                     return_back(c, file);
                     token.type = TOKEN_INT;
-                    token.value = malloc(sizeof(length));
+                    token.value = malloc(length+1);
+                    if(token.value == NULL)
+                        {
+                            fprintf(stderr, "MALLOC FAIL\n");
+                            exit(INTER_ERROR);
+                        }
                     strcpy(token.value, value);
                     token.valueLength = length;
                     return token;
@@ -685,7 +695,12 @@ T_token getNextToken(FILE* file){
                 } else {
                     return_back(c, file);
                     token.type = TOKEN_INT_EXP;
-                    token.value = malloc(sizeof(length));
+                    token.value = malloc(length+1);
+                    if(token.value == NULL)
+                        {
+                            fprintf(stderr, "MALLOC FAIL\n");
+                            exit(INTER_ERROR);
+                        }
                     strcpy(token.value, value);
                     token.valueLength = length;
                     return token;
@@ -712,7 +727,12 @@ T_token getNextToken(FILE* file){
                 } else {
                     return_back(c, file);
                     token.type = TOKEN_INT_EXP_PM;
-                    token.value = malloc(sizeof(length));
+                    token.value = malloc(length+1);
+                    if(token.value == NULL)
+                        {
+                            fprintf(stderr, "MALLOC FAIL\n");
+                            exit(INTER_ERROR);
+                        }
                     strcpy(token.value, value);
                     token.valueLength = length;
                     return token;
@@ -732,7 +752,12 @@ T_token getNextToken(FILE* file){
                 } else {
                     return_back(c, file);
                     token.type = TOKEN_DOUBLE;
-                    token.value = malloc(sizeof(length));
+                    token.value = malloc(length+1);
+                    if(token.value == NULL)
+                        {
+                            fprintf(stderr, "MALLOC FAIL\n");
+                            exit(INTER_ERROR);
+                        }
                     strcpy(token.value, value);
                     token.valueLength = length;
                     return token;
@@ -752,7 +777,12 @@ T_token getNextToken(FILE* file){
                 } else {
                     return_back(c, file);
                     token.type = TOKEN_DOUBLE_EXP;
-                    token.value = malloc(sizeof(length));
+                    token.value = malloc(length+1);
+                    if(token.value == NULL)
+                        {
+                            fprintf(stderr, "MALLOC FAIL\n");
+                            exit(INTER_ERROR);
+                        }
                     strcpy(token.value, value);
                     token.valueLength = length;
                     return token;
@@ -779,7 +809,12 @@ T_token getNextToken(FILE* file){
                 } else {
                     return_back(c, file);
                     token.type = TOKEN_DOUBLE_EXP_PM;
-                    token.value = malloc(sizeof(length));
+                    token.value = malloc(length+1);
+                    if(token.value == NULL)
+                        {
+                            fprintf(stderr, "MALLOC FAIL\n");
+                            exit(INTER_ERROR);
+                        }
                     strcpy(token.value, value);
                     token.valueLength = length;
                     return token;
@@ -820,7 +855,12 @@ T_token getNextToken(FILE* file){
 
                 if(c == '"'){
                     token.type = TOKEN_STRING;
-                    token.value = malloc(sizeof(length));
+                    token.value = malloc(length+1);
+                    if(token.value == NULL)
+                    {
+                        fprintf(stderr, "MALLOC FAIL\n");
+                        exit(INTER_ERROR);
+                    }
                     strcpy(token.value, value);
                     token.valueLength = length;
                     return token;
@@ -914,7 +954,12 @@ T_token getNextToken(FILE* file){
                 } else {
                     return_back(c, file);
                     token.type = TOKEN_STRING;
-                    token.value = malloc(sizeof(length));
+                    token.value = malloc(length+1);
+                    if(token.value == NULL)
+                        {
+                            fprintf(stderr, "MALLOC FAIL\n");
+                            exit(INTER_ERROR);
+                        }
                     strcpy(token.value, value);
                     token.valueLength = length;
                     return token;
@@ -1016,7 +1061,12 @@ T_token getNextToken(FILE* file){
             case(S_ML_STRING_2):
                 if (c == '"'){
                     token.type = TOKEN_ML_STRING;
-                    token.value = malloc(sizeof(length));
+                    token.value = malloc(length+1);
+                    if(token.value == NULL)
+                        {
+                            fprintf(stderr, "MALLOC FAIL\n");
+                            exit(INTER_ERROR);
+                        }
                     strcpy(token.value, value);
                     token.valueLength = length;
                     return token;

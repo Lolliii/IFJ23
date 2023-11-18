@@ -44,6 +44,8 @@ int main(int argc, char *argv[]) {
     if(token.type == TOKEN_EOF){
         printf("KONEC\n");
     }
+    if(token.valueLength)
+        free(token.value);
 
     fclose(file);
     file = NULL;

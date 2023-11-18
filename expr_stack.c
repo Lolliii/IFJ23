@@ -39,7 +39,12 @@ void stack_push(T_stack *stack, T_token token, char* value, prec_symb idx)
         exit(INTER_ERROR);
     }
     new_elem->token = token;
-    new_elem->value = malloc(sizeof(token.valueLength)+1);
+    new_elem->value = malloc(token.valueLength+1);
+    if(new_elem->value == NULL)
+    {
+        fprintf(stderr, "MALLOC FAIL\n");
+        exit(INTER_ERROR);
+    }
     strcpy(new_elem->value, value);
     new_elem->symb = idx;
     new_elem->next = stack->top;
