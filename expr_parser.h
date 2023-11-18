@@ -15,6 +15,8 @@ IFJ Projekt 2023
 
 prec_symb get_prec_value(T_token token);
 
+void reduce_rule(T_stack *stack, T_elem *cur_term);
+
 void expr_parser(FILE* file);
 
 #endif

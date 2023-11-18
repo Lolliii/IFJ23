@@ -18,29 +18,6 @@ EXPRESSION PARSER
 #include <string.h>
 #include <stdlib.h>
 
-// Precedenční tabulka:
-const char preced_tab [20][20] = {
-/* +    -    *    /    !    (    )    <   <=    >   >=   ==   !=    id  int  dou  str  ??    $*/
-{ '>', '>', '<', '<', '<', '<', '>', '>', '>', '>', '>', '>', '>', '<', '<', '<', '<', '>', '>'},
-{ '>', '>', '<', '<', '<', '<', '>', '>', '>', '>', '>', '>', '>', '<', '<', '<', 'x', '>', '>'},
-{ '>', '>', '>', '>', '<', '<', '>', '>', '>', '>', '>', '>', '>', '<', '<', '<', 'x', '>', '>'},
-{ '>', '>', '>', '>', '<', '<', '>', '>', '>', '>', '>', '>', '>', '<', '<', '<', 'x', '>', '>'},
-{ '>', '>', '>', '>', 'x', '<', '>', '>', '>', '>', '>', '>', '>', 'x', 'x', 'x', 'x', '>', '>'},
-{ '<', '<', '<', '<', '<', '<', '=', '<', '<', '<', '<', '<', '<', '<', '<', '<', '<', '<', 'x'},
-{ '>', '>', '>', '>', '>', 'x', '>', '>', '>', '>', '>', '>', '>', 'x', 'x', 'x', 'x', '>', '>'},
-{ '<', '<', '<', '<', '<', '<', '>', 'x', 'x', 'x', 'x', 'x', 'x', '<', '<', '<', '<', 'x', '>'},
-{ '<', '<', '<', '<', '<', '<', '>', 'x', 'x', 'x', 'x', 'x', 'x', '<', '<', '<', '<', 'x', '>'},
-{ '<', '<', '<', '<', '<', '<', '>', 'x', 'x', 'x', 'x', 'x', 'x', '<', '<', '<', '<', 'x', '>'},
-{ '<', '<', '<', '<', '<', '<', '>', 'x', 'x', 'x', 'x', 'x', 'x', '<', '<', '<', '<', 'x', '>'},
-{ '<', '<', '<', '<', '<', '<', '>', 'x', 'x', 'x', 'x', 'x', 'x', '<', '<', '<', '<', 'x', '>'},
-{ '<', '<', '<', '<', '<', '<', '>', 'x', 'x', 'x', 'x', 'x', 'x', '<', '<', '<', '<', 'x', '>'},
-{ '>', '>', '>', '>', '>', 'x', '>', '>', '>', '>', '>', '>', '>', 'x', 'x', 'x', 'x', '>', '>'},
-{ '>', '>', '>', '>', '>', 'x', '>', '>', '>', '>', '>', '>', '>', 'x', 'x', 'x', 'x', '>', '>'},
-{ '>', '>', '>', '>', '>', 'x', '>', '>', '>', '>', '>', '>', '>', 'x', 'x', 'x', 'x', '>', '>'},
-{ '>', 'x', 'x', 'x', '>', 'x', '>', '>', '>', '>', '>', '>', '>', 'x', 'x', 'x', 'x', '>', '>'},
-{ '<', '<', '<', '<', '<', '<', '>', 'x', 'x', 'x', 'x', 'x', 'x', '<', '<', '<', '<', '<', '>'},
-{ '<', '<', '<', '<', '<', '<', 'x', '<', '<', '<', '<', '<', '<', '<', '<', '<', '<', '<', 'e'}
-};
 
 //Fce pro daný token vrátí jeho idex v precedenční tabulce
 prec_symb get_prec_value(T_token token)
@@ -74,65 +51,238 @@ prec_symb get_prec_value(T_token token)
     case TOKEN_NOT_EQUAL:
         return prec_n_eq;
     case TOKEN_ID:
-        return prec_id;
     case TOKEN_TYPE_ID:
         return prec_id;
+    
     case TOKEN_INT:
+    case TOKEN_INT_EXP:
+    case TOKEN_INT_EXP_PM:
         return prec_num;
     case TOKEN_TYPE_FLOAT:
+    case TOKEN_DOUBLE:
+    case TOKEN_DOUBLE_EXP:
+    case TOKEN_DOUBLE_EXP_PM:
         return prec_dbl;
+
     case TOKEN_STRING:
+    case TOKEN_ML_STRING:
         return prec_str;
     case TOKEN_DOUBLE_QUESTION_MARK:
         return prec_que;
-    //TODO dodělat ukončovací symbol
+    
+    // TODO dodělat ukončovací symbol
+    // asi jediný problém by nastal, kdyby přišlo ID, které již nepatří do výrazu
+    // pak by stačilo se podívat na další token což by mělo být '=' pro přiřazení, nebo '(' pro funkci
+    // a pak ty dva tokeny vrátit parseru
+    // ale nejsem si tím úplně jistý...
     default:
         return prec_end;
     }
 }
 
+void rule_numbers(T_stack *stack)
+{
+    T_elem *l_op, *r_op;
+    l_op = stack_get_val(stack, 2);
+    r_op = stack_get_val(stack, 0);
+    if(!((l_op->symb == e_num || l_op->symb == e_dbl || l_op->symb == e_str) && 
+    (r_op->symb == e_num || r_op->symb == e_dbl || r_op->symb == e_str)))
+    {
+        fprintf(stderr, "ERROR: Syntax error, invalid data types\n");
+        exit(EXPRESSION_ERROR);
+    }
+    stack_pop(stack);
+    stack_pop(stack);
+    l_op->symb = e_num;
+}
+
+void rule_rela(T_stack *stack)
+{
+    T_elem *l_op, *r_op;
+    l_op = stack_get_val(stack, 2);
+    r_op = stack_get_val(stack, 0);
+    if(!((l_op->symb == e_num || l_op->symb == e_dbl || l_op->symb == e_str) && 
+    (r_op->symb == e_num || r_op->symb == e_dbl || r_op->symb == e_str)))
+    {
+        fprintf(stderr, "ERROR: Syntax error, invalid data types\n");
+        exit(EXPRESSION_ERROR);
+    }
+    stack_pop(stack);
+    stack_pop(stack);
+    l_op->symb = e_bool;
+}
+
+void reduce_rule(T_stack *stack, T_elem *stack_top)
+{
+    switch (stack_top->symb)
+    {
+    case prec_add:
+        rule_numbers(stack);
+        printf("+ ");
+        break;
+    case prec_sub:
+        rule_numbers(stack);
+        printf("- ");
+        break;
+    case prec_mul:
+        rule_numbers(stack);
+        printf("* ");
+        break;
+    case prec_divi:
+        rule_numbers(stack);
+        printf("/ ");
+        break;
+        
+
+    case prec_lt:
+        printf("< ");
+        rule_rela(stack);
+        break;
+    case prec_lt_eq:
+        printf("<= ");
+        rule_rela(stack);
+        break;
+    case prec_gt:
+        printf("> ");
+        rule_rela(stack);
+        break;
+    case prec_gt_eq:
+        printf(">= ");
+        rule_rela(stack);
+        break;
+    case prec_eq:
+        printf("== ");
+        rule_rela(stack);
+        break;
+    case prec_n_eq:
+        printf("!= ");
+        rule_rela(stack);
+        break;
+        
+    case prec_exc:
+        /* code */
+        break;
+    case prec_l_brac:
+        break;  
+    case prec_r_brac:;
+        T_elem *op = stack_get_val(stack, 1);
+        stack_pop(stack);
+        stack_pop(stack);
+        stack_pop(stack);
+        stack_push(stack, op->token, op->value, op->symb);
+        break;
+    
+    case prec_que:
+        break;
+    
+    case prec_id:
+        stack_top->symb = e_id;
+        break;
+    case prec_num:
+        stack_top->symb = e_num;
+        printf("%s, ", stack_top->value);
+        break;
+    case prec_dbl:
+        stack_top->symb = e_dbl;
+        printf("%s, ", stack_top->value);
+        break;
+    case prec_str:
+        stack_top->symb = e_str;
+        printf("%s, ", stack_top->value);
+        break;
+    case prec_end:
+        stack_top->symb = e_end;
+        break;
+    
+    default:
+        break;
+    }
+}
+
+
 // Parsování výrazů TODO
 void expr_parser(FILE* file)
 {
+// Precedenční tabulka:
+const char preced_tab [20][20] = {
+/* +    -    *    /    !    (    )    <   <=    >   >=   ==   !=    id  int  dbl  str  ??    $*/
+{ '>', '>', '<', '<', '<', '<', '>', '>', '>', '>', '>', '>', '>', '<', '<', '<', '<', '>', '>'},// +
+{ '>', '>', '<', '<', '<', '<', '>', '>', '>', '>', '>', '>', '>', '<', '<', '<', 'x', '>', '>'},// -
+{ '>', '>', '>', '>', '<', '<', '>', '>', '>', '>', '>', '>', '>', '<', '<', '<', 'x', '>', '>'},// *
+{ '>', '>', '>', '>', '<', '<', '>', '>', '>', '>', '>', '>', '>', '<', '<', '<', 'x', '>', '>'},// /
+{ '>', '>', '>', '>', 'x', '<', '>', '>', '>', '>', '>', '>', '>', 'x', 'x', 'x', 'x', '>', '>'},// !
+{ '<', '<', '<', '<', '<', '<', '=', '<', '<', '<', '<', '<', '<', '<', '<', '<', '<', '<', 'x'},// (
+{ '>', '>', '>', '>', '>', 'x', '>', '>', '>', '>', '>', '>', '>', 'x', 'x', 'x', 'x', '>', '>'},// )
+{ '<', '<', '<', '<', '<', '<', '>', 'x', 'x', 'x', 'x', 'x', 'x', '<', '<', '<', '<', 'x', '>'},// <
+{ '<', '<', '<', '<', '<', '<', '>', 'x', 'x', 'x', 'x', 'x', 'x', '<', '<', '<', '<', 'x', '>'},// <=
+{ '<', '<', '<', '<', '<', '<', '>', 'x', 'x', 'x', 'x', 'x', 'x', '<', '<', '<', '<', 'x', '>'},// >
+{ '<', '<', '<', '<', '<', '<', '>', 'x', 'x', 'x', 'x', 'x', 'x', '<', '<', '<', '<', 'x', '>'},// >=
+{ '<', '<', '<', '<', '<', '<', '>', 'x', 'x', 'x', 'x', 'x', 'x', '<', '<', '<', '<', 'x', '>'},// ==
+{ '<', '<', '<', '<', '<', '<', '>', 'x', 'x', 'x', 'x', 'x', 'x', '<', '<', '<', '<', 'x', '>'},// !=
+{ '>', '>', '>', '>', '>', 'x', '>', '>', '>', '>', '>', '>', '>', 'x', 'x', 'x', 'x', '>', '>'},// id
+{ '>', '>', '>', '>', '>', 'x', '>', '>', '>', '>', '>', '>', '>', 'x', 'x', 'x', 'x', '>', '>'},// int
+{ '>', '>', '>', '>', '>', 'x', '>', '>', '>', '>', '>', '>', '>', 'x', 'x', 'x', 'x', '>', '>'},// dbl
+{ '>', 'x', 'x', 'x', '>', 'x', '>', '>', '>', '>', '>', '>', '>', 'x', 'x', 'x', 'x', '>', '>'},// str
+{ '<', '<', '<', '<', '<', '<', '>', 'x', 'x', 'x', 'x', 'x', 'x', '<', '<', '<', '<', '<', '>'},// ??
+{ '<', '<', '<', '<', '<', '<', 'x', '<', '<', '<', '<', '<', '<', '<', '<', '<', '<', '<', 'e'} // $
+};
+    int end = 1;
     T_stack *stack = stack_init();
     T_token init_tok;
-    init_tok.type = TOKEN_EOF;      // MILAN - zatim takhle, compiler hazel error
+    init_tok.type = TOKEN_ASSIGN;      // MILAN - zatim takhle, compiler hazel error
 
     // Na vrchol zásobníku vložím počáteční symbol $
-    stack_push(stack, init_tok, prec_end);
-    T_elem *stack_top = stack_find(stack, 0);
+    stack_push(stack, init_tok, "", prec_end);
+    T_elem *stack_top = stack_get_val(stack, 0);
     
-    // Získání tokenu z výrazu TODO, když jich parser pošle více, asi přes nějaký seznam
-    T_token first_tok = getNextToken(file);
-
-    while(1)
+    T_token token = getNextToken(file);
+    while(end)
     {
-        //printf("%i", get_prec_value(first_tok));
-        //printf("%i", stack_top->symb);
+        // Získání prvního terminálu ze zásobníku (přeskočení expressions)
+        int idx = 0;
+        stack_top = stack_get_val(stack, idx);
+            while(stack_top->symb > expressions)
+                stack_top = stack_get_val(stack, ++idx);
 
-        switch (preced_tab[get_prec_value(first_tok)][stack_top->symb])
+        // Získání indexů pro tabulku
+        int idx_col = get_prec_value(token);
+        int idx_row = stack_top->symb;
+
+        switch (preced_tab[idx_row][idx_col])
         {
-
+        // Operace shift -> přidej token na vrchol zásobníku
         case '<':
-            printf("<\n");
+            stack_push(stack, token, token.value, idx_col);
+            if(token.valueLength)
+                free(token.value);
+            token = getNextToken(file);
             break;
+
+        // Proveď redukci a aplikuj pravidlo
         case '>':
-            printf(">\n");
+            reduce_rule(stack, stack_top);
             break;
+
+        // Pro vyhodnocení závorek -> je to vlastně operace shift a zároveň redukce
         case '=':
-            printf("=\n");
+            stack_push(stack, token, token.value, idx_col);
+            stack_top = stack_get_val(stack, 0);
+            reduce_rule(stack, stack_top);
+            if(token.valueLength)
+                free(token.value);
+            token = getNextToken(file);
             break;
+
+        // Chyba podle precedenční tabulky
+        case 'x':
+            fprintf(stderr, "ERROR: Syntax error, invalid operand combination\n");
+            exit(EXPRESSION_ERROR);
+        
+        // Konec precedeneční analýzy
         case 'e':
-            printf("endd");
+            end = 0;
             break;
         }
-        
-        stack_push(stack, first_tok, get_prec_value(first_tok));
-        first_tok = getNextToken(file);
-        stack_top = stack_find(stack, 0);
-        
-        if(first_tok.type == TOKEN_EOF)
-            break;
     }
     stack_empty(stack);
 }
