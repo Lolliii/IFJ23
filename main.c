@@ -37,6 +37,8 @@ int main(int argc, char *argv[]) {
             //printf("%d\n", token.type);
             printTokenName(token);
             printf("\n");
+            if(token.valueLength)
+                free(token.value);
         }
     }
     if(token.type == TOKEN_EOF){
