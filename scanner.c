@@ -59,6 +59,9 @@ void printTokenName(T_token token) {
         // case TOKEN_TYPE_ID:
         //     printf("TOKEN_TYPE_ID");
         //     break;
+        // case TOKEN_TYPE_ID:
+        //     printf("TOKEN_TYPE_ID");
+        //     break;
         case TOKEN_EXCLAMATION_MARK:
             printf("TOKEN_EXCLAMATION_MARK");
             break;
@@ -176,6 +179,48 @@ void printTokenName(T_token token) {
         case TOKEN_TYPE_STRING:
             printf("TOKEN_TYPE_STRING");
             break;
+        case TOKEN_KW_DOUBLE:
+            printf("TOKEN_KW_DOUBLE");
+            break;
+        case TOKEN_KW_ELSE:
+            printf("TOKEN_KW_ELSE");
+            break;
+        case TOKEN_KW_FUNC:
+            printf("TOKEN_KW_FUNC");
+            break;
+        case TOKEN_KW_IF:
+            printf("TOKEN_KW_IF");
+            break;
+        case TOKEN_KW_INT:
+            printf("TOKEN_KW_INT");
+            break;
+        case TOKEN_KW_LET:
+            printf("TOKEN_KW_LET");
+            break;
+        case TOKEN_KW_NIL:
+            printf("TOKEN_KW_NIL");
+            break;
+        case TOKEN_KW_RETURN:
+            printf("TOKEN_KW_RETURN");
+            break;
+        case TOKEN_KW_STRING:
+            printf("TOKEN_KW_STRING");
+            break;
+        case TOKEN_KW_VAR:
+            printf("TOKEN_KW_VAR");
+            break;
+        case TOKEN_KW_WHILE:
+            printf("TOKEN_KW_WHILE");
+            break;
+        case TOKEN_TYPE_INT:
+            printf("TOKEN_TYPE_INT");
+            break;
+        case TOKEN_TYPE_FLOAT:
+            printf("TOKEN_TYPED_FLOAT");
+            break;
+        case TOKEN_TYPE_STRING:
+            printf("TOKEN_TYPE_STRING");
+            break;
         default:
             printf("Unknown Token Type");
             break;
@@ -184,6 +229,23 @@ void printTokenName(T_token token) {
         printf("->%s", token.value);
 }
 
+/*
+Checks if passed param is one of {Double, else, func, if, Int, let, nil, return, String, var, while}
+!! Is case-sensitive !!
+Return values:
+    0:  No match (not a keyword)
+    1:  Double
+    2:  else 
+    3:  func
+    4:  if
+    5:  Int
+    6:  let
+    7:  nil
+    8:  return
+    9:  String
+    10: var
+    11: while
+*/
 /*
 Checks if passed param is one of {Double, else, func, if, Int, let, nil, return, String, var, while}
 !! Is case-sensitive !!
@@ -452,6 +514,28 @@ T_token getNextToken(FILE* file){
                 if(c == '?'){   
                     value[length] = c;
                     length++;
+
+                    int type = check_id_types(value);
+                    switch(type){
+                        case 0:
+                            // Prislo ID s ?, jestli to neni jeden z typu, je to chyba
+                            token.type = TOKEN_ERROR;
+                            return token;
+                            break;
+                        case 1:
+                            token.type = TOKEN_TYPE_FLOAT;
+                            return token;
+                            break;
+                        case 2:
+                            token.type = TOKEN_TYPE_INT;
+                            return token;
+                            break;
+                        case 3:
+                            token.type = TOKEN_TYPE_STRING;
+                            return token;
+                            break;
+                    }
+
 
                     int type = check_id_types(value);
                     switch(type){
