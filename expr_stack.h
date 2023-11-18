@@ -39,12 +39,14 @@ typedef enum {
     e_num,
     e_dbl,
     e_str,
+    e_bool,
     e_end,
 } prec_symb;
 
 typedef struct telem
 {
     T_token token;
+    char *value;
     prec_symb symb;
     struct telem *next;
 }T_elem;
@@ -56,11 +58,11 @@ typedef struct tstack
 
 T_stack *stack_init(void);
 
-void stack_push(T_stack *stack, T_token token, prec_symb idx);
+void stack_push(T_stack *stack, T_token token, char *value, prec_symb idx);
 
 void stack_pop(T_stack *stack);
 
-T_elem *stack_find(T_stack *stack, int index);
+T_elem *stack_get_val(T_stack *stack, int index);
 
 void stack_empty(T_stack *stack);
 
