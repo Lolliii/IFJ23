@@ -110,10 +110,21 @@ typedef enum {
     TOKEN_DOUBLE,
     TOKEN_DOUBLE_EXP,
     TOKEN_DOUBLE_EXP_PM,
-    // Keywordy ??
-    TOKEN_KEYWORD,                      // keyword
+    // Keywordy
+    // TOKEN_KEYWORD,                      // keyword
+    TOKEN_KW_DOUBLE,
+    TOKEN_KW_ELSE,
+    TOKEN_KW_FUNC,
+    TOKEN_KW_IF,
+    TOKEN_KW_INT,
+    TOKEN_KW_LET,
+    TOKEN_KW_NIL,
+    TOKEN_KW_RETURN,
+    TOKEN_KW_STRING,
+    TOKEN_KW_VAR,
+    TOKEN_KW_WHILE,
     TOKEN_TYPE_INT,                     // type int
-    TOKEN_TYPE_FLOAT,                   // type float
+    TOKEN_TYPE_FLOAT,                  // type double
     TOKEN_TYPE_STRING,                  // type string
 } T_token_type;
 

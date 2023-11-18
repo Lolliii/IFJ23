@@ -56,9 +56,9 @@ void printTokenName(T_token token) {
         case TOKEN_ID:
             printf("TOKEN_ID");
             break;
-        case TOKEN_TYPE_ID:
-            printf("TOKEN_TYPE_ID");
-            break;
+        // case TOKEN_TYPE_ID:
+        //     printf("TOKEN_TYPE_ID");
+        //     break;
         case TOKEN_EXCLAMATION_MARK:
             printf("TOKEN_EXCLAMATION_MARK");
             break;
@@ -134,6 +134,48 @@ void printTokenName(T_token token) {
         case TOKEN_DOUBLE_EXP_PM:
             printf("TOKEN_DOUBLE_EXP_PM");
             break;
+        case TOKEN_KW_DOUBLE:
+            printf("TOKEN_KW_DOUBLE");
+            break;
+        case TOKEN_KW_ELSE:
+            printf("TOKEN_KW_ELSE");
+            break;
+        case TOKEN_KW_FUNC:
+            printf("TOKEN_KW_FUNC");
+            break;
+        case TOKEN_KW_IF:
+            printf("TOKEN_KW_IF");
+            break;
+        case TOKEN_KW_INT:
+            printf("TOKEN_KW_INT");
+            break;
+        case TOKEN_KW_LET:
+            printf("TOKEN_KW_LET");
+            break;
+        case TOKEN_KW_NIL:
+            printf("TOKEN_KW_NIL");
+            break;
+        case TOKEN_KW_RETURN:
+            printf("TOKEN_KW_RETURN");
+            break;
+        case TOKEN_KW_STRING:
+            printf("TOKEN_KW_STRING");
+            break;
+        case TOKEN_KW_VAR:
+            printf("TOKEN_KW_VAR");
+            break;
+        case TOKEN_KW_WHILE:
+            printf("TOKEN_KW_WHILE");
+            break;
+        case TOKEN_TYPE_INT:
+            printf("TOKEN_TYPE_INT");
+            break;
+        case TOKEN_TYPE_FLOAT:
+            printf("TOKEN_TYPED_FLOAT");
+            break;
+        case TOKEN_TYPE_STRING:
+            printf("TOKEN_TYPE_STRING");
+            break;
         default:
             printf("Unknown Token Type");
             break;
@@ -142,18 +184,52 @@ void printTokenName(T_token token) {
         printf("->%s", token.value);
 }
 
+/*
+Checks if passed param is one of {Double, else, func, if, Int, let, nil, return, String, var, while}
+!! Is case-sensitive !!
+Return values:
+    0:  No match (not a keyword)
+    1:  Double
+    2:  else 
+    3:  func
+    4:  if
+    5:  Int
+    6:  let
+    7:  nil
+    8:  return
+    9:  String
+    10: var
+    11: while
+*/
 int check_keywords(char *check){
-    //strcmp return values -> 0 = equal, 1 = first doesnt match, 2 = second doesnt match
-    if((strcmp(check, "else")) == 0) return 1;
-    else if((strcmp(check, "float")) == 0) return 2;
-    else if((strcmp(check, "function")) == 0) return 1;
-    else if((strcmp(check, "if")) == 0) return 1;
-    else if((strcmp(check, "int")) == 0) return 3;
-    else if((strcmp(check, "null")) == 0) return 1;
-    else if((strcmp(check, "return")) == 0) return 1;
-    else if((strcmp(check, "string")) == 0) return 4;
-    else if((strcmp(check, "void")) == 0) return 1;
-    else if((strcmp(check, "while")) == 0) return 1;
+    if((strcmp(check, "Double")) == 0)  return 1;
+    else if((strcmp(check, "else")) == 0) return 2;
+    else if((strcmp(check, "func")) == 0) return 3;
+    else if((strcmp(check, "if")) == 0) return 4;
+    else if((strcmp(check, "Int")) == 0) return 5;
+    else if((strcmp(check, "let")) == 0) return 6;
+    else if((strcmp(check, "nil")) == 0) return 7;
+    else if((strcmp(check, "return")) == 0) return 8;
+    else if((strcmp(check, "String")) == 0) return 9;
+    else if((strcmp(check, "var")) == 0) return 10;
+    else if((strcmp(check, "while")) == 0) return 11;
+    else return 0;
+}
+
+
+/*
+Checks if passed param is one of {Double?, Int?, String?}
+!! case-sensitive !!
+Return values:
+    0: No match
+    1: Double?
+    2: Int?
+    3: String?
+*/
+int check_id_types(char *check){
+    if((strcmp(check, "Double?")) == 0)  return 1;
+    else if((strcmp(check, "Int?")) == 0) return 2;
+    else if((strcmp(check, "String?")) == 0) return 3;
     else return 0;
 }
 
@@ -202,7 +278,6 @@ void error_caller(int error_code){
 
 // TODO =============
 // Dynamicky string + alokace
-// ??? Zkontrolovat u ID klicova slova
 
 /*
 Funkce vraci token.
@@ -377,16 +452,85 @@ T_token getNextToken(FILE* file){
                 if(c == '?'){   
                     value[length] = c;
                     length++;
-                    token.type        = TOKEN_TYPE_ID;
-                    token.value       = value;
-                    token.valueLength = length; 
-                    return token;
+
+                    int type = check_id_types(value);
+                    switch(type){
+                        case 0:
+                            // Prislo ID s ?, jestli to neni jeden z typu, je to chyba
+                            token.type = TOKEN_ERROR;
+                            return token;
+                            break;
+                        case 1:
+                            token.type = TOKEN_TYPE_FLOAT;
+                            return token;
+                            break;
+                        case 2:
+                            token.type = TOKEN_TYPE_INT;
+                            return token;
+                            break;
+                        case 3:
+                            token.type = TOKEN_TYPE_STRING;
+                            return token;
+                            break;
+                    }
+
                 } else if(!isalnum(c) && c != '_'){     // znema log. operace (bylo || ale nefungovalo to :( )
                     return_back(c, file);
-                    token.type        = TOKEN_ID;
-                    token.value       = value;
-                    token.valueLength = length; 
-                    return token;
+
+                    // Zkontroluj jestli to jsou keywords
+                    int keyword = check_keywords(value);
+                    switch(keyword){
+                        case 0:
+                            token.type        = TOKEN_ID;
+                            token.value       = value;
+                            token.valueLength = length; 
+                            return token;
+                            break;      // Zbytecny, ale whatever
+                        case 1:
+                            token.type = TOKEN_KW_DOUBLE;
+                            return token;
+                            break;
+                        case 2:
+                            token.type = TOKEN_KW_ELSE;
+                            return token;
+                            break;
+                        case 3:
+                            token.type = TOKEN_KW_FUNC;
+                            return token;
+                            break;
+                        case 4:
+                            token.type = TOKEN_KW_IF;
+                            return token;
+                            break;
+                        case 5:
+                            token.type = TOKEN_KW_INT;
+                            return token;
+                            break;
+                        case 6:
+                            token.type = TOKEN_KW_LET;
+                            return token;
+                            break;
+                        case 7:
+                            token.type = TOKEN_KW_NIL;
+                            return token;
+                            break;
+                        case 8:
+                            token.type = TOKEN_KW_RETURN;
+                            return token;
+                            break;
+                        case 9:
+                            token.type = TOKEN_KW_STRING;
+                            return token;
+                            break;
+                        case 10:
+                            token.type = TOKEN_KW_VAR;
+                            return token;
+                            break;
+                        case 11:
+                            token.type = TOKEN_KW_WHILE;
+                            return token;
+                            break;
+                    }
                 } else {
                     value[length] = c;
                     length++;
