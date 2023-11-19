@@ -18,6 +18,7 @@ fills it and returns NO_ERROR. In case of an error, the return value is LEX_ERRO
 #include <ctype.h>
 #include <stdint.h> // kvuli uint_32
 
+
 void printTokenName(T_token token) {
     switch (token.type) {
         case TOKEN_ERROR:
@@ -204,23 +205,6 @@ Return values:
     10: var
     11: while
 */
-/*
-Checks if passed param is one of {Double, else, func, if, Int, let, nil, return, String, var, while}
-!! Is case-sensitive !!
-Return values:
-    0:  No match (not a keyword)
-    1:  Double
-    2:  else 
-    3:  func
-    4:  if
-    5:  Int
-    6:  let
-    7:  nil
-    8:  return
-    9:  String
-    10: var
-    11: while
-*/
 int check_keywords(char *check){
     if((strcmp(check, "Double")) == 0)  return 1;
     else if((strcmp(check, "else")) == 0) return 2;
@@ -235,7 +219,6 @@ int check_keywords(char *check){
     else if((strcmp(check, "while")) == 0) return 11;
     else return 0;
 }
-
 
 /*
 Checks if passed param is one of {Double?, Int?, String?}
@@ -844,6 +827,14 @@ T_token getNextToken(FILE* file){
 // STRING
             case(S_STRING_START):
                 while(c != '"' && c != '\\' && c != EOF && c != '\n'){
+                    if(c == ' '){
+                        value[length++] = '\\';
+                        value[length++] = '0';
+                        value[length++] = '3';
+                        value[length++] = '2';
+                        c = fgetc(file);
+                        continue;
+                    }
                     value[length] = c;
                     length++;
                     c = fgetc(file);
@@ -868,6 +859,14 @@ T_token getNextToken(FILE* file){
 
             case(S_STRING_FILL):
                 while(c != '"' && c != '\\' && c != EOF && c != '\n'){
+                    if(c == ' '){
+                        value[length++] = '\\';
+                        value[length++] = '0';
+                        value[length++] = '3';
+                        value[length++] = '2';
+                        c = fgetc(file);
+                        continue;
+                    }
                     value[length] = c;
                     length++;
                     c = fgetc(file);
@@ -902,22 +901,37 @@ T_token getNextToken(FILE* file){
                 }
                 else if(c == 'n'){
                     state = S_STRING_START;
+                    value[length++] = '0';
+                    value[length++] = '1';
+                    value[length++] = '0';
                     break;
                 }
                 else if(c == 'r'){
                     state = S_STRING_START;
+                    value[length++] = '0';
+                    value[length++] = '1';
+                    value[length++] = '3';
                     break;
                 }
                 else if(c == 't'){
                     state = S_STRING_START;
+                    value[length++] = '0';
+                    value[length++] = '0';
+                    value[length++] = '9';
                     break;
                 }
                 else if(c == '\\'){
                     state = S_STRING_START;
+                    value[length++] = '0';
+                    value[length++] = '9';
+                    value[length++] = '2';
                     break;
                 }
                 else if(c == '"'){
                     state = S_STRING_START;
+                    value[length++] = '0';
+                    value[length++] = '3';
+                    value[length++] = '4';
                     break;
                 }
                 else {
@@ -989,6 +1003,14 @@ T_token getNextToken(FILE* file){
 // ML STRINGY
             case(S_ML_STRING_FILL):
                 while(c != '"' && c != '\\' && c != EOF){
+                    if(c == ' '){
+                        value[length++] = '\\';
+                        value[length++] = '0';
+                        value[length++] = '3';
+                        value[length++] = '2';
+                        c = fgetc(file);
+                        continue;
+                    }
                     value[length] = c;
                     length++;
                     c = fgetc(file);
@@ -1011,13 +1033,38 @@ T_token getNextToken(FILE* file){
             case(S_ML_BS):
                 if(c == '\\'){
                     state = S_ML_STRING_FILL;
-                    value[length] = c;
-                    length++;
+                    value[length++] = '0';
+                    value[length++] = '9';
+                    value[length++] = '2';
                     break;
                 } else if(c == 'u'){
                     state = S_ML_BS_U;
                     value[length] = c;
                     length++;
+                    break;
+                } else if(c == 'n'){
+                    state = S_ML_STRING_FILL;
+                    value[length++] = '0';
+                    value[length++] = '1';
+                    value[length++] = '0';
+                    break;
+                } else if(c == 't'){
+                    state = S_ML_STRING_FILL;
+                    value[length++] = '0';
+                    value[length++] = '0';
+                    value[length++] = '9';
+                    break;
+                } else if(c == 'r'){
+                    state = S_ML_STRING_FILL;
+                    value[length++] = '0';
+                    value[length++] = '1';
+                    value[length++] = '3';
+                    break;
+                } else if(c == '"'){
+                    state = S_ML_STRING_FILL;
+                    value[length++] = '0';
+                    value[length++] = '3';
+                    value[length++] = '4';
                     break;
                 } else {
                     token.type = TOKEN_ERROR;
