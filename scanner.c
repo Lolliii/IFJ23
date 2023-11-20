@@ -956,6 +956,11 @@ T_token getNextToken(FILE* file){
                     hexLength++;
                     state = S_BS_UC_DD;
                     break;
+                } else if(c == '}') {
+                    state = S_STRING_FILL;
+                    value[length - 1] = 0;
+                    length--;
+                    break;
                 } else {
                     token.type = TOKEN_ERROR;
                     return token;
@@ -963,23 +968,56 @@ T_token getNextToken(FILE* file){
                 break;
 
             case(S_BS_UC_DD):
+            {
+                char hexVal[3] = {0};
+                hexVal[0] = value[length - 1];  // jedno je tam urcite 
+                hexVal[2] = 0; 
+                length--;
+                int done = 0;
+
                 while(c != '}'){   // 8???? <= ????
                     if((c >= 'a' && c <= 'f') || (c >= 'A' && c <= 'F') || (c >= '0' && c <= '9')){
-                        value[length] = c;
-                        length++;
-                        hexLength++;
-                        c = fgetc(file);
+                        // Tady je to druhy znak -> prevedu na decimal, a pak doctu, ale neukladam zbytek
+                        if(done){
+                            hexLength++;
+                        } else {    // provede se jednou
+                            done = 1;
+                            hexVal[1] = c;
+                        }
+
                     } else {
                         token.type = TOKEN_ERROR;
                         return token;
                     }
-                    if(hexLength > 8){
+                    if(hexLength > 7){
                         token.type = TOKEN_ERROR;
                         return token;
                     }
+                    c = fgetc(file);
                 }
+                int decValue = (int) strtol(hexVal, NULL, 16);
+                char decimal[4];
+                sprintf(decimal, "%d", decValue);
+
+                if(decValue < 10){
+                    value[length++] = '0';
+                    value[length++] = '0';
+                    value[length++] = decimal[0];
+                } else {
+                    if(decValue < 100){
+                        value[length++] = '0';
+                        value[length++] = decimal[0];
+                        value[length++] = decimal[1];
+                    } else{
+                        value[length++] = decimal[0];
+                        value[length++] = decimal[1];
+                        value[length++] = decimal[2];
+                    }
+                }
+
                 state = S_STRING_FILL; // Tady uz to nasbiralo co potrebuje, nebo hodilo chybu
                 break;
+            }
 
             case(S_STRING):
                 if(c == '"'){
@@ -1008,6 +1046,27 @@ T_token getNextToken(FILE* file){
                         value[length++] = '0';
                         value[length++] = '3';
                         value[length++] = '2';
+                        c = fgetc(file);
+                        continue;
+                    } else if(c == '\n'){
+                        value[length++] = '\\';
+                        value[length++] = '0';
+                        value[length++] = '1';
+                        value[length++] = '0';
+                        c = fgetc(file);
+                        continue;
+                    } else if(c == '\t'){
+                        value[length++] = '\\';
+                        value[length++] = '0';
+                        value[length++] = '0';
+                        value[length++] = '9';
+                        c = fgetc(file);
+                        continue;
+                    } else if(c == '\r'){
+                        value[length++] = '\\';
+                        value[length++] = '0';
+                        value[length++] = '1';
+                        value[length++] = '3';
                         c = fgetc(file);
                         continue;
                     }
@@ -1039,8 +1098,6 @@ T_token getNextToken(FILE* file){
                     break;
                 } else if(c == 'u'){
                     state = S_ML_BS_U;
-                    value[length] = c;
-                    length++;
                     break;
                 } else if(c == 'n'){
                     state = S_ML_STRING_FILL;
@@ -1075,8 +1132,6 @@ T_token getNextToken(FILE* file){
             case(S_ML_BS_U):
                 if(c == '{'){
                     state = S_ML_BS_UC;
-                    value[length] = c;
-                    length++;
                     break;
                 } else {
                     token.type = TOKEN_ERROR;
@@ -1091,6 +1146,11 @@ T_token getNextToken(FILE* file){
                     hexLength++;
                     state = S_ML_BS_UC_DD;
                     break;
+                } else if(c == '}') {
+                    state = S_ML_STRING_FILL;
+                    value[length - 1] = 0;
+                    length--;
+                    break;
                 } else {
                     token.type = TOKEN_ERROR;
                     return token;
@@ -1098,19 +1158,57 @@ T_token getNextToken(FILE* file){
                 break;
 
             case(S_ML_BS_UC_DD):
-                while(c != '}' || hexLength < 8){   // 8???? <= ????
+            {
+                char hexVal[3] = {0};
+                hexVal[0] = value[length - 1];  // jedno je tam urcite 
+                hexVal[2] = 0; 
+                length--;
+                int done = 0;
+
+               while(c != '}'){   // 8???? <= ????
                     if((c >= 'a' && c <= 'f') || (c >= 'A' && c <= 'F') || (c >= '0' && c <= '9')){
-                        value[length] = c;
-                        length++;
-                        hexLength++;
-                        c = fgetc(file);
+                        // Tady je to druhy znak -> prevedu na decimal, a pak doctu, ale neukladam zbytek
+                        if(done){
+                            hexLength++;
+                        } else {    // provede se jednou
+                            done = 1;
+                            hexVal[1] = c;
+                        }
+
                     } else {
                         token.type = TOKEN_ERROR;
                         return token;
                     }
+                    if(hexLength > 7){
+                        token.type = TOKEN_ERROR;
+                        return token;
+                    }
+                    c = fgetc(file);
                 }
+
+                int decValue = (int) strtol(hexVal, NULL, 16);
+                char decimal[4];
+                sprintf(decimal, "%d", decValue);
+
+                if(decValue < 10){
+                    value[length++] = '0';
+                    value[length++] = '0';
+                    value[length++] = decimal[0];
+                } else {
+                    if(decValue < 100){
+                        value[length++] = '0';
+                        value[length++] = decimal[0];
+                        value[length++] = decimal[1];
+                    } else{
+                        value[length++] = decimal[0];
+                        value[length++] = decimal[1];
+                        value[length++] = decimal[2];
+                    }
+                }
+
                 state = S_ML_STRING_FILL; // Tady uz to nasbiralo co potrebuje, nebo hodilo chybu
                 break;
+            } 
 
             case(S_ML_STRING_1):
                 if (c == '"'){
@@ -1123,7 +1221,7 @@ T_token getNextToken(FILE* file){
                     state = S_ML_STRING_FILL;
                     break;
                 }
-                break;  
+                break; 
 
             case(S_ML_STRING_2):
                 if (c == '"'){

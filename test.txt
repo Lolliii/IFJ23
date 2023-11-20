@@ -94,3 +94,19 @@ var
 Var
 while
 While
+
+"AHOJ \n\\\"\r\t"
+
+"""AHOJ \n\\\"\r\t"""
+"""AHOJ 
+    """
+"AHOJ\u{}sdvsdvs"
+"AHOJ\u{A}sdvsdvs"
+"AHOJ\u{FF}sdvsdvs"
+"AHOJ\u{01234567}sdvsdvs"
+"AHOJ\u{012345678}sdvsdvs"
+"""AHOJ\u{}sdvsdvs"""
+"""AHOJ\u{A}sdvsdvs"""
+"""AHOJ\u{FF}sdvsdvs"""
+"""AHOJ\u{01234567}sdvsdvs"""
+"""AHOJ\u{012345678}sdvsdvs"""
