@@ -57,12 +57,6 @@ void printTokenName(T_token token) {
         case TOKEN_ID:
             printf("TOKEN_ID");
             break;
-        // case TOKEN_TYPE_ID:
-        //     printf("TOKEN_TYPE_ID");
-        //     break;
-        // case TOKEN_TYPE_ID:
-        //     printf("TOKEN_TYPE_ID");
-        //     break;
         case TOKEN_EXCLAMATION_MARK:
             printf("TOKEN_EXCLAMATION_MARK");
             break;

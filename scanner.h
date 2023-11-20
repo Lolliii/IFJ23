@@ -84,7 +84,7 @@ typedef enum {
     TOKEN_DOUBLE_QUESTION_MARK,         // ?? 
     TOKEN_UNDERSCORE,                   // _
     TOKEN_ID,                           // ID
-    TOKEN_ID_EM,                        // ID!
+    TOKEN_ID_EM,                        // ID! - zaruceno ze neni nil
     TOKEN_EXCLAMATION_MARK,             // !
     TOKEN_NOT_EQUAL,                    // != 
     TOKEN_ASSIGN,                       // =
@@ -123,9 +123,9 @@ typedef enum {
     TOKEN_KW_STRING,
     TOKEN_KW_VAR,
     TOKEN_KW_WHILE,
-    TOKEN_TYPE_INT,                     // type int
-    TOKEN_TYPE_FLOAT,                  // type double
-    TOKEN_TYPE_STRING,                  // type string
+    TOKEN_TYPE_INT,                     // type int? s otaznikem
+    TOKEN_TYPE_FLOAT,                   // type double?
+    TOKEN_TYPE_STRING,                  // type string?
 } T_token_type;
 
 typedef struct {
