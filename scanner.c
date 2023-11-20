@@ -1000,8 +1000,8 @@ T_token getNextToken(FILE* file){
                         return token;
                     }
                     if(hexLength > 7){
-                        token.type = TOKEN_ERROR;
-                        return token;
+                        error_caller(SYN_ERROR);
+                        exit(SYN_ERROR);
                     }
                     c = fgetc(file);
                 }
@@ -1190,8 +1190,8 @@ T_token getNextToken(FILE* file){
                         return token;
                     }
                     if(hexLength > 7){
-                        token.type = TOKEN_ERROR;
-                        return token;
+                        error_caller(SYN_ERROR);
+                        exit(SYN_ERROR);
                     }
                     c = fgetc(file);
                 }
