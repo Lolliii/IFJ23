@@ -18,6 +18,7 @@ fills it and returns NO_ERROR. In case of an error, the return value is LEX_ERRO
 #include <ctype.h>
 #include <stdint.h> // kvuli uint_32
 
+
 void printTokenName(T_token token) {
     switch (token.type) {
         case TOKEN_ERROR:
@@ -179,6 +180,9 @@ void printTokenName(T_token token) {
         case TOKEN_TYPE_STRING:
             printf("TOKEN_TYPE_STRING");
             break;
+        case TOKEN_ID_EM:
+            printf("TOKEN_ID_EM");
+            break;
         default:
             printf("Unknown Token Type");
             break;
@@ -187,23 +191,6 @@ void printTokenName(T_token token) {
         printf("->%s", token.value);
 }
 
-/*
-Checks if passed param is one of {Double, else, func, if, Int, let, nil, return, String, var, while}
-!! Is case-sensitive !!
-Return values:
-    0:  No match (not a keyword)
-    1:  Double
-    2:  else 
-    3:  func
-    4:  if
-    5:  Int
-    6:  let
-    7:  nil
-    8:  return
-    9:  String
-    10: var
-    11: while
-*/
 /*
 Checks if passed param is one of {Double, else, func, if, Int, let, nil, return, String, var, while}
 !! Is case-sensitive !!
@@ -236,7 +223,6 @@ int check_keywords(char *check){
     else return 0;
 }
 
-
 /*
 Checks if passed param is one of {Double?, Int?, String?}
 !! case-sensitive !!
@@ -267,31 +253,31 @@ void error_caller(int error_code){
     printf("\n");
     switch(error_code){
         case LEX_ERROR:
-            printf("Error: %d -> Wrong lexem structure on line %d.\n", error_code, __LINE__);
+            fprintf(stderr, "Error: %d -> Wrong lexem structure.\n", error_code);
             break;
         case SYN_ERROR:
-            printf("Error: %d -> Wrong syntax on line %d.\n", error_code, __LINE__);
+            fprintf(stderr, "Error: %d -> Wrong syntax.\n", error_code);
             break;
         case UNDEF_FUNCTION_ERROR:
-            printf("Error: %d -> Undefined function or redefining attempt on line %d.\n", error_code, __LINE__);
+            fprintf(stderr, "Error: %d -> Undefined function or redefining attempt.\n", error_code);
             break;
         case PARAM_ERROR:
-            printf("Error: %d -> Wrong type, number of parameters or return type on line %d.\n", error_code, __LINE__);
+            fprintf(stderr, "Error: %d -> Wrong type, number of parameters or return type.\n", error_code);
             break;
         case UNDEF_UNINIT_VARIABLE_ERROR:
-            printf("Error: %d -> Using undefined variable on line %d.\n", error_code, __LINE__);
+            fprintf(stderr, "Error: %d -> Using undefined variable.\n", error_code);
             break;
         case EXPRESSION_ERROR:
-            printf("Error: %d -> Too little or too many expressions in return command on line %d.\n", error_code, __LINE__);
+            fprintf(stderr, "Error: %d -> Too little or too many expressions in return command.\n", error_code);
             break;
         case TYPE_COMP_ERROR:
-            printf("Error: %d -> Wrong type in aritmetics, string, and relation expressions on line %d.\n", error_code, __LINE__);
+            fprintf(stderr, "Error: %d -> Wrong type in aritmetics, string, and relation expressions.\n", error_code);
             break;
         case OTHER_ERROR:
-            printf("Error: %d -> Other semantic error on line %d.\n", error_code, __LINE__);
+            fprintf(stderr, "Error: %d -> Other semantic error.\n", error_code);
             break;
         case INTER_ERROR:
-            printf("Error: %d -> Compilator error (allocation error, ...).\n", error_code);
+            fprintf(stderr, "Error: %d -> Compilator error (allocation error, ...).\n", error_code);
             break;
     }
 }
@@ -431,7 +417,6 @@ T_token getNextToken(FILE* file){
                         state = S_ERROR;
                         break;
                     }
-
                 break; 
 
             case(S_MINUS):
@@ -494,18 +479,25 @@ T_token getNextToken(FILE* file){
                             break;
                     }
 
-                } else if(!isalnum(c) && c != '_'){     // znema log. operace (bylo || ale nefungovalo to :( )
+                } else if(!isalnum(c) && c != '_'){  
+                    char c2 = c;
                     return_back(c, file);
 
                     // Zkontroluj jestli to jsou keywords
                     int keyword = check_keywords(value);
                     switch(keyword){
                         case 0:
-                            token.type        = TOKEN_ID;
+                            if(c2 == '!'){
+                                token.type = TOKEN_ID_EM;
+                                c = getc(file);
+                            } else {
+                                token.type = TOKEN_ID;
+                            }
+
                             token.value = malloc(length+1);
                             if(token.value == NULL)
                             {
-                                fprintf(stderr, "MALLOC FAIL\n");
+                                error_caller(INTER_ERROR);
                                 exit(INTER_ERROR);
                             }
                             strcpy(token.value, value);
@@ -570,7 +562,8 @@ T_token getNextToken(FILE* file){
                 } else {
                     return_back(c, file);
                     token.type = TOKEN_EXCLAMATION_MARK;
-                    return token;
+                    error_caller(SYN_ERROR);
+                    exit(SYN_ERROR);
                 }
                 break; 
             
@@ -693,7 +686,7 @@ T_token getNextToken(FILE* file){
                     token.value = malloc(length+1);
                     if(token.value == NULL)
                         {
-                            fprintf(stderr, "MALLOC FAIL\n");
+                            error_caller(INTER_ERROR);
                             exit(INTER_ERROR);
                         }
                     strcpy(token.value, value);
@@ -718,7 +711,7 @@ T_token getNextToken(FILE* file){
                     token.value = malloc(length+1);
                     if(token.value == NULL)
                         {
-                            fprintf(stderr, "MALLOC FAIL\n");
+                            error_caller(INTER_ERROR);
                             exit(INTER_ERROR);
                         }
                     strcpy(token.value, value);
@@ -750,7 +743,7 @@ T_token getNextToken(FILE* file){
                     token.value = malloc(length+1);
                     if(token.value == NULL)
                         {
-                            fprintf(stderr, "MALLOC FAIL\n");
+                            error_caller(INTER_ERROR);
                             exit(INTER_ERROR);
                         }
                     strcpy(token.value, value);
@@ -775,7 +768,7 @@ T_token getNextToken(FILE* file){
                     token.value = malloc(length+1);
                     if(token.value == NULL)
                         {
-                            fprintf(stderr, "MALLOC FAIL\n");
+                            error_caller(INTER_ERROR);
                             exit(INTER_ERROR);
                         }
                     strcpy(token.value, value);
@@ -800,7 +793,7 @@ T_token getNextToken(FILE* file){
                     token.value = malloc(length+1);
                     if(token.value == NULL)
                         {
-                            fprintf(stderr, "MALLOC FAIL\n");
+                            error_caller(INTER_ERROR);
                             exit(INTER_ERROR);
                         }
                     strcpy(token.value, value);
@@ -832,7 +825,7 @@ T_token getNextToken(FILE* file){
                     token.value = malloc(length+1);
                     if(token.value == NULL)
                         {
-                            fprintf(stderr, "MALLOC FAIL\n");
+                            error_caller(INTER_ERROR);
                             exit(INTER_ERROR);
                         }
                     strcpy(token.value, value);
@@ -844,6 +837,14 @@ T_token getNextToken(FILE* file){
 // STRING
             case(S_STRING_START):
                 while(c != '"' && c != '\\' && c != EOF && c != '\n'){
+                    if(c == ' '){
+                        value[length++] = '\\';
+                        value[length++] = '0';
+                        value[length++] = '3';
+                        value[length++] = '2';
+                        c = fgetc(file);
+                        continue;
+                    }
                     value[length] = c;
                     length++;
                     c = fgetc(file);
@@ -868,6 +869,14 @@ T_token getNextToken(FILE* file){
 
             case(S_STRING_FILL):
                 while(c != '"' && c != '\\' && c != EOF && c != '\n'){
+                    if(c == ' '){
+                        value[length++] = '\\';
+                        value[length++] = '0';
+                        value[length++] = '3';
+                        value[length++] = '2';
+                        c = fgetc(file);
+                        continue;
+                    }
                     value[length] = c;
                     length++;
                     c = fgetc(file);
@@ -878,7 +887,7 @@ T_token getNextToken(FILE* file){
                     token.value = malloc(length+1);
                     if(token.value == NULL)
                     {
-                        fprintf(stderr, "MALLOC FAIL\n");
+                        error_caller(INTER_ERROR);
                         exit(INTER_ERROR);
                     }
                     strcpy(token.value, value);
@@ -902,22 +911,37 @@ T_token getNextToken(FILE* file){
                 }
                 else if(c == 'n'){
                     state = S_STRING_START;
+                    value[length++] = '0';
+                    value[length++] = '1';
+                    value[length++] = '0';
                     break;
                 }
                 else if(c == 'r'){
                     state = S_STRING_START;
+                    value[length++] = '0';
+                    value[length++] = '1';
+                    value[length++] = '3';
                     break;
                 }
                 else if(c == 't'){
                     state = S_STRING_START;
+                    value[length++] = '0';
+                    value[length++] = '0';
+                    value[length++] = '9';
                     break;
                 }
                 else if(c == '\\'){
                     state = S_STRING_START;
+                    value[length++] = '0';
+                    value[length++] = '9';
+                    value[length++] = '2';
                     break;
                 }
                 else if(c == '"'){
                     state = S_STRING_START;
+                    value[length++] = '0';
+                    value[length++] = '3';
+                    value[length++] = '4';
                     break;
                 }
                 else {
@@ -942,6 +966,11 @@ T_token getNextToken(FILE* file){
                     hexLength++;
                     state = S_BS_UC_DD;
                     break;
+                } else if(c == '}') {
+                    state = S_STRING_FILL;
+                    value[length - 1] = 0;
+                    length--;
+                    break;
                 } else {
                     token.type = TOKEN_ERROR;
                     return token;
@@ -949,23 +978,56 @@ T_token getNextToken(FILE* file){
                 break;
 
             case(S_BS_UC_DD):
+            {
+                char hexVal[3] = {0};
+                hexVal[0] = value[length - 1];  // jedno je tam urcite 
+                hexVal[2] = 0; 
+                length--;
+                int done = 0;
+
                 while(c != '}'){   // 8???? <= ????
                     if((c >= 'a' && c <= 'f') || (c >= 'A' && c <= 'F') || (c >= '0' && c <= '9')){
-                        value[length] = c;
-                        length++;
-                        hexLength++;
-                        c = fgetc(file);
+                        // Tady je to druhy znak -> prevedu na decimal, a pak doctu, ale neukladam zbytek
+                        if(done){
+                            hexLength++;
+                        } else {    // provede se jednou
+                            done = 1;
+                            hexVal[1] = c;
+                        }
+
                     } else {
                         token.type = TOKEN_ERROR;
                         return token;
                     }
-                    if(hexLength > 8){
-                        token.type = TOKEN_ERROR;
-                        return token;
+                    if(hexLength > 7){
+                        error_caller(SYN_ERROR);
+                        exit(SYN_ERROR);
+                    }
+                    c = fgetc(file);
+                }
+                int decValue = (int) strtol(hexVal, NULL, 16);
+                char decimal[4];
+                sprintf(decimal, "%d", decValue);
+
+                if(decValue < 10){
+                    value[length++] = '0';
+                    value[length++] = '0';
+                    value[length++] = decimal[0];
+                } else {
+                    if(decValue < 100){
+                        value[length++] = '0';
+                        value[length++] = decimal[0];
+                        value[length++] = decimal[1];
+                    } else{
+                        value[length++] = decimal[0];
+                        value[length++] = decimal[1];
+                        value[length++] = decimal[2];
                     }
                 }
+
                 state = S_STRING_FILL; // Tady uz to nasbiralo co potrebuje, nebo hodilo chybu
                 break;
+            }
 
             case(S_STRING):
                 if(c == '"'){
@@ -977,7 +1039,7 @@ T_token getNextToken(FILE* file){
                     token.value = malloc(length+1);
                     if(token.value == NULL)
                         {
-                            fprintf(stderr, "MALLOC FAIL\n");
+                            error_caller(INTER_ERROR);
                             exit(INTER_ERROR);
                         }
                     strcpy(token.value, value);
@@ -989,6 +1051,35 @@ T_token getNextToken(FILE* file){
 // ML STRINGY
             case(S_ML_STRING_FILL):
                 while(c != '"' && c != '\\' && c != EOF){
+                    if(c == ' '){
+                        value[length++] = '\\';
+                        value[length++] = '0';
+                        value[length++] = '3';
+                        value[length++] = '2';
+                        c = fgetc(file);
+                        continue;
+                    } else if(c == '\n'){
+                        value[length++] = '\\';
+                        value[length++] = '0';
+                        value[length++] = '1';
+                        value[length++] = '0';
+                        c = fgetc(file);
+                        continue;
+                    } else if(c == '\t'){
+                        value[length++] = '\\';
+                        value[length++] = '0';
+                        value[length++] = '0';
+                        value[length++] = '9';
+                        c = fgetc(file);
+                        continue;
+                    } else if(c == '\r'){
+                        value[length++] = '\\';
+                        value[length++] = '0';
+                        value[length++] = '1';
+                        value[length++] = '3';
+                        c = fgetc(file);
+                        continue;
+                    }
                     value[length] = c;
                     length++;
                     c = fgetc(file);
@@ -1011,13 +1102,36 @@ T_token getNextToken(FILE* file){
             case(S_ML_BS):
                 if(c == '\\'){
                     state = S_ML_STRING_FILL;
-                    value[length] = c;
-                    length++;
+                    value[length++] = '0';
+                    value[length++] = '9';
+                    value[length++] = '2';
                     break;
                 } else if(c == 'u'){
                     state = S_ML_BS_U;
-                    value[length] = c;
-                    length++;
+                    break;
+                } else if(c == 'n'){
+                    state = S_ML_STRING_FILL;
+                    value[length++] = '0';
+                    value[length++] = '1';
+                    value[length++] = '0';
+                    break;
+                } else if(c == 't'){
+                    state = S_ML_STRING_FILL;
+                    value[length++] = '0';
+                    value[length++] = '0';
+                    value[length++] = '9';
+                    break;
+                } else if(c == 'r'){
+                    state = S_ML_STRING_FILL;
+                    value[length++] = '0';
+                    value[length++] = '1';
+                    value[length++] = '3';
+                    break;
+                } else if(c == '"'){
+                    state = S_ML_STRING_FILL;
+                    value[length++] = '0';
+                    value[length++] = '3';
+                    value[length++] = '4';
                     break;
                 } else {
                     token.type = TOKEN_ERROR;
@@ -1028,8 +1142,6 @@ T_token getNextToken(FILE* file){
             case(S_ML_BS_U):
                 if(c == '{'){
                     state = S_ML_BS_UC;
-                    value[length] = c;
-                    length++;
                     break;
                 } else {
                     token.type = TOKEN_ERROR;
@@ -1044,6 +1156,11 @@ T_token getNextToken(FILE* file){
                     hexLength++;
                     state = S_ML_BS_UC_DD;
                     break;
+                } else if(c == '}') {
+                    state = S_ML_STRING_FILL;
+                    value[length - 1] = 0;
+                    length--;
+                    break;
                 } else {
                     token.type = TOKEN_ERROR;
                     return token;
@@ -1051,19 +1168,57 @@ T_token getNextToken(FILE* file){
                 break;
 
             case(S_ML_BS_UC_DD):
-                while(c != '}' || hexLength < 8){   // 8???? <= ????
+            {
+                char hexVal[3] = {0};
+                hexVal[0] = value[length - 1];  // jedno je tam urcite 
+                hexVal[2] = 0; 
+                length--;
+                int done = 0;
+
+               while(c != '}'){   // 8???? <= ????
                     if((c >= 'a' && c <= 'f') || (c >= 'A' && c <= 'F') || (c >= '0' && c <= '9')){
-                        value[length] = c;
-                        length++;
-                        hexLength++;
-                        c = fgetc(file);
+                        // Tady je to druhy znak -> prevedu na decimal, a pak doctu, ale neukladam zbytek
+                        if(done){
+                            hexLength++;
+                        } else {    // provede se jednou
+                            done = 1;
+                            hexVal[1] = c;
+                        }
+
                     } else {
                         token.type = TOKEN_ERROR;
                         return token;
                     }
+                    if(hexLength > 7){
+                        error_caller(SYN_ERROR);
+                        exit(SYN_ERROR);
+                    }
+                    c = fgetc(file);
                 }
+
+                int decValue = (int) strtol(hexVal, NULL, 16);
+                char decimal[4];
+                sprintf(decimal, "%d", decValue);
+
+                if(decValue < 10){
+                    value[length++] = '0';
+                    value[length++] = '0';
+                    value[length++] = decimal[0];
+                } else {
+                    if(decValue < 100){
+                        value[length++] = '0';
+                        value[length++] = decimal[0];
+                        value[length++] = decimal[1];
+                    } else{
+                        value[length++] = decimal[0];
+                        value[length++] = decimal[1];
+                        value[length++] = decimal[2];
+                    }
+                }
+
                 state = S_ML_STRING_FILL; // Tady uz to nasbiralo co potrebuje, nebo hodilo chybu
                 break;
+            } 
 
             case(S_ML_STRING_1):
                 if (c == '"'){
@@ -1076,7 +1231,7 @@ T_token getNextToken(FILE* file){
                     state = S_ML_STRING_FILL;
                     break;
                 }
-                break;  
+                break; 
 
             case(S_ML_STRING_2):
                 if (c == '"'){
@@ -1084,7 +1239,7 @@ T_token getNextToken(FILE* file){
                     token.value = malloc(length+1);
                     if(token.value == NULL)
                         {
-                            fprintf(stderr, "MALLOC FAIL\n");
+                            error_caller(INTER_ERROR);
                             exit(INTER_ERROR);
                         }
                     strcpy(token.value, value);
@@ -1101,8 +1256,6 @@ T_token getNextToken(FILE* file){
 
             default:  // Vsechno ostatni by mela byt chyba
                 token.type = TOKEN_ERROR;
-                //token.value = c;
-                //token.valueLength = 1;
                 return token;
 
         }
