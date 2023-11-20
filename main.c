@@ -11,6 +11,7 @@ IFJ Projekt 2023
 #include "error.h"
 #include "expr_stack.h"
 #include "expr_parser.h"
+#include "parser_queue.h"
 
 #include <stdio.h>
 
@@ -27,8 +28,15 @@ int main(int argc, char *argv[]) {
     printf("NAZEV: %s\n", argv[1]);
     
     //expr_parser(file);
+
+    /*T_queue *queue = queue_init();
+    T_token token = getNextToken(file);
+    queue_add(queue, token);
+    T_token token1 = getToken(queue, file);
+    T_token token2 = getToken(queue, file);
+    free(queue);*/
     
-    T_token token;
+    /*T_token token;
 
     while ((token = getNextToken(file)).type != TOKEN_EOF) {
         if(token.type == TOKEN_ERROR){
@@ -49,6 +57,6 @@ int main(int argc, char *argv[]) {
 
     fclose(file);
     file = NULL;
-
+*/
     return 0;
 }
