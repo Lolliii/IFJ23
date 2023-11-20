@@ -253,31 +253,31 @@ void error_caller(int error_code){
     printf("\n");
     switch(error_code){
         case LEX_ERROR:
-            printf("Error: %d -> Wrong lexem structure on line %d.\n", error_code, __LINE__);
+            fprintf(stderr, "Error: %d -> Wrong lexem structure.\n", error_code);
             break;
         case SYN_ERROR:
-            printf("Error: %d -> Wrong syntax on line %d.\n", error_code, __LINE__);
+            fprintf(stderr, "Error: %d -> Wrong syntax.\n", error_code);
             break;
         case UNDEF_FUNCTION_ERROR:
-            printf("Error: %d -> Undefined function or redefining attempt on line %d.\n", error_code, __LINE__);
+            fprintf(stderr, "Error: %d -> Undefined function or redefining attempt.\n", error_code);
             break;
         case PARAM_ERROR:
-            printf("Error: %d -> Wrong type, number of parameters or return type on line %d.\n", error_code, __LINE__);
+            fprintf(stderr, "Error: %d -> Wrong type, number of parameters or return type.\n", error_code);
             break;
         case UNDEF_UNINIT_VARIABLE_ERROR:
-            printf("Error: %d -> Using undefined variable on line %d.\n", error_code, __LINE__);
+            fprintf(stderr, "Error: %d -> Using undefined variable.\n", error_code);
             break;
         case EXPRESSION_ERROR:
-            printf("Error: %d -> Too little or too many expressions in return command on line %d.\n", error_code, __LINE__);
+            fprintf(stderr, "Error: %d -> Too little or too many expressions in return command.\n", error_code);
             break;
         case TYPE_COMP_ERROR:
-            printf("Error: %d -> Wrong type in aritmetics, string, and relation expressions on line %d.\n", error_code, __LINE__);
+            fprintf(stderr, "Error: %d -> Wrong type in aritmetics, string, and relation expressions.\n", error_code);
             break;
         case OTHER_ERROR:
-            printf("Error: %d -> Other semantic error on line %d.\n", error_code, __LINE__);
+            fprintf(stderr, "Error: %d -> Other semantic error.\n", error_code);
             break;
         case INTER_ERROR:
-            printf("Error: %d -> Compilator error (allocation error, ...).\n", error_code);
+            fprintf(stderr, "Error: %d -> Compilator error (allocation error, ...).\n", error_code);
             break;
     }
 }
@@ -417,7 +417,6 @@ T_token getNextToken(FILE* file){
                         state = S_ERROR;
                         break;
                     }
-
                 break; 
 
             case(S_MINUS):
@@ -481,32 +480,24 @@ T_token getNextToken(FILE* file){
                     }
 
                 } else if(!isalnum(c) && c != '_'){  
-
-                    if(c == '!'){
-                        value[length] = c;
-                        token.type = TOKEN_ID_EM;
-                        token.value = malloc(length+1);
-                        if(token.value == NULL)
-                        {
-                            fprintf(stderr, "MALLOC FAIL\n");
-                            exit(INTER_ERROR);
-                        }
-                        strcpy(token.value, value);
-                        token.valueLength = length; 
-                        return token;
-                    } else {
-                        return_back(c, file);
-                    }
+                    char c2 = c;
+                    return_back(c, file);
 
                     // Zkontroluj jestli to jsou keywords
                     int keyword = check_keywords(value);
                     switch(keyword){
                         case 0:
-                            token.type        = TOKEN_ID;
+                            if(c2 == '!'){
+                                token.type = TOKEN_ID_EM;
+                                c = getc(file);
+                            } else {
+                                token.type = TOKEN_ID;
+                            }
+
                             token.value = malloc(length+1);
                             if(token.value == NULL)
                             {
-                                fprintf(stderr, "MALLOC FAIL\n");
+                                error_caller(INTER_ERROR);
                                 exit(INTER_ERROR);
                             }
                             strcpy(token.value, value);
@@ -571,7 +562,8 @@ T_token getNextToken(FILE* file){
                 } else {
                     return_back(c, file);
                     token.type = TOKEN_EXCLAMATION_MARK;
-                    return token;
+                    error_caller(SYN_ERROR);
+                    exit(SYN_ERROR);
                 }
                 break; 
             
@@ -694,7 +686,7 @@ T_token getNextToken(FILE* file){
                     token.value = malloc(length+1);
                     if(token.value == NULL)
                         {
-                            fprintf(stderr, "MALLOC FAIL\n");
+                            error_caller(INTER_ERROR);
                             exit(INTER_ERROR);
                         }
                     strcpy(token.value, value);
@@ -719,7 +711,7 @@ T_token getNextToken(FILE* file){
                     token.value = malloc(length+1);
                     if(token.value == NULL)
                         {
-                            fprintf(stderr, "MALLOC FAIL\n");
+                            error_caller(INTER_ERROR);
                             exit(INTER_ERROR);
                         }
                     strcpy(token.value, value);
@@ -751,7 +743,7 @@ T_token getNextToken(FILE* file){
                     token.value = malloc(length+1);
                     if(token.value == NULL)
                         {
-                            fprintf(stderr, "MALLOC FAIL\n");
+                            error_caller(INTER_ERROR);
                             exit(INTER_ERROR);
                         }
                     strcpy(token.value, value);
@@ -776,7 +768,7 @@ T_token getNextToken(FILE* file){
                     token.value = malloc(length+1);
                     if(token.value == NULL)
                         {
-                            fprintf(stderr, "MALLOC FAIL\n");
+                            error_caller(INTER_ERROR);
                             exit(INTER_ERROR);
                         }
                     strcpy(token.value, value);
@@ -801,7 +793,7 @@ T_token getNextToken(FILE* file){
                     token.value = malloc(length+1);
                     if(token.value == NULL)
                         {
-                            fprintf(stderr, "MALLOC FAIL\n");
+                            error_caller(INTER_ERROR);
                             exit(INTER_ERROR);
                         }
                     strcpy(token.value, value);
@@ -833,7 +825,7 @@ T_token getNextToken(FILE* file){
                     token.value = malloc(length+1);
                     if(token.value == NULL)
                         {
-                            fprintf(stderr, "MALLOC FAIL\n");
+                            error_caller(INTER_ERROR);
                             exit(INTER_ERROR);
                         }
                     strcpy(token.value, value);
@@ -895,7 +887,7 @@ T_token getNextToken(FILE* file){
                     token.value = malloc(length+1);
                     if(token.value == NULL)
                     {
-                        fprintf(stderr, "MALLOC FAIL\n");
+                        error_caller(INTER_ERROR);
                         exit(INTER_ERROR);
                     }
                     strcpy(token.value, value);
@@ -1047,7 +1039,7 @@ T_token getNextToken(FILE* file){
                     token.value = malloc(length+1);
                     if(token.value == NULL)
                         {
-                            fprintf(stderr, "MALLOC FAIL\n");
+                            error_caller(INTER_ERROR);
                             exit(INTER_ERROR);
                         }
                     strcpy(token.value, value);
@@ -1247,7 +1239,7 @@ T_token getNextToken(FILE* file){
                     token.value = malloc(length+1);
                     if(token.value == NULL)
                         {
-                            fprintf(stderr, "MALLOC FAIL\n");
+                            error_caller(INTER_ERROR);
                             exit(INTER_ERROR);
                         }
                     strcpy(token.value, value);
@@ -1264,8 +1256,6 @@ T_token getNextToken(FILE* file){
 
             default:  // Vsechno ostatni by mela byt chyba
                 token.type = TOKEN_ERROR;
-                //token.value = c;
-                //token.valueLength = 1;
                 return token;
 
         }
