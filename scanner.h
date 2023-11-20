@@ -84,6 +84,7 @@ typedef enum {
     TOKEN_DOUBLE_QUESTION_MARK,         // ?? 
     TOKEN_UNDERSCORE,                   // _
     TOKEN_ID,                           // ID
+    TOKEN_ID_EM,                        // ID!
     TOKEN_TYPE_ID,                      // ? - type id
     TOKEN_EXCLAMATION_MARK,             // !
     TOKEN_NOT_EQUAL,                    // != 

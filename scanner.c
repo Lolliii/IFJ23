@@ -180,6 +180,9 @@ void printTokenName(T_token token) {
         case TOKEN_TYPE_STRING:
             printf("TOKEN_TYPE_STRING");
             break;
+        case TOKEN_ID_EM:
+            printf("TOKEN_ID_EM");
+            break;
         default:
             printf("Unknown Token Type");
             break;
@@ -477,8 +480,23 @@ T_token getNextToken(FILE* file){
                             break;
                     }
 
-                } else if(!isalnum(c) && c != '_'){     // znema log. operace (bylo || ale nefungovalo to :( )
-                    return_back(c, file);
+                } else if(!isalnum(c) && c != '_'){  
+
+                    if(c == '!'){
+                        value[length] = c;
+                        token.type = TOKEN_ID_EM;
+                        token.value = malloc(length+1);
+                        if(token.value == NULL)
+                        {
+                            fprintf(stderr, "MALLOC FAIL\n");
+                            exit(INTER_ERROR);
+                        }
+                        strcpy(token.value, value);
+                        token.valueLength = length; 
+                        return token;
+                    } else {
+                        return_back(c, file);
+                    }
 
                     // Zkontroluj jestli to jsou keywords
                     int keyword = check_keywords(value);
