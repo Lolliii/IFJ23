@@ -13,13 +13,12 @@ PARSER
 #define PARSER_H
 
 #include <stdio.h>
-#include <stdbool.h> // nebo pouzit #define OK 1 notok 0?????
+#include <stdbool.h>
 #include "scanner.h"
+#include "parser_queue.h"
+#include "expr_parser.h"
 
-
-// budem potrebovat keywordy z getNextToken v scanneru, typ float int a string nevim ci je potreba
-
-//terminaly z LL gramatiky
+// neterminaly z LL gramatiky
 bool prog(T_token token, T_queue *queue, FILE *file);
 bool st_list(T_token token, T_queue *queue, FILE *file);
 bool body(T_token token, T_queue *queue, FILE *file);

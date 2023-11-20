@@ -29,6 +29,10 @@ int main(int argc, char *argv[]) {
     
     //expr_parser(file);
 
+    T_queue *queue = queue_init();
+
+    free(queue);
+
     /*T_queue *queue = queue_init();
     T_token token = getNextToken(file);
     queue_add(queue, token);
@@ -55,8 +59,9 @@ int main(int argc, char *argv[]) {
     if(token.valueLength)
         free(token.value);
 
-    fclose(file);
     file = NULL;
 */
+    fclose(file);
+
     return 0;
 }

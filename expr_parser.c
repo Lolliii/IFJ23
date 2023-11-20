@@ -9,14 +9,13 @@ EXPRESSION PARSER
 @author Thu Tra Phamová
 */
 
-#include "error.h"
-#include "scanner.h"
-#include "expr_stack.h"
+// #include "error.h"
+// #include "expr_stack.h"
 #include "expr_parser.h"
 
-#include <stdio.h>
-#include <string.h>
-#include <stdlib.h>
+// #include <stdio.h>
+// #include <string.h>
+// #include <stdlib.h>
 
 
 //Fce pro daný token vrátí jeho idex v precedenční tabulce
@@ -51,7 +50,7 @@ prec_symb get_prec_value(T_token token)
     case TOKEN_NOT_EQUAL:
         return prec_n_eq;
     case TOKEN_ID:
-    case TOKEN_TYPE_ID:
+    //case TOKEN_TYPE_ID:
         return prec_id;
     
     case TOKEN_INT:

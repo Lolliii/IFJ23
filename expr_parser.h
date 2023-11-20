@@ -10,8 +10,18 @@ IFJ Projekt 2023
 #ifndef EXPR_PARSER_H
 #define EXPR_PARSER_H
 
+#include "error.h"
+#include "scanner.h"
+#include "expr_stack.h"
+#include "expr_parser.h"
+
 #include <stdio.h>
+#include <string.h>
 #include <stdlib.h>
+
+
+// #include <stdio.h>
+// #include <stdlib.h>
 
 prec_symb get_prec_value(T_token token);
 
