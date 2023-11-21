@@ -1,0 +1,85 @@
+//________________prazdny program
+//EOF
+//________________let deklarace
+let id1 : String
+let      id2 : String?
+let id3 :     Int
+let id4 :
+ Int?
+let id5
+ : Double
+let 
+id6 : Double?
+//________________ let definice
+let id1 : String = "ahoj"
+let      id2 : String? = "ASD saddsad dsa"
+let id3 :     Int = 23432
+let id4 :
+ Int? = 432
+let id5
+ : Double = 234.32
+let 
+id6 : Double? = nil
+
+let id7 = "ahoj"
+let      id8 = "ASD saddsad dsa"
+let id9 = 23432
+let id10 = 432
+let id11
+  = 234.32
+let 
+id12 = nil
+//________________var deklarace
+var id1 : String
+var      id2 : String?
+var id3 :     Int
+var id4 :
+ Int?
+var id5
+ : Double
+var 
+id6 : Double?
+//________________var definice
+var id1 : String = "ahoj"
+var      id2 : String? = "ASD saddsad dsa"
+var id3 :     Int = 23432
+var id4 :
+ Int? = 432
+var id5
+ : Double = 234.32
+var 
+id6 : Double? = nil
+
+var id7 = "ahoj"
+var      id8 = "ASD saddsad dsa"
+var id9 = 23432
+var id10 = 432
+var id11
+  = 234.32
+var 
+id12 = nil
+//________________func deklarace
+func id1 () {
+    
+}
+//________________
+//________________
+//________________
+//________________
+//________________
+//________________
+//________________
+//________________
+//________________
+//________________
+//________________
+//________________
+//________________
+//________________
+//________________
+//________________
+//________________
+//________________
+//________________
+//________________
+//________________

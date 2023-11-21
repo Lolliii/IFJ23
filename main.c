@@ -12,6 +12,7 @@ IFJ Projekt 2023
 #include "expr_stack.h"
 #include "expr_parser.h"
 #include "parser_queue.h"
+#include "parser.h"
 
 #include <stdio.h>
 
@@ -24,12 +25,29 @@ int main(int argc, char *argv[]) {
     
     // TODO:
     // zkontrolovat spravne otevreni souboru
-    FILE* file = fopen("test.txt", "r+");
+    FILE* file = fopen(argv[1], "r+");
     printf("NAZEV: %s\n", argv[1]);
     
     //expr_parser(file, queue);
+    printf("________\n");
 
     T_queue *queue = queue_init();
+
+    T_token token = getNextToken(file);
+
+
+    if (prog(token, queue, file))
+    {
+
+        printf("________\n");
+        
+        printf("good\n");
+    } else {
+        printf("________\n");
+
+        printf("bad\n");
+    }
+    
 
     free(queue);
 
