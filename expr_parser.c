@@ -135,8 +135,8 @@ void rule_min_mul(T_stack *stack)
     T_elem *l_op, *r_op;
     l_op = stack_get_val(stack, 2);
     r_op = stack_get_val(stack, 0);
-    if(!((l_op->symb == e_num || l_op->symb == e_dbl || l_op->symb == e_str) && 
-    (r_op->symb == e_num || r_op->symb == e_dbl || r_op->symb == e_str)))
+    if(!((l_op->symb == e_num || l_op->symb == e_dbl || l_op->symb == e_str || l_op->symb == e_id) && 
+    (r_op->symb == e_num || r_op->symb == e_dbl || r_op->symb == e_str || r_op->symb == e_id)))
     {
         fprintf(stderr, "ERROR: Syntax error, need 2 literals or ID as an operands\n");
         exit(SYN_ERROR);
@@ -172,8 +172,8 @@ void rule_div(T_stack *stack)
     T_elem *l_op, *r_op;
     l_op = stack_get_val(stack, 2);
     r_op = stack_get_val(stack, 0);
-    if(!((l_op->symb == e_num || l_op->symb == e_dbl || l_op->symb == e_str) && 
-    (r_op->symb == e_num || r_op->symb == e_dbl || r_op->symb == e_str)))
+    if(!((l_op->symb == e_num || l_op->symb == e_dbl || l_op->symb == e_str || l_op->symb == e_id) && 
+    (r_op->symb == e_num || r_op->symb == e_dbl || r_op->symb == e_str || r_op->symb == e_id)))
     {
         fprintf(stderr, "ERROR: Syntax error, need 2 literals or ID as an operands\n");
         exit(SYN_ERROR);
