@@ -91,12 +91,13 @@ void rule_plus(T_stack *stack)
     l_op = stack_get_val(stack, 2);
     r_op = stack_get_val(stack, 0);
     if(!((l_op->symb == e_num || l_op->symb == e_dbl || l_op->symb == e_str || l_op->symb == e_id) && 
-    (r_op->symb == e_num || r_op->symb == e_dbl || r_op->symb == e_str || l_op->symb == e_id)))
+    (r_op->symb == e_num || r_op->symb == e_dbl || r_op->symb == e_str || r_op->symb == e_id)))
     {
         fprintf(stderr, "ERROR: Syntax error, need 2 literals or ID as an operands\n");
         exit(SYN_ERROR);
     }
-    else if(l_op->symb == e_str && r_op->symb == e_str)
+    else if((l_op->symb == e_str && r_op->symb == e_str) || (l_op->symb == e_id && r_op->symb == e_id)
+    || (l_op->symb == e_str && r_op->symb == e_id) || (l_op->symb == e_id && r_op->symb == e_str))
     {
         printf("conca ");
         l_op->symb = e_str;
