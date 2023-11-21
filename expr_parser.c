@@ -19,7 +19,7 @@ EXPRESSION PARSER
 
 
 //Fce pro daný token vrátí jeho idex v precedenční tabulce
-prec_symb get_prec_value(T_token token, T_queue *queue, int *zavorka)
+prec_symb get_prec_value(T_token token, int *zavorka)
 {
     switch (token.type)
     {
@@ -38,7 +38,7 @@ prec_symb get_prec_value(T_token token, T_queue *queue, int *zavorka)
     case TOKEN_R_RND:
         if(*zavorka == 0)
         {
-            queue_add(queue, token);
+            
             return prec_end;            
         }
         else
@@ -80,7 +80,7 @@ prec_symb get_prec_value(T_token token, T_queue *queue, int *zavorka)
     // a pak ty dva tokeny vrátit parseru
     // ale nejsem si tím úplně jistý...
     default:
-        queue_add(queue, token);
+        
         return prec_end;
     }
 }
@@ -450,7 +450,7 @@ const char preced_tab [20][20] = {
                 stack_top = stack_get_val(stack, ++idx);
 
         // Získání indexů pro tabulku
-        int idx_col = get_prec_value(token, queue, &zavorka);
+        int idx_col = get_prec_value(token, &zavorka);
         int idx_row = stack_top->symb;
 
         switch (preced_tab[idx_row][idx_col])
@@ -496,6 +496,7 @@ const char preced_tab [20][20] = {
         // Konec precedeneční analýzy
         case 'e':
             end = 0;
+            queue_add(queue, token);
             break;
         }
     }
