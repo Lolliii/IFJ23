@@ -74,7 +74,7 @@ T_elem *stack_get_val(T_stack *stack, int index)
     }
     //Index přesáhl velikost zásobníku -> error
     fprintf(stderr, "ERROR: Stack error in expression\n");
-    exit(EXPRESSION_ERROR);
+    exit(SYN_ERROR);
 }
 
 // Vyprázdění zásobníku a dealokace paměti

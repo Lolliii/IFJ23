@@ -230,7 +230,7 @@ bool ret_stat(T_token token, T_queue *queue, FILE *file) {
     UNUSED(queue);
     UNUSED(token);
 
-    expr_parser(file);
+    expr_parser(file, queue);
     // tady by mel expr_parser vlozit to co nemel precist zpatky sam
     return true;
 }
@@ -263,7 +263,7 @@ bool id_type(T_token token, T_queue *queue, FILE *file){
         T_token next_token = getToken(queue, file);
         return assign(next_token, queue, file);
     }else if(token.type == TOKEN_ASSIGN){
-        expr_parser(file);
+        expr_parser(file, queue);
         return true;
         
     }else{  
@@ -323,7 +323,7 @@ bool call(T_token token, T_queue *queue, FILE *file){
     //}else if(expr_parser(file)){
       //  return true;
     }else{
-        expr_parser(file);
+        expr_parser(file, queue);
         return true;
     }
     return false;
@@ -339,7 +339,7 @@ bool exp_stat(T_token token, T_queue *queue, FILE *file){
         }
         return false;
     }else{
-        expr_parser(file);
+        expr_parser(file, queue);
         return true;
     }
     return false;

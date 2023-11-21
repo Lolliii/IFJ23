@@ -23,10 +23,10 @@ IFJ Projekt 2023
 // #include <stdio.h>
 // #include <stdlib.h>
 
-prec_symb get_prec_value(T_token token);
+prec_symb get_prec_value(T_token token, T_queue *queue, int *zavorka);
 
 void reduce_rule(T_stack *stack, T_elem *cur_term);
 
-void expr_parser(FILE* file);
+void expr_parser(FILE* file, T_queue *queue);
 
 #endif

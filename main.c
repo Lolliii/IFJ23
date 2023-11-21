@@ -27,7 +27,7 @@ int main(int argc, char *argv[]) {
     FILE* file = fopen("test.txt", "r+");
     printf("NAZEV: %s\n", argv[1]);
     
-    //expr_parser(file);
+    //expr_parser(file, queue);
 
     T_queue *queue = queue_init();
 

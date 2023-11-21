@@ -11,6 +11,7 @@ IFJ Projekt 2023
 #define EXPR_STACK_H
 
 #include "scanner.h"
+#include "parser_queue.h"
 
 // indexace tokenů v precedenční tabulce (+ je na indexu 0 atd...)
 typedef enum {
