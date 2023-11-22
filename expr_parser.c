@@ -31,7 +31,7 @@ prec_symb get_prec_value(T_token token, int *end_expr, T_queue *queue, FILE* fil
         return prec_mul;
     case TOKEN_SLASH:
         return prec_divi;
-    case TOKEN_EXCLAMATION_MARK:
+    case TOKEN_ID_EM:
         return prec_exc;
     case TOKEN_L_RND:
         return prec_l_brac;
@@ -94,14 +94,15 @@ void rule_plus(T_stack *stack)
     T_elem *l_op, *r_op;
     l_op = stack_get_val(stack, 2);
     r_op = stack_get_val(stack, 0);
-    if(!((l_op->symb == e_num || l_op->symb == e_dbl || l_op->symb == e_str || l_op->symb == e_id) && 
-    (r_op->symb == e_num || r_op->symb == e_dbl || r_op->symb == e_str || r_op->symb == e_id)))
+    if(!((l_op->symb == e_num || l_op->symb == e_dbl || l_op->symb == e_str || l_op->symb == e_id || l_op->symb == e_id_exc) && 
+    (r_op->symb == e_num || r_op->symb == e_dbl || r_op->symb == e_str || r_op->symb == e_id || r_op->symb == e_id_exc)))
     {
         fprintf(stderr, "ERROR: Syntax error, need 2 literals or ID as an operands\n");
         exit(SYN_ERROR);
     }
     else if((l_op->symb == e_str && r_op->symb == e_str) || (l_op->symb == e_id && r_op->symb == e_id)
-    || (l_op->symb == e_str && r_op->symb == e_id) || (l_op->symb == e_id && r_op->symb == e_str))
+    || (l_op->symb == e_str && r_op->symb == e_id) || (l_op->symb == e_id && r_op->symb == e_str)
+    || (l_op->symb == e_str && r_op->symb == e_id_exc) || (l_op->symb == e_id_exc && r_op->symb == e_str))
     {
         printf("conca ");
         l_op->symb = e_str;
@@ -117,7 +118,7 @@ void rule_plus(T_stack *stack)
         printf("+ ");
         l_op->symb = e_dbl;
     }
-    else if(l_op->symb == e_id || r_op->symb == e_id)
+    else if(l_op->symb == e_id || r_op->symb == e_id || l_op->symb == e_id_exc || r_op->symb == e_id_exc)
     {
         // TODO
         // musí být stejné typy, bez konverze (Int Int, Dbl Dbl, Str Str)
@@ -140,8 +141,8 @@ void rule_min_mul(T_stack *stack)
     T_elem *l_op, *r_op;
     l_op = stack_get_val(stack, 2);
     r_op = stack_get_val(stack, 0);
-    if(!((l_op->symb == e_num || l_op->symb == e_dbl || l_op->symb == e_str || l_op->symb == e_id) && 
-    (r_op->symb == e_num || r_op->symb == e_dbl || r_op->symb == e_str || r_op->symb == e_id)))
+    if(!((l_op->symb == e_num || l_op->symb == e_dbl || l_op->symb == e_str || l_op->symb == e_id || l_op->symb == e_id_exc) && 
+    (r_op->symb == e_num || r_op->symb == e_dbl || r_op->symb == e_str || r_op->symb == e_id || r_op->symb == e_id_exc)))
     {
         fprintf(stderr, "ERROR: Syntax error, need 2 literals or ID as an operands\n");
         exit(SYN_ERROR);
@@ -155,7 +156,7 @@ void rule_min_mul(T_stack *stack)
         // Provedení konverze jednoho z operandu na DOUBLE
         l_op->symb = e_dbl;
     }
-    else if(l_op->symb == e_id || r_op->symb == e_id)
+    else if(l_op->symb == e_id || r_op->symb == e_id || l_op->symb == e_id_exc || r_op->symb == e_id_exc)
     {
         // TODO
         // musí být stejné typy, bez konverze (Int Int, Dbl Dbl, Str Str)
@@ -177,8 +178,8 @@ void rule_div(T_stack *stack)
     T_elem *l_op, *r_op;
     l_op = stack_get_val(stack, 2);
     r_op = stack_get_val(stack, 0);
-    if(!((l_op->symb == e_num || l_op->symb == e_dbl || l_op->symb == e_str || l_op->symb == e_id) && 
-    (r_op->symb == e_num || r_op->symb == e_dbl || r_op->symb == e_str || r_op->symb == e_id)))
+    if(!((l_op->symb == e_num || l_op->symb == e_dbl || l_op->symb == e_str || l_op->symb == e_id || l_op->symb == e_id_exc) && 
+    (r_op->symb == e_num || r_op->symb == e_dbl || r_op->symb == e_str || r_op->symb == e_id || r_op->symb == e_id_exc)))
     {
         fprintf(stderr, "ERROR: Syntax error, need 2 literals or ID as an operands\n");
         exit(SYN_ERROR);
@@ -193,7 +194,7 @@ void rule_div(T_stack *stack)
         // Desetinné dělení
         l_op->symb = e_dbl;
     }
-    else if(l_op->symb == e_id || r_op->symb == e_id)
+    else if(l_op->symb == e_id || r_op->symb == e_id || l_op->symb == e_id_exc || r_op->symb == e_id_exc)
     {
         // TODO
         // musí být stejné typy, bez konverze (Int Int, Dbl Dbl, Str Str)
@@ -221,8 +222,8 @@ void rule_rela(T_stack *stack)
     T_elem *l_op, *r_op;
     l_op = stack_get_val(stack, 2);
     r_op = stack_get_val(stack, 0);
-    if(!((l_op->symb == e_id || l_op->symb == e_num || l_op->symb == e_dbl || l_op->symb == e_str) && 
-    (r_op->symb == e_id || r_op->symb == e_num || r_op->symb == e_dbl || r_op->symb == e_str)))
+    if(!((l_op->symb == e_id || l_op->symb == e_num || l_op->symb == e_dbl || l_op->symb == e_str || l_op->symb == e_id_exc) && 
+    (r_op->symb == e_id || r_op->symb == e_num || r_op->symb == e_dbl || r_op->symb == e_str || r_op->symb == e_id_exc)))
     {
         fprintf(stderr, "ERROR: Syntax error, need 2 literals or ID as an operands\n");
         exit(SYN_ERROR);
@@ -235,7 +236,7 @@ void rule_rela(T_stack *stack)
         stack_pop(stack);
         l_op->symb = e_bool;
     }
-    else if(l_op->symb == e_id || r_op->symb == e_id)
+    else if(l_op->symb == e_id || r_op->symb == e_id || l_op->symb == e_id_exc || r_op->symb == e_id_exc)
     {
         // TODO: potřeba Tabulky symbolů
         // můsí být stejné typy a bez nil (takže pro String? musí být před tím !)
@@ -255,8 +256,8 @@ void rule_rela_equal(T_stack *stack)
     T_elem *l_op, *r_op;
     l_op = stack_get_val(stack, 2);
     r_op = stack_get_val(stack, 0);
-    if(!((l_op->symb == e_id || l_op->symb == e_num || l_op->symb == e_dbl || l_op->symb == e_str) && 
-    (r_op->symb == e_id || r_op->symb == e_num || r_op->symb == e_dbl || r_op->symb == e_str)))
+    if(!((l_op->symb == e_id || l_op->symb == e_num || l_op->symb == e_dbl || l_op->symb == e_str || l_op->symb == e_id_exc) && 
+    (r_op->symb == e_id || r_op->symb == e_num || r_op->symb == e_dbl || r_op->symb == e_str || r_op->symb == e_id_exc)))
     {
         fprintf(stderr, "ERROR: Syntax error, need 2 literals or ID as an operands\n");
         exit(SYN_ERROR);
@@ -269,7 +270,7 @@ void rule_rela_equal(T_stack *stack)
         stack_pop(stack);
         l_op->symb = e_bool;
     }
-    else if(l_op->symb == e_id || r_op->symb == e_id)
+    else if(l_op->symb == e_id || r_op->symb == e_id || l_op->symb == e_id_exc || r_op->symb == e_id_exc)
     {
         // TODO: potřeba Tabulky symbolů
         // můsí být také stejné typy (bez implicitní konverze) může být NIL type
@@ -290,8 +291,8 @@ void rule_nil_coal(T_stack *stack)
     T_elem *l_op, *r_op;
     l_op = stack_get_val(stack, 2);
     r_op = stack_get_val(stack, 0);
-    if(!((l_op->symb == e_id || l_op->symb == e_num || l_op->symb == e_dbl || l_op->symb == e_str) && 
-    (r_op->symb == e_id || r_op->symb == e_num || r_op->symb == e_dbl || r_op->symb == e_str)))
+    if(!((l_op->symb == e_id || l_op->symb == e_id_exc || l_op->symb == e_num || l_op->symb == e_dbl || l_op->symb == e_str) && 
+    (r_op->symb == e_id || r_op->symb == e_id_exc || r_op->symb == e_num || r_op->symb == e_dbl || r_op->symb == e_str)))
     {
         fprintf(stderr, "ERROR: Syntax error, need 2 literals or ID as an operands\n");
         exit(SYN_ERROR);
@@ -303,7 +304,7 @@ void rule_nil_coal(T_stack *stack)
         stack_pop(stack);
         l_op->symb = r_op->symb;
     }
-    else if(l_op->symb == e_id || r_op->symb == e_id)
+    else if(l_op->symb == e_id || r_op->symb == e_id || l_op->symb == e_id_exc || r_op->symb == e_id_exc)
     {
         // TODO: potřeba Tabulky symbolů
         stack_pop(stack);
@@ -363,7 +364,8 @@ void reduce_rule(T_stack *stack, T_elem *stack_top)
         break;
         
     case prec_exc:
-        /* code */
+        stack_top->symb = e_id_exc;
+        printf("%s, ", stack_top->value);
         break;
 
     // Závorka
@@ -419,17 +421,17 @@ const char preced_tab [20][20] = {
 { '>', '>', '>', '>', '<', '<', '>', '>', '>', '>', '>', '>', '>', '<', '<', '<', 'x', '>', '>'},// /
 { '>', '>', '>', '>', 'x', '<', '>', '>', '>', '>', '>', '>', '>', 'x', 'x', 'x', 'x', '>', '>'},// !
 { '<', '<', '<', '<', '<', '<', '=', '<', '<', '<', '<', '<', '<', '<', '<', '<', '<', '<', 'x'},// (
-{ '>', '>', '>', '>', '>', 'x', '>', '>', '>', '>', '>', '>', '>', 'x', 'x', 'x', 'x', '>', '>'},// )
+{ '>', '>', '>', '>', 'X', 'x', '>', '>', '>', '>', '>', '>', '>', 'x', 'x', 'x', 'x', '>', '>'},// )
 { '<', '<', '<', '<', '<', '<', '>', 'x', 'x', 'x', 'x', 'x', 'x', '<', '<', '<', '<', 'x', '>'},// <
 { '<', '<', '<', '<', '<', '<', '>', 'x', 'x', 'x', 'x', 'x', 'x', '<', '<', '<', '<', 'x', '>'},// <=
 { '<', '<', '<', '<', '<', '<', '>', 'x', 'x', 'x', 'x', 'x', 'x', '<', '<', '<', '<', 'x', '>'},// >
 { '<', '<', '<', '<', '<', '<', '>', 'x', 'x', 'x', 'x', 'x', 'x', '<', '<', '<', '<', 'x', '>'},// >=
 { '<', '<', '<', '<', '<', '<', '>', 'x', 'x', 'x', 'x', 'x', 'x', '<', '<', '<', '<', 'x', '>'},// ==
 { '<', '<', '<', '<', '<', '<', '>', 'x', 'x', 'x', 'x', 'x', 'x', '<', '<', '<', '<', 'x', '>'},// !=
-{ '>', '>', '>', '>', '>', 'x', '>', '>', '>', '>', '>', '>', '>', 'x', 'x', 'x', 'x', '>', '>'},// id
-{ '>', '>', '>', '>', '>', 'x', '>', '>', '>', '>', '>', '>', '>', 'x', 'x', 'x', 'x', '>', '>'},// int
-{ '>', '>', '>', '>', '>', 'x', '>', '>', '>', '>', '>', '>', '>', 'x', 'x', 'x', 'x', '>', '>'},// dbl
-{ '>', 'x', 'x', 'x', '>', 'x', '>', '>', '>', '>', '>', '>', '>', 'x', 'x', 'x', 'x', '>', '>'},// str
+{ '>', '>', '>', '>', 'X', 'x', '>', '>', '>', '>', '>', '>', '>', 'x', 'x', 'x', 'x', '>', '>'},// id
+{ '>', '>', '>', '>', 'X', 'x', '>', '>', '>', '>', '>', '>', '>', 'x', 'x', 'x', 'x', '>', '>'},// int
+{ '>', '>', '>', '>', 'X', 'x', '>', '>', '>', '>', '>', '>', '>', 'x', 'x', 'x', 'x', '>', '>'},// dbl
+{ '>', 'x', 'x', 'x', 'X', 'x', '>', '>', '>', '>', '>', '>', '>', 'x', 'x', 'x', 'x', '>', '>'},// str
 { '<', '<', '<', '<', '<', '<', '>', 'x', 'x', 'x', 'x', 'x', 'x', '<', '<', '<', '<', '<', '>'},// ??
 { '<', '<', '<', '<', '<', '<', 'x', '<', '<', '<', '<', '<', '<', '<', '<', '<', '<', '<', 'e'} // $
 };
