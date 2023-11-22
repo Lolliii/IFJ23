@@ -18,6 +18,11 @@ PARSER
 #include "parser_queue.h"
 #include "expr_parser.h"
 
+// Double, Int, String, ?
+bool IsType(T_token token);
+// numericke a retezcove literaly
+bool IsTerm(T_token token);
+
 // neterminaly z LL gramatiky
 bool prog(T_token token, T_queue *queue, FILE *file);
 bool st_list(T_token token, T_queue *queue, FILE *file);

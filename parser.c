@@ -11,288 +11,37 @@ PARSER
 
 #include "parser.h"
 
-// <prog> -> <st-list> 
-bool prog(T_token token, T_queue *queue, FILE *file) {
-    printf("<prog>\n");
-
-    //token = getToken(queue, file);
-    return st_list(token, queue, file);
-}
-
-// <st-list> -> <stat> <st-list>
-// <st-list> -> EOF
-bool st_list(T_token token, T_queue *queue, FILE *file) {
-    // EOF
-    printf("<st_list>\n");
-    if (token.type == TOKEN_EOF) {
-        printf("eof\n");
-        return true;
-    } else {
-        // <stat>
-        if (stat(token, queue, file))
-        {
-            // <st-list>
-            token = getToken(queue, file);
-            if (st_list(token, queue, file)) return true;
-        }
-    }
-//    printf("end st-list\n");
-    return false;
-}
-
-// <body> -> <stat> <body>
-// <body> -> eps
-bool body(T_token token, T_queue *queue, FILE *file) {
-    // <stat>
-    printf("<body>\n");
-    if (stat(token, queue, file))
-    {
-        // <body>
-        token = getToken(queue, file);
-        if (body(token, queue, file))
-        {
+bool IsTerm(T_token token){
+    switch(token.type){
+        case TOKEN_INT:
             return true;
-        }
-    // eps
-    } else {
-        printf("eps\n");
-
-        queue_add(queue, token);
-        return true;
+            break;
+        case TOKEN_INT_EXP:
+            return true;
+            break;
+        case TOKEN_INT_EXP_PM:
+            return true;
+            break;
+        case TOKEN_DOUBLE:
+            return true;
+            break;
+        case TOKEN_DOUBLE_EXP:
+            return true;
+            break;
+        case TOKEN_DOUBLE_EXP_PM:
+            return true;
+            break;
+        case TOKEN_STRING:
+            return true;
+            break;
+        case TOKEN_ML_STRING:
+            return true;
+            break;
+        default:
+            return false;
+            break;
     }
     return false;
-}
-
-// <stat> -> while <exp-stat> { <body> }                  
-// <stat> -> if <exp-stat> { <body> } else { <body> }            
-// <stat> -> func id ( <param-list> ) <f-type> { <body> }       
-// <stat> -> let id <id-type>                                  
-// <stat> -> var id <id-type>                                    
-// <stat> -> id <id-stat>   
-// <stat> -> return <ret-stat> 
-bool stat(T_token token, T_queue *queue, FILE *file) {
-    // <stat> -> while <exp-stat> { <body> }
-    printf("<stat>\n");
-
-    if (token.type == TOKEN_KW_WHILE)
-    {
-        printf("<while>\n");
-
-        // <exp-stat>
-        token = getToken(queue, file);
-        if (exp_stat(token, queue, file))
-        {
-            // {
-            token = getToken(queue, file);
-            if (token.type == TOKEN_L_CURL)
-            {
-            printf("{\n");
-
-                // <body>
-                token = getToken(queue, file);
-                if (body(token, queue, file))
-                {
-                    // }
-                    token = getToken(queue, file);
-                    if (token.type == TOKEN_R_CURL)
-                    {
-            printf("}\n");
-
-                        return true;
-                    }
-                }
-            }
-        }
-        return false;
-    
-    // <stat> -> if <exp-stat> { <body> } else { <body> }
-    } else if (token.type == TOKEN_KW_IF) {
-        printf("<if>\n");
-
-        // <exp-stat>
-        token = getToken(queue, file);
-        if (exp_stat(token, queue, file))
-        {
-
-
-            // {
-            token = getToken(queue, file);
-
-            if (token.type == TOKEN_L_CURL)
-            {
-            printf("{\n");
-
-                // <body>
-                token = getToken(queue, file);
-                if (body(token, queue, file))
-                {
-                    // }
-                    token = getToken(queue, file);
-                    if (token.type == TOKEN_R_CURL)
-                    {
-            printf("}\n");
-
-                        // else
-                        token = getToken(queue, file);
-                        if (token.type == TOKEN_KW_ELSE)
-                        {
-            printf("else\n");
-
-                            // {
-                            token = getToken(queue, file);
-                            if (token.type == TOKEN_L_CURL)
-                            {
-            printf("{\n");
-
-                                // <body>
-                                token = getToken(queue, file);
-                                if (body(token, queue, file))
-                                {
-                                    // }
-                                    token = getToken(queue, file);
-                                    if (token.type == TOKEN_R_CURL)
-                                    {
-            printf("}\n");
-
-                                        return true;
-                                    }
-                                }
-                            }
-                        }
-                    }
-                }
-            }
-        }
-        return false;
-    
-    // <stat> -> func id ( <param-list> ) <f-type> { <body> }
-    } else if (token.type == TOKEN_KW_FUNC) {
-        printf("<func>\n");
-
-        // id
-        token = getToken(queue, file);
-        if (token.type == TOKEN_ID)
-        {
-            printf("id\n");
-
-            // (
-            token = getToken(queue, file);
-            if (token.type == TOKEN_L_RND)
-            {
-                printf("(\n");
-
-                // <param-list>
-                token = getToken(queue, file);
-                if (param_list(token, queue, file))
-                {
-                    // )
-                    token = getToken(queue, file);
-                    if (token.type == TOKEN_R_RND)
-                    {
-                        printf(")\n");
-
-                        // <f-type>
-                        token = getToken(queue, file);
-                        if (f_type(token, queue, file))
-                        {
-                            // {
-                            token = getToken(queue, file);
-                            if (token.type == TOKEN_L_CURL)
-                            {
-                                printf("{\n");
-
-                                // <body>
-                                token = getToken(queue, file);
-                                if (body(token, queue, file))
-                                {
-                                    // }
-                                    token = getToken(queue, file);
-                                    if (token.type == TOKEN_R_CURL)
-                                    {
-                                        printf("}\n");
-                                        return true;
-                                    }
-                                }
-                            }
-                        }
-                    }
-                }
-            }
-        }
-        return false;
-        
-    // <stat> -> let id <id-type>
-    } else if (token.type == TOKEN_KW_LET) {
-        printf("let\n");
-
-        // id
-        token = getToken(queue, file);
-        if (token.type == TOKEN_ID)
-        {
-            printf("id\n");
-
-            // <id-type>
-            token = getToken(queue, file);
-            if(id_type(token, queue, file)) return true;
-        }
-        return false;
-        
-    // <stat> -> var id <id-type>
-    } else if (token.type == TOKEN_KW_VAR) {
-        printf("var\n");
-
-
-        // id
-        token = getToken(queue, file);
-
-
-        if (token.type == TOKEN_ID)
-        {
-        printf("id\n");
-
-            // <id-type>
-            token = getToken(queue, file);
-            if(id_type(token, queue, file)) return true;
-        }
-        return false;
-        
-    // <stat> -> id <id-stat>
-    } else if (token.type == TOKEN_ID) {
-        printf("id\n");
-
-        // <id-stat>
-        token = getToken(queue, file);
-        if(id_stat(token, queue, file)) return true;
-        
-        return false;
-    // <stat> -> return <ret-stat>
-    } else if (token.type == TOKEN_KW_RETURN) {
-        printf("return\n");
-
-        // <ret_stat>
-        token = getToken(queue, file);
-        if(ret_stat(token, queue, file)) return true;
-
-        return false;
-    }
-
-    return false;
-}
-
-// <ret-stat> -> <exp>
-// <ret-stat> -> eps
-bool ret_stat(T_token token, T_queue *queue, FILE *file) {
-    printf("<ret_stat>\n");
-
-    printf("<expr>\n");
-    if (token.type == TOKEN_INT || token.type == TOKEN_INT_EXP || token.type == TOKEN_INT_EXP_PM || token.type == TOKEN_DOUBLE || token.type == TOKEN_DOUBLE_EXP || token.type == TOKEN_DOUBLE_EXP_PM || token.type == TOKEN_STRING || token.type == TOKEN_ML_STRING || token.type == TOKEN_ID || token.type == TOKEN_ID_EM || token.type == TOKEN_R_CURL || token.type == TOKEN_L_RND)
-    {
-        queue_add(queue, token);
-    }
-
-    expr_parser(file, queue);
-    printf("<expr good>\n");
-    return true;
 }
 
 bool IsType(T_token token){
@@ -322,30 +71,249 @@ bool IsType(T_token token){
     return false;
 }
 
+// <prog> -> <st-list> 
+bool prog(T_token token, T_queue *queue, FILE *file) {
+    return st_list(token, queue, file);
+}
+
+// <st-list> -> <stat> <st-list>
+// <st-list> -> EOF
+bool st_list(T_token token, T_queue *queue, FILE *file) {
+    // EOF
+    if (token.type == TOKEN_EOF) {
+        return true;
+    } else {
+        // <stat>
+        if (stat(token, queue, file))
+        {
+            // <st-list>
+            token = getToken(queue, file);
+            if (st_list(token, queue, file)) return true;
+        }
+    }
+    return false;
+}
+
+// <body> -> <stat> <body>
+// <body> -> eps
+bool body(T_token token, T_queue *queue, FILE *file) {
+    // <stat>
+    if (stat(token, queue, file))
+    {
+        // <body>
+        token = getToken(queue, file);
+        if (body(token, queue, file))
+        {
+            return true;
+        }
+    // eps
+    } else {
+        queue_add(queue, token);
+        return true;
+    }
+    return false;
+}
+
+// <stat> -> while <exp-stat> { <body> }                  
+// <stat> -> if <exp-stat> { <body> } else { <body> }            
+// <stat> -> func id ( <param-list> ) <f-type> { <body> }       
+// <stat> -> let id <id-type>                                  
+// <stat> -> var id <id-type>                                    
+// <stat> -> id <id-stat>   
+// <stat> -> return <ret-stat> 
+bool stat(T_token token, T_queue *queue, FILE *file) {
+    // <stat> -> while <exp-stat> { <body> }
+    if (token.type == TOKEN_KW_WHILE)
+    {
+        // <exp-stat>
+        token = getToken(queue, file);
+        if (exp_stat(token, queue, file))
+        {
+            // {
+            token = getToken(queue, file);
+            if (token.type == TOKEN_L_CURL)
+            {
+                // <body>
+                token = getToken(queue, file);
+                if (body(token, queue, file))
+                {
+                    // }
+                    token = getToken(queue, file);
+                    if (token.type == TOKEN_R_CURL)
+                    {
+                        return true;
+                    }
+                }
+            }
+        }
+        return false;
+    
+    // <stat> -> if <exp-stat> { <body> } else { <body> }
+    } else if (token.type == TOKEN_KW_IF) {
+        // <exp-stat>
+        token = getToken(queue, file);
+        if (exp_stat(token, queue, file))
+        {
+            // {
+            token = getToken(queue, file);
+            if (token.type == TOKEN_L_CURL)
+            {
+                // <body>
+                token = getToken(queue, file);
+                if (body(token, queue, file))
+                {
+                    // }
+                    token = getToken(queue, file);
+                    if (token.type == TOKEN_R_CURL)
+                    {
+                        // else
+                        token = getToken(queue, file);
+                        if (token.type == TOKEN_KW_ELSE)
+                        {
+                            // {
+                            token = getToken(queue, file);
+                            if (token.type == TOKEN_L_CURL)
+                            {
+                                // <body>
+                                token = getToken(queue, file);
+                                if (body(token, queue, file))
+                                {
+                                    // }
+                                    token = getToken(queue, file);
+                                    if (token.type == TOKEN_R_CURL)
+                                    {
+                                        return true;
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        return false;
+    
+    // <stat> -> func id ( <param-list> ) <f-type> { <body> }
+    } else if (token.type == TOKEN_KW_FUNC) {
+        // id
+        token = getToken(queue, file);
+        if (token.type == TOKEN_ID)
+        {
+            // (
+            token = getToken(queue, file);
+            if (token.type == TOKEN_L_RND)
+            {
+                // <param-list>
+                token = getToken(queue, file);
+                if (param_list(token, queue, file))
+                {
+                    // )
+                    token = getToken(queue, file);
+                    if (token.type == TOKEN_R_RND)
+                    {
+                        // <f-type>
+                        token = getToken(queue, file);
+                        if (f_type(token, queue, file))
+                        {
+                            // {
+                            token = getToken(queue, file);
+                            if (token.type == TOKEN_L_CURL)
+                            {
+                                // <body>
+                                token = getToken(queue, file);
+                                if (body(token, queue, file))
+                                {
+                                    // }
+                                    token = getToken(queue, file);
+                                    if (token.type == TOKEN_R_CURL)
+                                    {
+                                        return true;
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        return false;
+        
+    // <stat> -> let id <id-type>
+    } else if (token.type == TOKEN_KW_LET) {
+        // id
+        token = getToken(queue, file);
+        if (token.type == TOKEN_ID)
+        {
+            // <id-type>
+            token = getToken(queue, file);
+            if(id_type(token, queue, file)) return true;
+        }
+        return false;
+        
+    // <stat> -> var id <id-type>
+    } else if (token.type == TOKEN_KW_VAR) {
+        // id
+        token = getToken(queue, file);
+        if (token.type == TOKEN_ID)
+        {
+            // <id-type>
+            token = getToken(queue, file);
+            if(id_type(token, queue, file)) return true;
+        }
+        return false;
+        
+    // <stat> -> id <id-stat>
+    } else if (token.type == TOKEN_ID) {
+        // <id-stat>
+        token = getToken(queue, file);
+        if(id_stat(token, queue, file)) return true;
+        
+        return false;
+
+    // <stat> -> return <ret-stat>
+    } else if (token.type == TOKEN_KW_RETURN) {
+        // <ret_stat>
+        token = getToken(queue, file);
+        if(ret_stat(token, queue, file)) return true;
+
+        return false;
+    }
+    return false;
+}
+
+// <ret-stat> -> <exp>
+// <ret-stat> -> eps
+bool ret_stat(T_token token, T_queue *queue, FILE *file) {
+    // <exp>
+    if (IsTerm(token) || token.type == TOKEN_ID || token.type == TOKEN_ID_EM || token.type == TOKEN_R_CURL || token.type == TOKEN_L_RND)
+    {
+        queue_add(queue, token);
+    }
+    expr_parser(file, queue);
+    
+    return true;
+}
+
 //<id-type> -> : type <assign>
 //<id-type> -> = <call>
 bool id_type(T_token token, T_queue *queue, FILE *file){
-    printf("<id_type>\n");
-    
+    // :    
     if(token.type == TOKEN_COLON)
     {
-        printf(":\n");
+        // type
         T_token tmp = getToken(queue, file);
         if (IsType(tmp))
         {
-            printf("type\n");
+            // <assign>
             T_token next_token = getToken(queue, file);
             return assign(next_token, queue, file);
         }
-        
+    // =
     }else if(token.type == TOKEN_ASSIGN){
-        printf("=\n");
-
+        // <call>
         token = getToken(queue, file);
-
         return call(token, queue, file);
-
-    }else{  
+    }else{
         return false;
     }
     return false;
@@ -354,15 +322,13 @@ bool id_type(T_token token, T_queue *queue, FILE *file){
 // <assign> -> = <call>
 // <assign> -> eps
 bool assign(T_token token, T_queue *queue, FILE *file){
-    printf("<assign>\n");
+    // =
     if(token.type == TOKEN_ASSIGN){
-        printf("=\n");
-
+        // <call>
         T_token next_token = getToken(queue, file);
         return call(next_token, queue, file);
-    }else{//moze tam byt hocico
-        printf("eps\n");
-
+    // eps
+    }else{
         queue_add(queue, token);
         return true;
     }
@@ -372,26 +338,19 @@ bool assign(T_token token, T_queue *queue, FILE *file){
 //<id-stat> -> = <call>
 //<id-stat> –> ( <term-list> )
 bool id_stat(T_token token, T_queue *queue, FILE *file){
-    printf("<id_stat>\n");
     // =
     if(token.type == TOKEN_ASSIGN){
-        printf("=\n");
-
         // <call>
         T_token next_token = getToken(queue, file);
         return call(next_token, queue, file);
     // (
     }else if(token.type == TOKEN_L_RND){
-        printf("(\n");
-
         // <term-list>
         T_token next_token = getToken(queue, file);
         if(term_list(next_token, queue, file)){
             // )
             token = getToken(queue, file);
             if(token.type == TOKEN_R_RND){
-                printf(")\n");
-
                 return true;
             }
         }
@@ -405,19 +364,14 @@ bool id_stat(T_token token, T_queue *queue, FILE *file){
 // <call> -> id ( <term-list> )
 // <call> -> <exp>
 bool call(T_token token, T_queue *queue, FILE *file){
-    printf("<call>\n");
     // id
     if(token.type == TOKEN_ID){
-        printf("id\n");
+        // kouknu dopredu na dalsi token
         T_token tmp = getToken(queue, file);
-
-        // id (
-        // kouknu na dopredu na dalsi token
+        // id ( --> volani funkce
         if (tmp.type == TOKEN_L_RND)
         {
             token = tmp;
-            printf("(\n");
-
             // <term-list>
             token = getToken(queue, file);
             if(term_list(token, queue, file))
@@ -425,8 +379,6 @@ bool call(T_token token, T_queue *queue, FILE *file){
                 // )
                 token = getToken(queue, file);
                 if(token.type == TOKEN_R_RND){
-                    printf(")\n");
-
                     return true;
                 }
             }
@@ -437,49 +389,18 @@ bool call(T_token token, T_queue *queue, FILE *file){
         } else {
             queue_add(queue, token);
             queue_add(queue, tmp);
-            
-            printf("<expr>\n");
-            expr_parser(file, queue);
-            printf("<expr good>\n");
 
+            expr_parser(file, queue);
             return true;
         }
         return false;
     // <exp>
     }else{
-        printf("<exp>\n");
-
-        if (token.type == TOKEN_INT || token.type == TOKEN_INT_EXP || token.type == TOKEN_INT_EXP_PM || token.type == TOKEN_DOUBLE || token.type == TOKEN_DOUBLE_EXP || token.type == TOKEN_DOUBLE_EXP_PM || token.type == TOKEN_STRING || token.type == TOKEN_ML_STRING || token.type == TOKEN_ID || token.type == TOKEN_ID_EM || token.type == TOKEN_L_RND)
+        if (IsTerm(token) || token.type == TOKEN_ID || token.type == TOKEN_ID_EM || token.type == TOKEN_L_RND)
         {
             queue_add(queue, token);
-
         }
-
-// token = getToken(queue, file);
-// printTokenName(token);
-// printf("\n");
-
-// token = getToken(queue, file);
-// printTokenName(token);
-// printf("\n");
-
-// token = getToken(queue, file);
-// printTokenName(token);
-// printf("\n");
-
-// token = getToken(queue, file);
-// printTokenName(token);
-// printf("\n");
-
-// token = getToken(queue, file);
-// printTokenName(token);
-// printf("\n");
-
-
-
         expr_parser(file, queue);
-        printf("<expr good>\n");
-
         return true;
     }
     return false;
@@ -488,28 +409,22 @@ bool call(T_token token, T_queue *queue, FILE *file){
 // <exp-stat> -> <exp>
 // <exp-stat> -> let id
 bool exp_stat(T_token token, T_queue *queue, FILE *file){
-    printf("<exp_stat>\n");
+    // let
     if(token.type == TOKEN_KW_LET){
-        printf("let\n");
-
+        // id
         T_token tmp = getToken(queue, file);
         if(tmp.type == TOKEN_ID){
-            printf("id\n");
-
             return true;
         }
         return false;
+    // <exp>
     }else{
-        printf("<exp>\n");
-
-        if (token.type == TOKEN_L_RND || token.type == TOKEN_INT || token.type == TOKEN_INT_EXP || token.type == TOKEN_INT_EXP_PM || token.type == TOKEN_DOUBLE || token.type == TOKEN_DOUBLE_EXP || token.type == TOKEN_DOUBLE_EXP_PM || token.type == TOKEN_STRING || token.type == TOKEN_ML_STRING || token.type == TOKEN_ID || token.type == TOKEN_ID_EM || token.type == TOKEN_L_RND)
+        if (IsTerm(token) || token.type == TOKEN_ID || token.type == TOKEN_ID_EM || token.type == TOKEN_L_RND)
         {
             queue_add(queue, token);
         }
         
         expr_parser(file, queue);
-        printf("<expr good>\n");
-
         return true;
     }
     return false;
@@ -518,24 +433,18 @@ bool exp_stat(T_token token, T_queue *queue, FILE *file){
 // <term-list> -> <term> <t-list>
 // <term-list> -> eps
 bool term_list(T_token token, T_queue *queue, FILE *file) {
-    printf("<term_list>\n");
     // <term>
     if (term(token, queue, file))
     {
-        printf("<t-list>\n");
-
         // <t-list>
         token = getToken(queue, file);
         return t_list(token, queue, file);
     // eps
     } else {
-        printf("eps\n");
-
         if (token.type == TOKEN_R_RND)
         {
             queue_add(queue, token);
         }
-
         return true;
     }
     return false;
@@ -544,25 +453,18 @@ bool term_list(T_token token, T_queue *queue, FILE *file) {
 // <t-list> -> , <term> <t-list>
 // <t-list> -> eps 
 bool t_list(T_token token, T_queue *queue, FILE *file) {
-    printf("<t_list>\n");
     // ,
     if (token.type == TOKEN_COMMA)
     {
-        printf(",\n");
-
         // <term>
         token = getToken(queue, file);
         if (term(token, queue, file)) {
-            printf("<t-list\n");
-
             // <t-list>
             token = getToken(queue, file);
             return t_list(token, queue, file);
         }
     // eps
     } else {
-        printf("eps\n");
-
         queue_add(queue, token);
         return true;
     }
@@ -572,18 +474,14 @@ bool t_list(T_token token, T_queue *queue, FILE *file) {
 // <term> -> lit
 // <term> -> id <term-name>
 bool term(T_token token, T_queue *queue, FILE *file){
-    printf("<term>\n");
     // id
     if (token.type == TOKEN_ID) {
-        printf("id\n");
-
         // <term-name>
         token = getToken(queue, file);
         return term_name(token, queue, file);
 
     // lit
-    } else if (token.type == TOKEN_INT || token.type == TOKEN_INT_EXP || token.type == TOKEN_INT_EXP_PM || token.type == TOKEN_DOUBLE || token.type == TOKEN_DOUBLE_EXP || token.type == TOKEN_DOUBLE_EXP_PM || token.type == TOKEN_STRING || token.type == TOKEN_ML_STRING || token.type == TOKEN_KW_NIL) {
-        printf("lit\n");
+    } else if (IsTerm(token) || token.type == TOKEN_KW_NIL) {
         return true;
     } else {
         return false;
@@ -594,51 +492,37 @@ bool term(T_token token, T_queue *queue, FILE *file){
 // <term-name> -> : val
 // <term-name> -> eps 
 bool term_name(T_token token, T_queue *queue, FILE *file) {
-    printf("<term-name>\n");
-
     // :
     if (token.type == TOKEN_COLON)
     {
-        printf(":\n");
-
         // value
         token = getToken(queue, file);
-        if(token.type == TOKEN_INT || token.type == TOKEN_INT_EXP || token.type == TOKEN_INT_EXP_PM || token.type == TOKEN_DOUBLE || token.type == TOKEN_DOUBLE_EXP || token.type == TOKEN_DOUBLE_EXP_PM || token.type == TOKEN_STRING || token.type == TOKEN_ML_STRING || token.type == TOKEN_ID) {
-            printf("value\n");
+        if(IsTerm(token) || token.type == TOKEN_ID) {
             return true;
         }
     // eps
     } else {
-        printf("eps\n");
         queue_add(queue, token);
         return true;
     }
-    
     return false;
 }
 
 // <f-type> -> -> type
 // <f-type> -> eps  
 bool f_type(T_token token, T_queue *queue, FILE *file) {
-    printf("<f_type>\n");
     // ->
     if (token.type == TOKEN_FUNCTION_TYPE)
     {
-        printf("->\n");
-
         // type - Double, Int, String, ?
         token = getToken(queue, file);
-        if (token.type == TOKEN_KW_DOUBLE || token.type == TOKEN_KW_INT || token.type == TOKEN_KW_STRING || token.type == TOKEN_TYPE_FLOAT || token.type == TOKEN_TYPE_INT || token.type == TOKEN_TYPE_STRING)
+        if (IsType(token))
         {
-            printf("type\n");
-
             return true;
         }
         return false;
     // eps
     } else {
-        printf("eps\n");
-
         queue_add(queue, token);
         return true;
     }   
@@ -648,19 +532,14 @@ bool f_type(T_token token, T_queue *queue, FILE *file) {
 // <param-list> -> <param> <p-list>
 // <param-list> -> eps
 bool param_list(T_token token, T_queue *queue, FILE *file) {
-    printf("<parm_list>\n");
     // <param>
     if (param(token, queue, file))
     {
-        printf("<p-list>\n");
-
         // <p-list>
         token = getToken(queue, file);
         return p_list(token, queue, file);
     // eps
     } else {
-        printf("eps\n");
-
         queue_add(queue, token);
         return true;
     }
@@ -670,7 +549,6 @@ bool param_list(T_token token, T_queue *queue, FILE *file) {
 // <p-list> -> , <param> <p-list>
 // <p-list> -> eps
 bool p_list(T_token token, T_queue *queue, FILE *file){
-    printf("<p_list>\n");
     // ,
     if (token.type == TOKEN_COMMA)
     {
@@ -692,8 +570,7 @@ bool p_list(T_token token, T_queue *queue, FILE *file){
 
 // <param> -> p-name id : type
 bool param(T_token token, T_queue *queue, FILE *file){
-    printf("<param>\n");
-    // p-name
+    // p-name, _
     if (token.type == TOKEN_ID || token.type == TOKEN_UNDERSCORE)
     {
         // id
@@ -704,9 +581,9 @@ bool param(T_token token, T_queue *queue, FILE *file){
             token = getToken(queue, file);
             if (token.type == TOKEN_COLON)
             {
+                // type - Double, Int, String, ?
                 token = getToken(queue, file);
-
-                if (token.type == TOKEN_KW_DOUBLE || token.type == TOKEN_KW_STRING || token.type == TOKEN_KW_INT || token.type == TOKEN_TYPE_FLOAT || token.type == TOKEN_TYPE_INT || token.type == TOKEN_TYPE_STRING)
+                if (IsType(token))
                 {
                     return true;
                 }

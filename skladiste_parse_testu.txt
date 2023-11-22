@@ -1,16 +1,20 @@
-//_______________TODO LIST___________
+/*_______________TODO LIST___________
 
         // neprochází funkce s ??
         ???? str = funkce() ?? 123
 
-        // epression parser chyba, nebere 2 leve zavorky
-        var id = ((d))
-
-//________ END TODO LIST ___________
+________ END TODO LIST ___________ */
 
 
+// - spustit --> ./prog skladiste_parse.txt
+// - nefunguje na macu, na merlinovi to ficiiii
+//       var a = ((d))
 
-// ___ kombinace vseho____
+
+
+// -- pod timto nam funguje vse ---
+
+// ______________ kombinace vseho
         func void2(){
             return
         }
@@ -114,9 +118,6 @@ let vysl = factorial(inp)
         } else {
 write("Chyba pri nacitani celeho cisla!")
 }
-
-
-// toto nam funguje
 //____________________ volani void funkce
 
         voidfunkce1()
