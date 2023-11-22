@@ -119,7 +119,7 @@ void rule_plus(T_stack *stack)
         // musí být stejné typy, bez konverze (Int Int, Dbl Dbl, Str Str)
         // Pro typy s nil ? potřeba předtím operátor !
         printf("+ ");
-        l_op->symb = e_dbl;
+        l_op->symb = e_id;
     }
     else
     {
@@ -156,7 +156,7 @@ void rule_min_mul(T_stack *stack)
         // TODO
         // musí být stejné typy, bez konverze (Int Int, Dbl Dbl, Str Str)
         // Pro typy s nil ? potřeba předtím operátor !
-        l_op->symb = e_dbl;
+        l_op->symb = e_id;
     }
     else
     {
@@ -194,7 +194,7 @@ void rule_div(T_stack *stack)
         // TODO
         // musí být stejné typy, bez konverze (Int Int, Dbl Dbl, Str Str)
         // Pro typy s nil ? potřeba předtím operátor !
-        l_op->symb = e_dbl;
+        l_op->symb = e_id;
     }
     else
     {
@@ -329,6 +329,7 @@ void reduce_rule(T_stack *stack, T_elem *stack_top)
         printf("* ");
         break;
     case prec_divi:
+        printf("/ ");
         rule_div(stack);
         break;
         
