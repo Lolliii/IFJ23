@@ -1,45 +1,130 @@
 //_______________TODO LIST___________
 
-        /*
-        - pri <assign> se zavola <call> a ten nevi, zda to je 
-            expression nebo funkce, zatim neopraveno
-        - problem nalezen jen u :
-                    LET id = id + 123
-                    VAR id = id 
-        */
-        let x = x + y 
+        // neprochází funkce s ??
+        ???? str = funkce() ?? 123
 
-
-
-
-        //  - func volani nezvlada
-        voidfunkce1()
-        funkce(
-        )
-        da(fasdf)
-
-
-        //  - pri teto funkci samotne neni problem, ale když je  za ním
-        //    nějaky dalsi statement, tak to padá
-        func void2(){
-            return
-        }
-        var a = 2
-
-
-        // - chyba na strane expressionu, po přiřazení nepozna,
-        //   zda je dalsi statement nebo pokracovani vyrazu
-        c = 123432
-        d= a
-
+        // epression parser chyba, nebere 2 leve zavorky
+        var id = ((d))
 
 //________ END TODO LIST ___________
 
 
 
+// ___ kombinace vseho____
+        func void2(){
+            return
+        }
+        var a = 2
+    adsfS()
+
+    a= asd * DSa / ASD + 243.3
+
+while let id{
+
+    var s : String?
+
+}
+
+func bar(with param : String) -> String {
+    let r : String = foo(param)
+    return r
+}
+func foo(_ par : String) -> String {
+    let ret = bar(with: par)
+return ret }
+bar(with: "ahoj")
+
+
+  func concat(_ x : String, with y : String) -> String {
+      let x = x + y
+      return x + " " + y
+  }
+  let a = "ahoj "
+  var ct : String
+  ct = concat(a, with: "svete")
+  write(ct, a)
+
+func readString() -> String? {}func readInt() -> Int?{}
+func readDouble() -> Double?{}
+
+// Program 1: Vypocet faktorialu (iterativne)
+/* Hlavni telo programu */
+write("Zadejte cislo pro vypocet faktorialu\n")
+let a : Int? = readInt()
+if let a {
+        if (a < 0) {write("Faktorial nelze spocitat\n")
+        } else {
+} } else {
+}
+var a = Int2Double(a)
+var vysl : Double = 1
+while (a > 0) {
+vysl = vysl * a a=a-1
+}
+write("Vysledek je: ", vysl, "\n")
+write("Chyba pri nacitani celeho cisla!\n")
+
+
+/* Program 3: Prace s retezci a vestavenymi funkcemi */
+var str1 = "Toto je nejaky text v programu jazyka IFJ23"
+let str2 = str1 + ", ktery jeste trochu obohatime"
+write(str1, "\n", str2, "\n")
+let i = length(str1)
+write("Pozice retezce \"text\" v str2: ", i, "\n")
+write("Zadejte serazenou posloupnost vsech malych pismen a-h, ")
+let newInput = readString()
+if let newInput {
+        str1 = newInput
+        while (str1 != "abcdefgh") {
+                write("Spatne zadana posloupnost, zkuste znovu:\n")
+                str1 = "" ?? readString
+} }else{}
+
+
+// Program 2: Vypocet faktorialu (rekurzivne)
+// Hlavni telo programu
+write("Zadejte cislo pro vypocet faktorialu: ")
+let inp = readInt()
+// pomocna funkce pro dekrementaci celeho cisla o zadane cislo
+func decrement(of n: Int, by m: Int) -> Int {
+        return n - m
+}
+// Definice funkce pro vypocet hodnoty faktorialu
+func factorial(_ n : Int) -> Int {
+        var result : Int?
+}
+if (n < 2) {
+        result = 1
+} else {
+        let decremented_n = decrement(of: n, by: 1)
+        let temp_result = factorial(decremented_n)
+        result = n * temp_result
+}
+return result!
+// pokracovani hlavniho tela programu
+if let inp {
+        if (inp < 0)    { // Pokracovani hlavniho tela programu
+                write("Faktorial nelze spocitat!")
+        } else {
+let vysl = factorial(inp)
+
+} 
+
+        write("Vysledek je: ", vysl)
+        } else {
+write("Chyba pri nacitani celeho cisla!")
+}
 
 
 // toto nam funguje
+//____________________ volani void funkce
+
+        voidfunkce1()
+    funkce(
+    
+)
+        da(fasdf)
+ASFS( "asdf", nil, 123, 3454.4)
 
 // ________________ přiřazení do id
         let x = 
@@ -48,10 +133,44 @@
 var a = fknk()
 var b : Int = 12
 var c = x + b
-let saf= 234* SDFds
-c = 123432
-d= "sdfsd" + "fwfwe"
+let saf= 234* 234.23
+a = d
+   var ds=    voidfunkce1()
+           c = 123432
+        d= a
 
+let a = sdf("sdS")
+
+
+// Program 2: Vypocet faktorialu (rekurzivne)
+// Hlavni telo programu
+write("Zadejte cislo pro vypocet faktorialu: ")
+let inp = readInt()
+// pomocna funkce pro dekrementaci celeho cisla o zadane cislo
+func decrement(of n: Int, by m: Int) -> Int {
+        return n - m
+}
+// Definice funkce pro vypocet hodnoty faktorialu
+func factorial(_ n : Int) -> Int {
+        var result : Int?
+}
+if (n < 2) {
+        result = 1
+} else {
+        let decremented_n = decrement(of: n, by: 1)
+        let temp_result = factorial(decremented_n)
+        result = n * temp_result
+}
+return result!
+
+
+// pokracovani hlavniho tela programu
+if let inp {
+        if (inp < 0)    { // Pokracovani hlavniho tela programu
+                write("Faktorial nelze spocitat!")
+        } else {
+let vysl = factorial(inp)
+        }}else{}
 
 //________________prazdny program
 
@@ -222,7 +341,7 @@ func fid2 (_ x : Int, with y : String?)    {
     return x
 }
 func fid3 (dasd x : Int?, with y : String) {
-    return x
+    return 
 }
 func fid4 () -> String {
     let x = 234.234 + y
