@@ -238,9 +238,6 @@ bool stat(T_token token, T_queue *queue, FILE *file) {
         {
             printf("id\n");
 
-// printTokenName(token);
-// printf("\n");
-
             // <id-type>
             token = getToken(queue, file);
             if(id_type(token, queue, file)) return true;
@@ -269,9 +266,6 @@ bool stat(T_token token, T_queue *queue, FILE *file) {
     // <stat> -> id <id-stat>
     } else if (token.type == TOKEN_ID) {
         printf("id\n");
-        
-// printTokenName(token);
-// printf("\n");
 
         // <id-stat>
         token = getToken(queue, file);
@@ -349,9 +343,6 @@ bool IsType(T_token token){
 bool id_type(T_token token, T_queue *queue, FILE *file){
     printf("<id_type>\n");
     
-// printTokenName(token);
-// printf("\n");
-
     //T_token tmp = getToken(queue, file);
     if(token.type == TOKEN_COLON)
     {
@@ -373,6 +364,7 @@ bool id_type(T_token token, T_queue *queue, FILE *file){
         
         // printf("<expr good>\n");
         token = getToken(queue, file);
+
         return call(token, queue, file);
 
     }else{  
@@ -433,14 +425,13 @@ bool call(T_token token, T_queue *queue, FILE *file){
     // id
     if(token.type == TOKEN_ID){
         printf("id\n");
+        T_token tmp = getToken(queue, file);
 
-// printTokenName(token);
-// printf("\n");
-
-        // (
-        token = getToken(queue, file);
-        if( token.type == TOKEN_L_RND)
+        // id (
+        // kouknu na dopredu na dalsi token
+        if (tmp.type == TOKEN_L_RND)
         {
+            token = tmp;
             printf("(\n");
 
             // <term-list>
@@ -455,19 +446,21 @@ bool call(T_token token, T_queue *queue, FILE *file){
                     return true;
                 }
             }
-        // is not a function, will do <exp>
+            return false;
+
+        // neni to volani funkce --> je to vyraz
+        // id <exp>
         } else {
-            printf("<exp>\n");
             queue_add(queue, token);
+            queue_add(queue, tmp);
             
+            printf("<expr>\n");
             expr_parser(file, queue);
             printf("<expr good>\n");
 
-// printTokenName(token);
-// printf("\n");
+            return true;
         }
         return false;
-
     // <exp>
     }else{
         printf("<exp>\n");

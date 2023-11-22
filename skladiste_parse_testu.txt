@@ -29,6 +29,12 @@
         var a = 2
 
 
+        // - chyba na strane expressionu, po přiřazení nepozna,
+        //   zda je dalsi statement nebo pokracovani vyrazu
+        c = 123432
+        d= a
+
+
 //________ END TODO LIST ___________
 
 
@@ -36,6 +42,19 @@
 
 
 // toto nam funguje
+
+// ________________ přiřazení do id
+        let x = 
+        x + y 
+
+var a = fknk()
+var b : Int = 12
+var c = x + b
+let saf= 234* SDFds
+c = 123432
+d= "sdfsd" + "fwfwe"
+
+
 //________________prazdny program
 
 //EOF
