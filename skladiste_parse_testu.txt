@@ -1,6 +1,47 @@
+//_______________TODO LIST___________
+
+        /*
+        - pri <assign> se zavola <call> a ten nevi, zda to je 
+            expression nebo funkce, zatim neopraveno
+        - problem nalezen jen u :
+                    LET id = id + 123
+                    VAR id = id 
+        */
+        let x = x + y 
+
+
+        // problem s id?
+        while(432+3239236232/f*32 < 5){}
+
+
+        //  - func volani nezvlada
+        voidfunkce1()
+        funkce(
+        )
+        da(fasdf)
+
+
+        //  - pri teto funkci samotne neni problem, ale když je  za ním
+        //    nějaky dalsi statement, tak to padá
+        func void2(){
+            return
+        }
+        var a = 2
+
+
+//________ END TODO LIST ___________
+
+
+
+
+
+// toto nam funguje
 //________________prazdny program
+
 //EOF
+
 //________________let deklarace
+
 let id1 : String
 let      id2 : String?
 let id3 :     Int
@@ -10,7 +51,9 @@ let id5
  : Double
 let 
 id6 : Double?
+
 //________________ let definice
+
 let id1 : String = "ahoj"
 let      id2 : String? = "ASD saddsad dsa"
 let id3 :     Int = 23432
@@ -27,9 +70,9 @@ let id9 = 23432
 let id10 = 432
 let id11
   = 234.32
-let 
-id12 = nil
+
 //________________var deklarace
+
 var id1 : String
 var      id2 : String?
 var id3 :     Int
@@ -39,7 +82,9 @@ var id5
  : Double
 var 
 id6 : Double?
+
 //________________var definice
+
 var id1 : String = "ahoj"
 var      id2 : String? = "ASD saddsad dsa"
 var id3 :     Int = 23432
@@ -56,30 +101,111 @@ var id9 = 23432
 var id10 = 432
 var id11
   = 234.32
-var 
-id12 = nil
-//________________func deklarace
-func id1 () {
-    
+
+
+if (
+    43<=id
+    ){}else{}
+//________________if else
+
+if let a {
+
+}else{
+
 }
-//________________
-//________________
-//________________
-//________________
-//________________
-//________________
-//________________
-//________________
-//________________
-//________________
-//________________
-//________________
-//________________
-//________________
-//________________
-//________________
-//________________
-//________________
-//________________
-//________________
-//________________
+
+if (2){
+
+}else{
+
+}
+
+if let
+a 
+{
+
+}
+else{}
+
+if 242-132{
+
+}else{
+
+}
+
+if 123+13 -
+ 55 >= 12{}else{}
+
+if (34230 == 4-1+3*id){
+
+}else{}
+
+if (
+    42 != a
+    ){}else{}
+
+if "as" == "jj" {
+
+}else{}
+
+
+//________________while funkce
+
+while let a{
+
+}
+
+while "asd"
+{}
+
+while a{
+
+}
+
+while( a < 2){}
+
+while(1-2){
+}
+
+while 22==3{}
+
+while 2-f+4{}
+
+while f{}
+
+while 2 < 3{}
+
+while l >= 3{
+
+}
+
+while (f){}
+while(f>= h){}
+
+while
+(
+    asdf
+    +
+    afd
+){}
+
+//________________func deklarace
+
+
+func void1(){
+}
+func fid1 (_ x : String, with y : String) -> String {
+    let x = 2 + y
+    return x + y
+}
+func fid2 (_ x : Int, with y : String?)    {
+    let x = "sad" + y
+    return x
+}
+func fid3 (dasd x : Int?, with y : String) {
+    return x
+}
+func fid4 () -> String {
+    let x = 234.234 + y
+    return x
+}

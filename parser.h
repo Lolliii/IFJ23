@@ -32,6 +32,7 @@ bool exp_stat(T_token token, T_queue *queue, FILE *file);
 bool term_list(T_token token, T_queue *queue, FILE *file);
 bool t_list(T_token token, T_queue *queue, FILE *file);
 bool term(T_token token, T_queue *queue, FILE *file);
+bool term_name(T_token token, T_queue *queue, FILE *file);
 bool f_type(T_token token, T_queue *queue, FILE *file);
 bool param_list(T_token token, T_queue *queue, FILE *file);
 bool p_list(T_token token, T_queue *queue, FILE *file);

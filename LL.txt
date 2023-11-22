@@ -1,11 +1,11 @@
-1. <prog> -> <st-list>                                            EOF, return, id, var, let, func, if, while
-2. <st-list> -> <stat> <st-list>                                  return, id, var, let, func, if, while
-3. <st-list> -> EOF                                               EOF
+1. <prog> -> <st-list>                                             EOF, return, id, var, let, func, if, while
+2. <st-list> -> <stat> <st-list>                                   return, id, var, let, func, if, while
+3. <st-list> -> EOF                                                EOF
 4. <body> -> <stat> <body>                                         return, id, var, let, func, if, while
 5. <body> -> eps                                                   }
 6. <stat> -> while <exp-stat> { <body> }                           while
-7. <stat> -> if <exp-stat> { <body> } else { <body> }              f
-8. <stat> -> func id ( <param-list> ) <f-type> { <body> }         func
+7. <stat> -> if <exp-stat> { <body> } else { <body> }              if
+8. <stat> -> func id ( <param-list> ) <f-type> { <body> }          func
 9. <stat> -> let id <id-type>                                      let
 10. <stat> -> var id <id-type>                                     var
 11. <stat> -> id <id-stat>                                         id
@@ -13,26 +13,39 @@
 13. <ret-stat> -> <exp>                                            <exp>
 14. <ret-stat> -> eps                                              return, id, var, let, func, if, while, }
 15. <id-type> -> : type <assign>                                   :
-16. <id-type> -> = <exp>                                           =
+16. <id-type> -> = <call>                                          =
 17. <assign> -> = <call>                                           =
-18. <assign> -> eps                                               return, id, var, let, func, if, while, }
+18. <assign> -> eps                                                return, id, var, let, func, if, while, }
 19. <id-stat> -> = <call>                                          =
-20. <id-stat> –> ( <term-list> )                                  (
-21. <call> -> id ( <term-list> )                                  id
-22. <call> -> <exp>                                               <exp>
-23. <exp-stat> -> <exp>                                           <exp>
-24. <exp-stat> -> let id                                          let
-25. <term-list> -> eps                                            )
-26. <term-list> -> <term> <t-list>                                 id, lit, p-name
+20. <id-stat> –> ( <term-list> )                                   (
+21. <call> -> id ( <term-list> )                                   id
+22. <call> -> <exp>                                                <exp>
+23. <exp-stat> -> <exp>                                            <exp>
+24. <exp-stat> -> let id                                           let
+25. <term-list> -> eps                                             )
+26. <term-list> -> <term> <t-list>                                 id, lit
 27. <t-list> -> , <term> <t-list>                                  ,
 28. <t-list> -> eps                                                )
-29. <term> -> id                                                   id
-30. <term> -> lit                                                   lit
-31. <term> -> p-name : val                                         p-name
-32. <f-type> -> -> type                                             ->
-33. <f-type> -> eps                                              { 
-34. <param-list> -> eps                                          )
-35. <param-list> -> <param> <p-list>                             p-name
-36. <p-list> -> , <param> <p-list>                               ,
-37. <p-list> -> eps                                              )
-38. <param> -> p-name id : type                                  p-name
+29. <term> -> lit                                                  lit
+30. <term> -> id <term-name>                                       id
+31. <term-name> -> : val                                           :
+32. <term-name> -> eps                                             čárka, )
+33. <f-type> -> -> type                                            ->
+34. <f-type> -> eps                                                { 
+35. <param-list> -> eps                                            )
+36. <param-list> -> <param> <p-list>                               p-name
+37. <p-list> -> , <param> <p-list>                                 ,
+38. <p-list> -> eps                                                )
+39. <param> -> p-name id : type                                    p-name
+
+
+
+        TODOOOOOO
+
+        16. <exp> zmenit  na <call>
+         v parser.c je to už zmennene SNAD
+
+p-name a id v <term> zmenit!!
+<term> -> id <>
+<> -> : val
+<> -> eps
