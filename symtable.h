@@ -15,6 +15,45 @@ typedef struct bStrom{
     bStrom *rPtr;
 }bStrom;
 
+typedef struct param{
+    char *pName;                // Jmeno parametru
+    char *paramId;              // ID parametru
+    int   pType;                // Typ -> Int(0), String(1), Double(2)??
+} param;
+
+typedef struct func {
+    char *name;                 // Nazev fuknce
+    int   returnType;           // Typ -> Int(0), String(1), Double(2), void(3)??
+    struct param *params[20];   // Parametry (je potreba se na ne odkazovat takhle foo.params[0]->pName)
+} func;
+
+typedef struct id{
+    char *name;                 // Nazev promenne
+    bool  initialized;          // Je inicializovana?
+    int   type;                 // Typ -> Int(0), String(1), Double(2)
+    bool  modifiable;           // Lze menit?
+} id;
+
+// Priklad 
+// param parameter;
+// parameter.pName = "jebej";
+// parameter.paramId = "klokan";
+// parameter.pType = 1;
+
+// printf("%s\n", parameter.pName);
+// printf("%s\n", parameter.paramId);
+// printf("%d\n", parameter.pType);
+
+// func function;
+// function.name = "zavolej";
+// function.returnType = 1;
+// function.params[0] = &parameter;
+
+// printf("%s\n", function.name);
+// printf("%d\n", function.returnType);
+// printf("%s\n", function.params[0]->pName);
+
+
 int max(int n1, int n2);    //vracia vecsie cislo
 int bHeightBS(bStrom *root);    //vracia vysku stromu
 int bVyvazenost(bStrom *root);  //vracia 0 ak je vyvazeni 1 ak je lavi podstrom o jedno tazsi alebo -1 ak je pravi tazsi
