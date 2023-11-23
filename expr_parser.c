@@ -104,18 +104,18 @@ void rule_plus(T_stack *stack)
     || (l_op->symb == e_str && r_op->symb == e_id) || (l_op->symb == e_id && r_op->symb == e_str)
     || (l_op->symb == e_str && r_op->symb == e_id_exc) || (l_op->symb == e_id_exc && r_op->symb == e_str))
     {
-        printf("conca ");
+        //printf("conca ");
         l_op->symb = e_str;
     }
     else if((l_op->symb == e_num && r_op->symb == e_num) || (l_op->symb == e_dbl && r_op->symb == e_dbl))
     {
-        printf("+ ");
+        //printf("+ ");
         l_op->symb = r_op->symb;    //zbytečné, ale pro naznačení
     }
     else if((l_op->symb == e_num || l_op->symb == e_dbl) && (r_op->symb == e_num || r_op->symb == e_dbl))
     {
         // Provedení konverze jednoho z operandu na DOUBLE
-        printf("+ ");
+        //printf("+ ");
         l_op->symb = e_dbl;
     }
     else if(l_op->symb == e_id || r_op->symb == e_id || l_op->symb == e_id_exc || r_op->symb == e_id_exc)
@@ -123,7 +123,7 @@ void rule_plus(T_stack *stack)
         // TODO
         // musí být stejné typy, bez konverze (Int Int, Dbl Dbl, Str Str)
         // Pro typy s nil ? potřeba předtím operátor !
-        printf("+ ");
+        //printf("+ ");
         l_op->symb = e_id;
     }
     else
@@ -327,45 +327,45 @@ void reduce_rule(T_stack *stack, T_elem *stack_top)
         break;
     case prec_sub:
         rule_min_mul(stack);
-        printf("- ");
+        //printf("- ");
         break;
     case prec_mul:
         rule_min_mul(stack);
-        printf("* ");
+        //printf("* ");
         break;
     case prec_divi:
-        printf("/ ");
+        //printf("/ ");
         rule_div(stack);
         break;
         
     case prec_lt:
-        printf("< ");
+        //printf("< ");
         rule_rela(stack);
         break;
     case prec_lt_eq:
-        printf("<= ");
+        //printf("<= ");
         rule_rela(stack);
         break;
     case prec_gt:
-        printf("> ");
+        //printf("> ");
         rule_rela(stack);
         break;
     case prec_gt_eq:
-        printf(">= ");
+        //printf(">= ");
         rule_rela(stack);
         break;
     case prec_eq:
-        printf("== ");
+        //printf("== ");
         rule_rela_equal(stack);
         break;
     case prec_n_eq:
-        printf("!= ");
+        //printf("!= ");
         rule_rela_equal(stack);
         break;
         
     case prec_exc:
         stack_top->symb = e_id_exc;
-        printf("%s, ", stack_top->value);
+        //printf("%s, ", stack_top->value);
         break;
 
     // Závorka
@@ -378,25 +378,25 @@ void reduce_rule(T_stack *stack, T_elem *stack_top)
         break;
     
     case prec_que:
-        printf("??");
+        //printf("??");
         rule_nil_coal(stack);
         break;
     
     case prec_id:
         stack_top->symb = e_id;
-        printf("%s, ", stack_top->value);
+        //printf("%s, ", stack_top->value);
         break;
     case prec_num:
         stack_top->symb = e_num;
-        printf("%s, ", stack_top->value);
+        //printf("%s, ", stack_top->value);
         break;
     case prec_dbl:
         stack_top->symb = e_dbl;
-        printf("%s, ", stack_top->value);
+        //printf("%s, ", stack_top->value);
         break;
     case prec_str:
         stack_top->symb = e_str;
-        printf("%s, ", stack_top->value);
+        //printf("%s, ", stack_top->value);
         break;
     case prec_end:
         stack_top->symb = e_end;
