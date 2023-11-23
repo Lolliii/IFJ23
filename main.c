@@ -26,7 +26,7 @@ int main(int argc, char *argv[]) {
     // TODO:
     // zkontrolovat spravne otevreni souboru
     FILE* file = fopen(argv[1], "r+");
-    printf("NAZEV: %s\n\n", argv[1]);
+    //printf("NAZEV: %s\n\n", argv[1]);
     
     T_queue *queue = queue_init();
     
@@ -34,15 +34,9 @@ int main(int argc, char *argv[]) {
 
     T_token token = getNextToken(file);
 
-// ______ parser cast
-    if (prog(token, queue, file))
-    {
-        printf("\n\n PARSER : good\n");
-    } else {
+// ______ parser
+    prog(token, queue, file);
 
-        printf("\n\n PARSER : bad\n");
-    }
-// ______ end of parser
 
     free(queue);
 

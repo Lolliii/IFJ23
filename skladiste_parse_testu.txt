@@ -6,7 +6,7 @@
 ________ END TODO LIST ___________ */
 
 
-// - spustit --> ./prog skladiste_parse.txt
+// - spustit --> ./prog skladiste_parse_testu.txt
 // - nefunguje na macu, na merlinovi to ficiiii
 //       var a = ((d))
 

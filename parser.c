@@ -73,7 +73,11 @@ bool IsType(T_token token){
 
 // <prog> -> <st-list> 
 bool prog(T_token token, T_queue *queue, FILE *file) {
-    return st_list(token, queue, file);
+    if(!st_list(token, queue, file)){
+        error_caller(SYN_ERROR);
+        exit(SYN_ERROR);
+    }
+    return true;
 }
 
 // <st-list> -> <stat> <st-list>
