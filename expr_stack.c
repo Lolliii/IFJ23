@@ -54,10 +54,10 @@ void stack_push(T_stack *stack, T_token token, char* value, prec_symb idx)
 // Zrušení prvku na vrcholu zásobníku a uklizení paměti
 void stack_pop(T_stack *stack)
 {
-    T_elem *pop_elem = stack->top;
+    //T_elem *pop_elem = stack->top;
     stack->top = stack->top->next;
-    free(pop_elem->value);
-    free(pop_elem);
+    //free(pop_elem->value);
+    //free(pop_elem);
 }
 
 // Funkce vrací prvek na indexu v seznamu (tedy ne jenom vrchol zásobníku)
@@ -86,8 +86,8 @@ void stack_empty(T_stack *stack)
     while (pop_elem != NULL)
     {
         stack->top = pop_elem->next;
-        free(pop_elem->value);
-        free(pop_elem);
+        //free(pop_elem->value);
+        //free(pop_elem);
         pop_elem = stack->top;
     }
     // Smazání zásobníku
