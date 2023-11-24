@@ -1,3 +1,14 @@
+/*
+IFJ Projekt 2023
+
+EXPRESSION PARSER
+
+@author Jakub Valeš
+@author Milan Takáč
+@author Jakub Dyrčík
+@author Thu Tra Phamová
+*/
+
 #ifndef ERROR_H
 #define ERROR_H
 

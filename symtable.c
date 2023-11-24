@@ -1,3 +1,14 @@
+/*
+IFJ Projekt 2023
+
+EXPRESSION PARSER
+
+@author Jakub Valeš
+@author Milan Takáč
+@author Jakub Dyrčík
+@author Thu Tra Phamová
+*/
+
 #include "symtable.h"
 
 
@@ -183,7 +194,7 @@ bStrom *bDeleteOne(bStrom *root, int key) {
     }
 }
 
-void bDestroyR(bStrom *ptr){
+void *bDestroyR(bStrom *ptr){
     if(ptr != NULL){
         bDestroyR(ptr->lPtr);
         bDestroyR(ptr->rPtr);

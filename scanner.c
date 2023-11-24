@@ -295,7 +295,6 @@ T_token getNextToken(FILE* file){
     uint32_t length = 0;
     int hexLength = 0;
     int blockComms = 0;
-
     // Loop pro ziskani tokenu
     char c = fgetc(file);
     int state = S_START;
@@ -305,6 +304,7 @@ T_token getNextToken(FILE* file){
     
         switch(state){
             case(S_START): 
+            printf("scan\n");
             // Tady se to rozdeli podle toho jestli je to konecny stav nebo ne
             // Pokud z toho to stavu nelze uz nikam prejit, naplni a returnne se token
 

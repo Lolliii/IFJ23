@@ -1,3 +1,14 @@
+/*
+IFJ Projekt 2023
+
+EXPRESSION PARSER
+
+@author Jakub Valeš
+@author Milan Takáč
+@author Jakub Dyrčík
+@author Thu Tra Phamová
+*/
+
 #ifndef SYMSTACK_H
 #define SYMSTACK_H
 
@@ -65,7 +76,7 @@ bStrom *bInsert(bStrom *root, int key, void *data);//vlozi prvok
 bStrom *bMinL(bStrom *root);//vrati najavejsi prvok stormu
 bStrom *bMinR(bStrom *root);//vrati najpravejsi prvok stromu
 bStrom *bDeleteOne(bStrom *root, int key);//odstrani jeden
-bStrom *bDestroyR(bStrom *root);//zrusi cely strom
+void *bDestroyR(bStrom *root);//zrusi cely strom        // pridana * za void
 void bPreOrder(bStrom *root);//vypisuje
 void bInOrder(bStrom *root);
 void bPostOrder(bStrom *root);

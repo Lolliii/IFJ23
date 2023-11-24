@@ -17,15 +17,20 @@ IFJ Projekt 2023
 #include <stdio.h>
 
 int main(int argc, char *argv[]) {
-    
-    if(argc < 2){
-        fprintf(stderr, "ERROR: Too few arguments.\n");
-        return 1;
-    }
+    (void) argc;
+    (void) argv;
+
+
+    // if(argc < 2){
+    //     fprintf(stderr, "ERROR: Too few arguments.\n");
+    //     return 1;
+    // }
     
     // TODO:
     // zkontrolovat spravne otevreni souboru
-    FILE* file = fopen(argv[1], "r+");
+    // FILE* file = fopen(argv[1], "r+");
+    // FILE* file = fopen("stdin", "r+");
+    FILE* file = stdin;
     //printf("NAZEV: %s\n\n", argv[1]);
     
     T_queue *queue = queue_init();
@@ -68,7 +73,7 @@ int main(int argc, char *argv[]) {
 
     file = NULL;
 */
-    fclose(file);
+    // fclose(file);
 
     return 0;
 }
