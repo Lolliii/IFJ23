@@ -295,6 +295,7 @@ T_token getNextToken(FILE* file){
     uint32_t length = 0;
     int hexLength = 0;
     int blockComms = 0;
+    int expNum = 0;
     // Loop pro ziskani tokenu
     char c = fgetc(file);
     int state = S_START;
@@ -304,7 +305,6 @@ T_token getNextToken(FILE* file){
     
         switch(state){
             case(S_START): 
-            printf("scan\n");
             // Tady se to rozdeli podle toho jestli je to konecny stav nebo ne
             // Pokud z toho to stavu nelze uz nikam prejit, naplni a returnne se token
 
@@ -674,6 +674,7 @@ T_token getNextToken(FILE* file){
                     length++;
                     break;
                 } else if(c == 'e' || c == 'E'){
+                    expNum = 0;
                     state = S_INT_EXP;
                     value[length] = c;
                     length++;
@@ -695,6 +696,7 @@ T_token getNextToken(FILE* file){
 
             case(S_INT_EXP):
                 if(isdigit(c)){
+                    expNum++;
                     value[length] = c;
                     length++;
                     break;
@@ -703,6 +705,9 @@ T_token getNextToken(FILE* file){
                     value[length] = c;
                     length++;
                     break;
+                } else if(!expNum){
+                    error_caller(LEX_ERROR);
+                    exit(LEX_ERROR);
                 } else {
                     return_back(c, file);
                     token.type = TOKEN_INT_EXP;
@@ -758,6 +763,7 @@ T_token getNextToken(FILE* file){
                     length++;
                     break;
                 } else if(c == 'e' || c == 'E') {
+                    expNum = 0;
                     state = S_DOUBLE_EXP;
                     value[length] = c;
                     length++;
@@ -779,6 +785,7 @@ T_token getNextToken(FILE* file){
 
             case(S_DOUBLE_EXP):
                 if(isdigit(c)){
+                    expNum++;
                     value[length] = c;
                     length++;
                     break;
@@ -787,6 +794,9 @@ T_token getNextToken(FILE* file){
                     value[length] = c;
                     length++;
                     break;
+                } else if(!expNum){
+                    error_caller(LEX_ERROR);
+                    exit(LEX_ERROR);
                 } else {
                     return_back(c, file);
                     token.type = TOKEN_DOUBLE_EXP;
