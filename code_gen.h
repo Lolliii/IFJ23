@@ -20,6 +20,12 @@ CODE GENERATOR
 // ! Kod se bude generovat na stdout
 // ! Budu vyuzivat printf
 
+// <var>   -> Neterminal -> promenna
+// <symb>  -> Konstanta/promenna
+// <label> -> Navesti
+// Identifikator promenne se sklada z FRAME@jmeno
+//      -> jmeno zacina pismenem, nebo specialnim znakem (_, -, $, &, %, *, !, ?) -> (plati i pro label)
+
 // Vypise zahlavi .IFJcode23
 int codeGenInit();
 
@@ -29,10 +35,8 @@ void pushFrame();
 void popFrame();
 void cReturn();
 void clears();
-// Zasobnikove operace
 void adds();
 void subs();
-void divs();
 void divs();
 void idivs();
 void lts();
