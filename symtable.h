@@ -1,7 +1,7 @@
 /*
 IFJ Projekt 2023
 
-EXPRESSION PARSER
+SYMBOL TABLE
 
 @author Jakub Valeš
 @author Milan Takáč

@@ -1,7 +1,7 @@
 /*
 IFJ Projekt 2023
 
-EXPRESSION PARSER
+ERROR
 
 @author Jakub Valeš
 @author Milan Takáč
