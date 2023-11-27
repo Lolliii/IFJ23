@@ -122,13 +122,29 @@ void stri2ints(){
     printf("\nSTRI2INTS");
 }
 
-// Provede skok na navesti
+// Vytvori navesti
+void label(char *label){
+    printf("\nLABEL %s", label);
+}
+
+// Provede skok na navesti (funkce)
 void call(char *label){
     printf("\nCALL %s", label);
 }
 
-// ! Tady to bude slozitejsi
+// Provede nepodmineny skok na navesti 
+void jump(char *label){
+    printf("\nJUMP %s", label);
+}
 
+// Ukonci vykonavani programu s navratovym kodem returnCode 
+// Rozsah <0, 49> (nekontrolovano)
+void cExit(int returnCode){
+    printf("\nEXIT %d", returnCode);
+}
+
+
+// ! Tady to bude slozitejsi
 // void cBreak(){
 //     printf("\nBREAK");
 // }
