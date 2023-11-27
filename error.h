@@ -19,7 +19,8 @@ ERROR
 // • 5 - sémantická chyba v programu – použití nedefinované nebo neinicializovane proměnné.
 // • 6 - sémantická chyba v programu – chybějící/přebývající výraz v příkazu návratu z funkce.
 // • 7 - sémantická chyba typové kompatibility v aritmetických, řetězcových a relačních výrazech.
-// • 8 - ostatní sémantické chyby.
+// • 8 - sémantická chyba odvození typu – typ proměnné nebo parametru není uveden a nelze odvodit od použitého výrazu.
+// • 9 - ostatní sémantické chyby.
 // • 99 - interní chyba překladače tj. neovlivněná vstupním programem (např. chyba alokace paměti atd.).
 
 #define NO_ERROR 0
@@ -30,7 +31,8 @@ ERROR
 #define UNDEF_UNINIT_VARIABLE_ERROR 5
 #define EXPRESSION_ERROR 6
 #define TYPE_COMP_ERROR 7
-#define OTHER_ERROR 8
+#define MISSING_TYPE 8
+#define OTHER_ERROR 9
 #define INTER_ERROR 99
 
 #endif
