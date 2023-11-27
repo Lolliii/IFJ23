@@ -143,6 +143,15 @@ void cExit(int returnCode){
     printf("\nEXIT %d", returnCode);
 }
 
+// Zasobnikovy skok na navesti, pokud rovno
+void jumpIfEqS(char *label){
+    printf("\nJUMPIFEQS %s", label);
+}
+
+// Zasobnikovy skok na navesti, pokud nerovno
+void jumpIfNEqS(char *label){
+    printf("\nJUMPIFNEQS %s", label);
+}
 
 // ! Tady to bude slozitejsi
 // void cBreak(){

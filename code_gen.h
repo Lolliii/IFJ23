@@ -49,10 +49,15 @@ void int2floats();
 void float2ints();
 void int2chars();
 void stri2ints();
-void cBreak();
+void label(char *label);
+void call(char *label);
+void jump(char *label);
+void cExit(int returnCode);
+void jumpIfEqS(char *label);
+void jumpIfNEqS(char *label);
 
 
-
+// void cBreak();
 
 
 
