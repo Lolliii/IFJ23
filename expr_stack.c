@@ -1,7 +1,7 @@
 /*
 IFJ Projekt 2023
 
-Lineárně zřetězený seznam - zásobník (stack)
+Implementace lineárního ADT zásobník
 
 @author Jakub Valeš
 @author Milan Takáč
@@ -15,7 +15,6 @@ Lineárně zřetězený seznam - zásobník (stack)
 #include <stdio.h>
 #include <string.h>
 
-// Inicializace zásobníku = dynamické přiřazení paměti a nastavení vrcholu zásobníku na NULL
 T_stack *stack_init(void)
 {
     T_stack *stack = malloc(sizeof(T_stack));
@@ -28,8 +27,7 @@ T_stack *stack_init(void)
     return stack;
 }
 
-// Přidání prvku na vrchol zásobníku (dynamická alokace paměti pro prvek)
-// Data, která jsou uložena je token a index tokenu v precedenční tabulce (idx)
+
 void stack_push(T_stack *stack, T_token token, char* value, prec_symb idx)
 {
     T_elem *new_elem = (T_elem *) malloc(sizeof(T_elem));
@@ -39,6 +37,7 @@ void stack_push(T_stack *stack, T_token token, char* value, prec_symb idx)
         exit(INTER_ERROR);
     }
     new_elem->token = token;
+    // Alokace paměti pro dynamický řetězec z tokenu -> token.value
     new_elem->value = malloc(token.valueLength + 1);
     if(new_elem->value == NULL)
     {
@@ -47,24 +46,25 @@ void stack_push(T_stack *stack, T_token token, char* value, prec_symb idx)
     }
     strcpy(new_elem->value, value);
     new_elem->symb = idx;
+    // Nový prvek je vrcholem zásobníku a zřetězení s předchozím vrcholem
     new_elem->next = stack->top;
     stack->top = new_elem;
 }
 
-// Zrušení prvku na vrcholu zásobníku a uklizení paměti
 void stack_pop(T_stack *stack)
 {
-    //T_elem *pop_elem = stack->top;
+    T_elem *pop_elem = stack->top;
     stack->top = stack->top->next;
-    //free(pop_elem->value);
-    //free(pop_elem);
+    // Uvolnění místa pro dynamický řetězec a samotný prvek
+    free(pop_elem->value);
+    free(pop_elem);
 }
 
-// Funkce vrací prvek na indexu v seznamu (tedy ne jenom vrchol zásobníku)
 T_elem *stack_get_val(T_stack *stack, int index)
 {
     T_elem *find_elem = stack->top;
     int cnt = 0;
+    // Procházení zásobníkem dokuď nenajdeme daný prvek, nebo index nepřesáhne velikost zásobníku
     while(!(find_elem == NULL))
     {
         if(cnt == index)
@@ -72,7 +72,8 @@ T_elem *stack_get_val(T_stack *stack, int index)
         find_elem = find_elem->next;
         cnt++;
     }
-    //Index přesáhl velikost zásobníku -> error
+    // Index přesáhl velikost zásobníku -> error
+    // Nejčastěji nastavne při špatné práci se závorkami, např.: ((id))
     fprintf(stderr, "ERROR: Stack error in expression\n");
     exit(SYN_ERROR);
 }
@@ -82,14 +83,15 @@ void stack_empty(T_stack *stack)
 {
     T_elem *pop_elem = stack->top;
     
-    // Mazání prvků ze zásobníku
+    // Postupné mazání prvků ze zásobníku
     while (pop_elem != NULL)
     {
+        // Posunutí vrcholu zásobníku na následující prvek
         stack->top = pop_elem->next;
-        //free(pop_elem->value);
-        //free(pop_elem);
+        free(pop_elem->value);
+        free(pop_elem);
         pop_elem = stack->top;
     }
-    // Smazání zásobníku
+    // Uvolnění místa od zásobníku
     free(stack);
 }

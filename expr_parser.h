@@ -1,6 +1,8 @@
 /*
 IFJ Projekt 2023
 
+Hlavičkový soubor pro parser na vyhodnocování výrazů
+
 @author Jakub Valeš
 @author Milan Takáč
 @author Jakub Dyrčík
@@ -19,14 +21,34 @@ IFJ Projekt 2023
 #include <string.h>
 #include <stdlib.h>
 
+/* Funkce vybere typu tokenu (token.type) odpovídající index v precedenční tabulce
+   Parametry jsou: token, ukazatel na příznak end_expr, ukazatel na frontu tokenů a ukazatel na soubor
+   Funkce vrací číslo indexu v precedenční tabulce*/
+prec_symb get_prec_value(T_token token, int *end_expr, T_queue *queue, FILE* file);
 
-// #include <stdio.h>
-// #include <stdlib.h>
+/* Funkce pro vybrání pravidla pro prvek z vrcholu zásobníku
+   Parametry jsou: ukazatele na zásobník a na prvek z vrcholu zásobníku
+   Bez návratové hodnoty*/
+void reduce_rule(T_stack *stack, T_elem *stack_top);
 
-prec_symb get_prec_value(T_token token, int *zavorka, T_queue *queue, FILE* file);
+/* Funkce, která zkontroluje, zdali je levý a pravý operand literál nebo ID
+   Parametry jsou levý a pravý operand operátoru, který je nejvrchnějším terminálem na zásobníku 
+   Bez návratové hodnoty*/
+void check_two_operands(T_elem l_op, T_elem r_op);
 
-void reduce_rule(T_stack *stack, T_elem *cur_term);
+/* Funkce pro aplikaci odpovídajícího pravidla
+   Parametrem je ukazatel na zásobník
+   Bez návratové hodnoty, v případě Syntaktické/Sématické chyby funkce ukončí program*/
+void rule_plus(T_stack *stack);
+void rule_min_mul(T_stack *stack);
+void rule_div(T_stack *stack);
+void rule_rela(T_stack *stack);
+void rule_rela_equal(T_stack *stack);
+void rule_nil_coal(T_stack *stack);
 
+/* Funkce podle indexu prvku z vrcholu zásobníku a aktualního tokenu vybere operaci (<, >, =, x)
+   Parametry jsou ukazatel na soubor a na frontu
+   Bez návratové hodnoty, v případě operace 'x' funkce ukončí program*/
 void expr_parser(FILE* file, T_queue *queue);
 
 #endif

@@ -1,7 +1,7 @@
 /*
 IFJ Projekt 2023
 
-queue
+Implementace lineárního ADT fronta, pro přebývající tokeny
 
 @author Jakub Valeš
 @author Milan Takáč
@@ -42,21 +42,26 @@ void queue_add(T_queue *queue, T_token token)
     new_elem->next = NULL;
     
     if(queue->beg == NULL)
+        // Fronta je prázdná -> prvek bude i na začátku fronty
         queue->beg = new_elem;
     else
+        // Fronta je neprázdná -> uprav ukazatel bývalého posledního prvku
         queue->end->next = new_elem;
+    // Prvek vlož na konec fronty
     queue->end = new_elem;
 }
 
 
 void queue_remove(T_queue *queue)
 {
+    // Fronta musí být neprázdná, jinak není co mazat
     if(queue->beg != NULL){
         T_queue_elem *rm_elem = queue->beg;
         if(queue->beg == queue->end)
         {
             queue->end = NULL;
         }
+        // Posuň ukazatel na začátek fronty na další prvek
         queue->beg = queue->beg->next;
         free(rm_elem);
     }
@@ -73,10 +78,12 @@ T_token getToken(T_queue *queue, FILE *file)
     T_token token;
     if(queue->beg == NULL)
     {
+        // Fronta je prázdná, vem nový token ze souboru
         token = getNextToken(file);
     }
     else
     {
+        // Fronta je neprázdná, vrať prvek z vrcholu zásobníku
         token = queue_front(queue);
         queue_remove(queue);
     }
