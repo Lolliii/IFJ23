@@ -30,7 +30,8 @@ CODE GENERATOR
 // predava se jako v parametrech jako:
 //           bool id (0 = konstanta, 1 = id)
 //           int symbFrame (same jako u <var>)
-// !!        char value[] -> hodnoty se ukladaji do token.value jako string
+//           int symbVar (same jako u <var>)
+// !!        char symb[] -> hodnoty se ukladaji do token.value jako string
 //           int type
 
 
