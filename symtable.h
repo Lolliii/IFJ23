@@ -29,19 +29,20 @@ typedef struct bStrom{
 typedef struct param{
     char *pName;                // Jmeno parametru
     char *paramId;              // ID parametru
-    int   pType;                // Typ -> Int(0), String(1), Double(2)??
+    int   pType;                // Typ -> Int(0), Double(1), String(2)??
 } param;
 
 typedef struct func {
     char *name;                 // Nazev fuknce
-    int   returnType;           // Typ -> Int(0), String(1), Double(2), void(3)??
+    int   returnType;           // Typ -> Int(0), Double(1), String(2), void(3)??
     struct param *params[20];   // Parametry (je potreba se na ne odkazovat takhle foo.params[0]->pName)
 } func;
 
 typedef struct id{
     char *name;                 // Nazev promenne
     bool  initialized;          // Je inicializovana?
-    int   type;                 // Typ -> Int(0), String(1), Double(2)
+    int   type;                 // Typ -> Int(0), Double(1), String(2)
+    // VALUE??
     bool  modifiable;           // Lze menit?
 } id;
 

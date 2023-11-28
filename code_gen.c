@@ -11,11 +11,47 @@ CODE GENERATOR
 
 #include "code_gen.h"
 
-// TODO: bude se id zrovna posilat i s framem, nebo na to dat zvlast parametr?
+// Vypise var
+void printVar(int frame, int var){
+    if(!frame){
+        printf(" GF@_%d" , var);
+    } else {
+        if(frame == 1){
+            printf(" LF@_%d", var);
+        } else {
+            printf(" TF@_%d", var);
+        } 
+    }
+}
+
+// Vypise symb
+// ! nil ??
+void printSymb(bool id, int symbFrame, int symbVar, char value[], int type){
+    if(!id){           // Konstanta
+        if(!type){     // INT
+            int val = atoi(value);
+            printf(" int@%d", val);  // ! v zadani je, ze pri zapisu konstant pouzivat hexa, ale %a nadava na int
+        } else {
+            if(type == 1){  // DOUBLE (float)
+                float val = atof(value);
+                printf(" float@%a", val);
+            } else {
+                printf(" string@%s", value);
+            }
+        }
+    } else {           // ID
+        printVar(symbFrame, symbVar);
+    }
+}
+
 
 // Vypise zahlavi .IFJcode23
 int codeGenInit(){
     printf(".IFJcode23");
+
+    // ??
+    printf("\nCREATEFRAME");
+    printf("\nPUSHFRAME");
 }
 
 // NEMELY BY BRAT PARAMETRY
@@ -82,24 +118,20 @@ void eqs(){
     printf("\nEQS");
 }
 
-
 // Zasobnikove AND
 void ands(){
     printf("\nANDS");
 }
-
 
 // Zasobnikove OR
 void ors(){
     printf("\nORS");
 }
 
-
 // Zasobnikove NOT 
 void nots(){
     printf("\nNOTS");
 }
-
 
 // Zasobnikove int -> float
 void int2floats(){
@@ -153,7 +185,218 @@ void jumpIfNEqS(char *label){
     printf("\nJUMPIFNEQS %s", label);
 }
 
-// ! Tady to bude slozitejsi
-// void cBreak(){
-//     printf("\nBREAK");
-// }
+// Vypise stav interpretu v danou chvili na stderr
+void cBreak(){
+    printf("\nBREAK");
+}
+
+// Definuje promennou v urcenem ramci
+// Promenna bude zatim neinicializovana
+void defvar(int frame, int var){
+    printf("\nDEFVAR");
+    printVar(frame, var);
+}
+
+// Zasobnikove POP
+// Pokud neni zasobnik prazdny, ulozi vrchol do var
+void pops(int frame, int var){
+    printf("\nPOPS");
+    printVar(frame, var);
+}
+
+// Zasobnikove PUSH
+// Ulozi <symb> na zasobnik
+void pushs(bool id, int symbVar, int symbframe, char symb[], int type){
+    printf("\nPUSHS");
+    printSymb(id, symbframe, symbVar, symb, type);
+}
+
+// MOVE
+void move(int frame, int var, bool id, int symbVar, int symbframe, char symb[], int type){
+    printf("\nMOVE");
+    printVar(frame, var);
+    printSymb(id, symbframe, symbVar, symb, type);
+}
+
+// Prevede int z <symb> na float, a ulozi do <var>
+void int2float(int frame, int var, bool id, int symbVar, int symbframe, char symb[], int type){
+    printf("\nINT2FLOAT");
+    printVar(frame, var);
+    printSymb(id, symbframe, symbVar, symb, type);
+}
+
+// Prevede float z <symb> na int, a ulozi do <var>
+void float2int(int frame, int var, bool id, int symbVar, int symbframe, char symb[], int type){
+    printf("\nFLOAT2INT");
+    printVar(frame, var);
+    printSymb(id, symbframe, symbVar, symb, type);
+}
+
+// int <symb> je podle ascii ulozena na char, a ulozena do <var>
+void int2char(int frame, int var, bool id, int symbVar, int symbframe, char symb[], int type){
+    printf("\nINT2CHAR");
+    printVar(frame, var);
+    printSymb(id, symbframe, symbVar, symb, type);
+}
+
+// Do <var> ulozi ASCII hodnotu znaku ze <symb1> na pozici <symb2>
+void stri2int(int frame, int var, bool id, int symbVar, int symbframe, char symb[], int type, bool id2, int symbVar2, int symbframe2, char symb2[], int type2){
+    printf("\nSTRI2INT");
+    printVar(frame, var);
+    printSymb(id, symbframe, symbVar, symb, type);
+    printSymb(id2, symbframe2, symbVar2, symb2, type2);
+}
+
+// Vypise hodnotu <symb> na stdout
+void write(bool id, int symbVar, int symbframe, char symb[], int type){
+    printf("\nWRITE");
+    printSymb(id, symbframe, symbVar, symb, type);
+}
+
+// Delku <symb> ulozi do <var>
+void cStrlen(int frame, int var, bool id, int symbVar, int symbframe, char symb[], int type){
+    printf("\nSTRLEN");
+    printVar(frame, var);
+    printSymb(id, symbframe, symbVar, symb, type);
+}
+
+// Typ <symb> ulozi do <var>
+void type(int frame, int var, bool id, int symbVar, int symbframe, char symb[], int type){
+    printf("\nTYPE");
+    printVar(frame, var);
+    printSymb(id, symbframe, symbVar, symb, type);
+}
+
+// Vypise hodnotu <symb> na stderr
+void dPrint(bool id, int symbVar, int symbframe, char symb[], int type){
+    printf("\nDPRINT");
+    printSymb(id, symbframe, symbVar, symb, type);
+}
+
+// ADD (stejny typ)
+void add(int frame, int var, bool id, int symbVar, int symbframe, char symb[], int type, bool id2, int symbVar2, int symbframe2, char symb2[], int type2){
+    printf("\nADD");
+    printVar(frame, var);
+    printSymb(id, symbframe, symbVar, symb, type);
+    printSymb(id2, symbframe2, symbVar2, symb2, type2);
+}
+
+// SUB (stejny typ)
+void sub(int frame, int var, bool id, int symbVar, int symbframe, char symb[], int type, bool id2, int symbVar2, int symbframe2, char symb2[], int type2){
+    printf("\nSUB");
+    printVar(frame, var);
+    printSymb(id, symbframe, symbVar, symb, type);
+    printSymb(id2, symbframe2, symbVar2, symb2, type2);
+}
+
+// MUL (stejny typ)
+void mul(int frame, int var, bool id, int symbVar, int symbframe, char symb[], int type, bool id2, int symbVar2, int symbframe2, char symb2[], int type2){
+    printf("\nMUL");
+    printVar(frame, var);
+    printSymb(id, symbframe, symbVar, symb, type);
+    printSymb(id2, symbframe2, symbVar2, symb2, type2);
+}
+
+// DIV (stejny typ)
+void div(int frame, int var, bool id, int symbVar, int symbframe, char symb[], int type, bool id2, int symbVar2, int symbframe2, char symb2[], int type2){
+    printf("\nDIV");
+    printVar(frame, var);
+    printSymb(id, symbframe, symbVar, symb, type);
+    printSymb(id2, symbframe2, symbVar2, symb2, type2);
+}
+
+// SUB (stejny typ)
+void idiv(int frame, int var, bool id, int symbVar, int symbframe, char symb[], int type, bool id2, int symbVar2, int symbframe2, char symb2[], int type2){
+    printf("\nIDIV");
+    printVar(frame, var);
+    printSymb(id, symbframe, symbVar, symb, type);
+    printSymb(id2, symbframe2, symbVar2, symb2, type2);
+}
+
+// Less Than (stejny typ)
+// ! vraci to do bool <var>
+// ! podivej se radsi do zadani
+void lt(int frame, int var, bool id, int symbVar, int symbframe, char symb[], int type, bool id2, int symbVar2, int symbframe2, char symb2[], int type2){
+    printf("\nLT");
+    printVar(frame, var);
+    printSymb(id, symbframe, symbVar, symb, type);
+    printSymb(id2, symbframe2, symbVar2, symb2, type2);
+}
+
+// Greater Than (stejny typ)
+// ! vraci to do bool <var>
+// ! podivej se radsi do zadani
+void gt(int frame, int var, bool id, int symbVar, int symbframe, char symb[], int type, bool id2, int symbVar2, int symbframe2, char symb2[], int type2){
+    printf("\nGT");
+    printVar(frame, var);
+    printSymb(id, symbframe, symbVar, symb, type);
+    printSymb(id2, symbframe2, symbVar2, symb2, type2);
+}
+
+// EQual (stejny typ)
+// ! vraci to do bool <var>
+// ! podivej se radsi do zadani
+void eq(int frame, int var, bool id, int symbVar, int symbframe, char symb[], int type, bool id2, int symbVar2, int symbframe2, char symb2[], int type2){
+    printf("\nEQ");
+    printVar(frame, var);
+    printSymb(id, symbframe, symbVar, symb, type);
+    printSymb(id2, symbframe2, symbVar2, symb2, type2);
+}
+
+// AND - logicke na BOOL <symb>
+// ! vraci to do bool <var>
+// ! podivej se radsi do zadani
+void and(int frame, int var, bool id, int symbVar, int symbframe, char symb[], int type, bool id2, int symbVar2, int symbframe2, char symb2[], int type2){
+    printf("\nAND");
+    printVar(frame, var);
+    printSymb(id, symbframe, symbVar, symb, type);
+    printSymb(id2, symbframe2, symbVar2, symb2, type2);
+}
+
+// OR- logicke na BOOL <symb>
+// ! vraci to do bool <var>
+// ! podivej se radsi do zadani
+void or(int frame, int var, bool id, int symbVar, int symbframe, char symb[], int type, bool id2, int symbVar2, int symbframe2, char symb2[], int type2){
+    printf("\nOR");
+    printVar(frame, var);
+    printSymb(id, symbframe, symbVar, symb, type);
+    printSymb(id2, symbframe2, symbVar2, symb2, type2);
+}
+
+// NOT - logicke na BOOL <symb>
+// ! jen jeden operand
+// ! vraci to do bool <var>
+// ! podivej se radsi do zadani
+void not(int frame, int var, bool id, int symbVar, int symbframe, char symb[], int type){
+    printf("\nNOT");
+    printVar(frame, var);
+    printSymb(id, symbframe, symbVar, symb, type);
+}
+
+// Konkatenace retezcu
+void concat(int frame, int var, bool id, int symbVar, int symbframe, char symb[], int type, bool id2, int symbVar2, int symbframe2, char symb2[], int type2){
+    printf("\nCONCAT");
+    printVar(frame, var);
+    printSymb(id, symbframe, symbVar, symb, type);
+    printSymb(id2, symbframe2, symbVar2, symb2, type2);
+}
+
+// Do <var> ulozi retezec z jednoho znaku z retezce <symb1> na pozici <symb2>
+void cGetChar(int frame, int var, bool id, int symbVar, int symbframe, char symb[], int type, bool id2, int symbVar2, int symbframe2, char symb2[], int type2){
+    printf("\nGETCHAR");
+    printVar(frame, var);
+    printSymb(id, symbframe, symbVar, symb, type);
+    printSymb(id2, symbframe2, symbVar2, symb2, type2);
+}
+
+// Zmeni znak v <var> na znak z <symb1> z pozice <symb2> (prvni, pokud obsahuje vice znaku)
+void cSetChar(int frame, int var, bool id, int symbVar, int symbframe, char symb[], int type, bool id2, int symbVar2, int symbframe2, char symb2[], int type2){
+    printf("\nSETCHAR");
+    printVar(frame, var);
+    printSymb(id, symbframe, symbVar, symb, type);
+    printSymb(id2, symbframe2, symbVar2, symb2, type2);
+}
+
+
+
+
