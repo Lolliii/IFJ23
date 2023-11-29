@@ -32,21 +32,21 @@ typedef struct param{
     char *pName;                // Jmeno parametru
     char *paramId;              // ID parametru
     T_token_type pType;                // Typ -> Int(0), Double(1), String(2)??
-} T_param_type;
+} T_param;
 
 
 typedef struct func {
     char *name;                 // Nazev fuknce
     T_token_type returnType;           // Typ -> Int(0), Double(1), String(2), void(3)??
     struct param *params[20];   // Parametry (je potreba se na ne odkazovat takhle foo.params[0]->pName)
-} T_func_type;
+} T_func;
 
 typedef struct id{
     char *name;                 // Nazev promenne
     bool  initialized;          // Je inicializovana?
     T_token_type type;                 // Typ -> Int(0), Double(1), String(2)
     bool  modifiable;           // Lze menit?
-} T_id_type;
+} T_id;
 
 // Priklad 
 // param parameter;
