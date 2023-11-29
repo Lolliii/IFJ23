@@ -62,12 +62,12 @@ void int2floats();
 void float2ints();
 void int2chars();
 void stri2ints();
-void label(char *label);
-void call(char *label);
-void jump(char *label);
+void label(char label[]);
+void call(char label[]);
+void jump(char label[]);
 void cExit(int returnCode);
-void jumpIfEqS(char *label);
-void jumpIfNEqS(char *label);
+void jumpIfEqS(char label[]);
+void jumpIfNEqS(char label[]);
 void cBreak();
 
 void defvar(int frame, int var);
@@ -101,7 +101,9 @@ void concat(int frame, int var, bool id, int symbVar, int symbframe, char symb[]
 void cGetChar(int frame, int var, bool id, int symbVar, int symbframe, char symb[], int type, bool id2, int symbVar2, int symbframe2, char symb2[], int type2);
 void cSetChar(int frame, int var, bool id, int symbVar, int symbframe, char symb[], int type, bool id2, int symbVar2, int symbframe2, char symb2[], int type2);
 
-
+void jumpIfEq(char label[], bool id, int symbVar, int symbframe, char symb[], int type, bool id2, int symbVar2, int symbframe2, char symb2[], int type2);
+void jumpIfNEq(char label[], bool id, int symbVar, int symbframe, char symb[], int type, bool id2, int symbVar2, int symbframe2, char symb2[], int type2);
+void cRead(int frame, int var, char type[]);
 
 
 
