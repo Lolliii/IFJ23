@@ -34,6 +34,7 @@ typedef struct param{
     T_token_type pType;                // Typ -> Int(0), Double(1), String(2)??
 } T_param_type;
 
+
 typedef struct func {
     char *name;                 // Nazev fuknce
     T_token_type returnType;           // Typ -> Int(0), Double(1), String(2), void(3)??
