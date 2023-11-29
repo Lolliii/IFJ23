@@ -406,7 +406,7 @@ void reduce_rule(T_stack *stack, T_elem *stack_top)
 
 
 
-void expr_parser(FILE* file, T_queue *queue)
+T_token_type expr_parser(FILE* file, T_queue *queue)
 {
 // Precedenční tabulka:
 const char preced_tab [20][20] = {
@@ -435,12 +435,13 @@ const char preced_tab [20][20] = {
     int end_expr = 0;                   // Příznak nalezení nestandardního ukončení výrazu
     T_stack *stack = stack_init();      // Inicializace zásobníku
     T_token init_tok;
-    init_tok.type = TOKEN_ASSIGN;
+    init_tok.type = TOKEN_START_PREC;
     init_tok.valueLength = 1;
 
     // Na vrchol zásobníku vložím počáteční symbol $
     stack_push(stack, init_tok, "x", prec_end);
     T_elem *stack_top = stack_get_val(stack, 0);
+    prec_symb result;
     
     T_token token = getToken(queue, file);
     while(!end)
@@ -506,6 +507,8 @@ const char preced_tab [20][20] = {
         // Konec precedeneční analýzy
         case 'e':
             end = 1;
+            stack_top = stack_get_val(stack, 0);
+            result = stack_top->symb;
             // Pokud byl výraz ukončen standardně, vlož poslední token, který již není součástí výrazu, do fronty
             if(!end_expr)
                 queue_add(queue, token);
@@ -513,4 +516,29 @@ const char preced_tab [20][20] = {
         }
     }
     stack_empty(stack);
+    
+    T_token_type token_res;
+    switch (result)
+    {
+    case e_num:
+        token_res = TOKEN_KW_INT;
+        break;
+    case e_dbl:
+        token_res = TOKEN_KW_DOUBLE;
+        break;
+    case e_str:
+        token_res = TOKEN_KW_STRING;
+        break;
+    case e_bool:
+        token_res = TOKEN_BOOL;
+        break;
+    // zatim takhle, pak oddelat
+    case e_id:
+        token_res = TOKEN_ID;
+        break;    
+    default:
+        token_res = TOKEN_ERROR;
+        break;
+    }
+    return token_res;
 }

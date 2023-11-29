@@ -49,6 +49,6 @@ void rule_nil_coal(T_stack *stack);
 /* Funkce podle indexu prvku z vrcholu zásobníku a aktualního tokenu vybere operaci (<, >, =, x)
    Parametry jsou ukazatel na soubor a na frontu
    Bez návratové hodnoty, v případě operace 'x' funkce ukončí program*/
-void expr_parser(FILE* file, T_queue *queue);
+T_token_type expr_parser(FILE* file, T_queue *queue);
 
 #endif

@@ -126,6 +126,10 @@ typedef enum {
     TOKEN_TYPE_INT,                     // type int? s otaznikem
     TOKEN_TYPE_FLOAT,                   // type double?
     TOKEN_TYPE_STRING,                  // type string?
+
+    TOKEN_BOOL,
+    TOKEN_START_PREC,
+    TOKEN_VOID,
 } T_token_type;
 
 typedef struct {
