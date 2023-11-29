@@ -16,35 +16,36 @@ SYMBOL TABLE
 #include <stdlib.h>
 #include <stdbool.h>
 
+#include "scanner.h"
+
 
 
 typedef struct bStrom{
     void *data;          //pozor ked sa bude robit s touto premenou treba ju pretipovat podla toho co do nej budeme ukladat
     int key;
     int height;
-    bStrom *lPtr;
-    bStrom *rPtr;
+    struct bStrom *lPtr;
+    struct bStrom *rPtr;
 }bStrom;
 
 typedef struct param{
     char *pName;                // Jmeno parametru
     char *paramId;              // ID parametru
-    int   pType;                // Typ -> Int(0), Double(1), String(2)??
-} param;
+    T_token_type pType;                // Typ -> Int(0), Double(1), String(2)??
+} T_param_type;
 
 typedef struct func {
     char *name;                 // Nazev fuknce
-    int   returnType;           // Typ -> Int(0), Double(1), String(2), void(3)??
+    T_token_type returnType;           // Typ -> Int(0), Double(1), String(2), void(3)??
     struct param *params[20];   // Parametry (je potreba se na ne odkazovat takhle foo.params[0]->pName)
-} func;
+} T_func_type;
 
 typedef struct id{
     char *name;                 // Nazev promenne
     bool  initialized;          // Je inicializovana?
-    int   type;                 // Typ -> Int(0), Double(1), String(2)
-    // VALUE??
+    T_token_type type;                 // Typ -> Int(0), Double(1), String(2)
     bool  modifiable;           // Lze menit?
-} id;
+} T_id_type;
 
 // Priklad 
 // param parameter;
