@@ -33,7 +33,7 @@ int bVyvazenost(bStrom *root){
     return (bHeightBS(root->lPtr)-bHeightBS(root->rPtr));
 }
 
-bStrom *bCreate(int key, void *data){
+bStrom *bCreate(char key, void *data){
     bStrom *newElement = (bStrom*)malloc(sizeof(bStrom));
     if( newElement == NULL){
         fprintf(stderr, "Error in malloc(pridanie noveho prvku do bstrom): %d\n", 99);
@@ -73,14 +73,17 @@ bStrom *bLeftRotate(bStrom *root){
 }
 
 
-bStrom *bInsert(bStrom *root, int key, void *data){
+bStrom *bInsert(bStrom *root, char key, void *data){
     if( root == NULL){
         return bCreate(key, data);
-    }else{
-        if( key < root->key){
+    }else{`
+        int compR = strcmp(key, root->key);
+        // key < root->key
+        if( compR < 0){
             root->lPtr = bInsert(root->lPtr, key, data);
         }else {
-            if( key > root->key){
+            //key > root->key
+            if( compR > 0){
                 root->rPtr = bInsert(root->rPtr, key, data);
             }else{
                 root->data = data;
@@ -92,14 +95,18 @@ bStrom *bInsert(bStrom *root, int key, void *data){
         int balanc = bVyvazenost(root);
         
         if(balanc < -1){ //pravi podstrom je vetsi
-            if( key > root->rPtr->key){ //RR
+            int cmptmp = strcmp(key, root->rPtr->key);
+            //key > root->rPtr->key
+            if( cmptmp > 0){ //RR
                 return bLeftRotate(root);
             }else{//RL
                 root->rPtr = bRightRotate(root->rPtr);
                 return bLeftRotate(root);
             }
         }else if( balanc > 1){//lavi podstrom je vetsi
-            if( key < root->lPtr->key){ //LL                
+            int cmptmp2 = strcmp(key, root->rPtr->key);
+            //key < root->lPtr->key
+            if( cmptmp2 < 0){ //LL                
                 return bRightRotate(root);
             }else{//LR            
                 root->lPtr = bLeftRotate(root->lPtr);
@@ -132,13 +139,16 @@ bStrom *bMinR(bStrom *root){
 
 
 
-bStrom *bDeleteOne(bStrom *root, int key) {
+bStrom *bDeleteOne(bStrom *root, char key) {
     if (root == NULL) {
         return NULL;
     } else {
-        if (key < root->key) {
+        int stcmp = strcmp(key, root->key);
+        //key < root->key
+        if ( stcmp < 0) {
             root->lPtr = bDeleteOne(root->lPtr, key);
-        } else if (key > root->key) {
+        //key > root->key
+        } else if ( stcmp > 0) {
             root->rPtr = bDeleteOne(root->rPtr, key);
         } else { // nasli sme
             if (root->lPtr == NULL || root->rPtr == NULL) {
@@ -203,8 +213,40 @@ void *bDestroyR(bStrom *ptr){
 }
 
 
+bStrom *bsearch_one(bStrom *root, char search){
+    if(root == NULL){
+        return NULL;
+    }
+    int compare = strcmp(search, root->key);
+    if(compare > 0){
+        bsearch_one(root->lPtr, search);
+    }else if(compare < 0){
+        bsearch_one(root->rPtr, search);
+    }else if(compare == 0){
+        return root;
+    }
+    return NULL;
+}
 
-
+//prehodi nam act a vracia ten frame kde to najde inak null
+ListElement *bSearch_all(Tlist *t, char search){
+    if( t == NULL || t->first == NULL){
+        return NULL;
+    }
+    t->act = t->first;
+    bStrom *tmp = bsearch_one(t->act->data, search);
+    while( tmp == NULL && t->act != NULL){
+        t->act = t->act->rPtr;
+        if(t->act == NULL){//pozor 
+            return NULL;
+        }
+        tmp = bsearch_one(t->act->data, search);
+    }
+    if(tmp != NULL){
+        return tmp;
+    }
+    return NULL;
+}
 
 void bPreOrder(bStrom *root){
   if(root != NULL){
@@ -232,3 +274,105 @@ void bPostOrder(bStrom *root){
         printf("Data: %s\n", a);
     }
 }
+
+
+
+
+Tlist *init_list(){
+    Tlist *t = (Tlist *)malloc(sizeof(Tlist));
+    if( t == NULL){
+        fprintf(stderr, "Error in malloc(init list): %d\n", 99);
+        exit(99);
+    }
+    t->act = NULL;
+    t->first = NULL;
+    return t;
+}
+
+void add_to_Lil(Tlist *t, bStrom *data){
+    ListElement *newElement = (ListElement *)malloc(sizeof(ListElement));
+    if( newElement == NULL){
+        fprintf(stderr, "Error in malloc(pridanie noveho prvku do LinkListu): %d\n", 99);
+        exit(99);
+    }
+    newElement->data = data;
+    newElement->rPtr = t->first;
+    t->first = newElement;    
+    printf("add_to ide dobre\n");
+}
+
+void set_act_first_Lil(Tlist *t){
+    t->act = t->first;
+}
+
+bool isActive_Lil(Tlist *t){
+    return t->act != NULL;
+}
+
+void InsertAfter_Lil(Tlist *t, bStrom *data){
+    if(isActive_Lil(t)){
+        ListElement *newElement = (ListElement *)malloc(sizeof(ListElement));
+        if( newElement == NULL){
+            fprintf(stderr, "Error in malloc(pridanie noveho prvku do LinkListu): %d\n", 99);
+            exit(99);
+        }
+        newElement->data = data;
+        newElement->rPtr = t->act->rPtr;
+        t->act->rPtr = newElement;
+    }
+}
+
+void set_value_Lil(Tlist *t, bStrom *data){
+    if(isActive_Lil(t)){
+        t->act->data = data;
+    }
+}
+
+void DeleteAfter_Lil(Tlist *t){
+    ListElement *tmp;
+    if(isActive_Lil(t)){
+        if(t->act->rPtr != NULL){
+            tmp = t->act->rPtr;
+            t->act->rPtr = tmp->rPtr;
+            bDestroyR(tmp->data);
+            free(tmp);
+        }
+    }
+}
+
+void next_Lil(Tlist *t){
+    t->act = t->act->rPtr;
+}
+
+void destroy_LilLast(Tlist *t){
+    if(isActive_Lil(t)){
+        ListElement *store = NULL;
+        while(t->act->rPtr != NULL){
+            store = t->act;
+            t->act = t->act->rPtr;
+        }
+        if(store != NULL){
+            bDestroyR(store->data);
+            free(store);
+        }else{
+            bDestroyR(t->act->data);
+            free(t->act);
+            t->act = NULL;
+            t->first = NULL;
+        }
+    }
+}
+
+//will free even the Tlist *t
+void destroy_Lilall(Tlist *t){
+    t->act = NULL;
+    while (t->first != NULL) {
+        ListElement *tmp = t->first;
+        t->first = t->first->rPtr;
+        bDestroyR(tmp->data);
+        free(tmp);
+    }
+    free(t);
+}
+
+
