@@ -155,17 +155,17 @@ void stri2ints(){
 }
 
 // Vytvori navesti
-void label(char *label){
+void label(char label[]){
     printf("\nLABEL %s", label);
 }
 
 // Provede skok na navesti (funkce)
-void call(char *label){
+void call(char label[]){
     printf("\nCALL %s", label);
 }
 
 // Provede nepodmineny skok na navesti 
-void jump(char *label){
+void jump(char label[]){
     printf("\nJUMP %s", label);
 }
 
@@ -176,12 +176,12 @@ void cExit(int returnCode){
 }
 
 // Zasobnikovy skok na navesti, pokud rovno
-void jumpIfEqS(char *label){
+void jumpIfEqS(char label[]){
     printf("\nJUMPIFEQS %s", label);
 }
 
 // Zasobnikovy skok na navesti, pokud nerovno
-void jumpIfNEqS(char *label){
+void jumpIfNEqS(char label[]){
     printf("\nJUMPIFNEQS %s", label);
 }
 
@@ -397,6 +397,30 @@ void cSetChar(int frame, int var, bool id, int symbVar, int symbframe, char symb
     printSymb(id2, symbframe2, symbVar2, symb2, type2);
 }
 
+// Pokud jsou <symbs> rovny, skoci se na label
+void jumpIfEq(char label[], bool id, int symbVar, int symbframe, char symb[], int type, bool id2, int symbVar2, int symbframe2, char symb2[], int type2){
+    printf("\nJUMPIFEQ");
+    printf(" %s", label);
+    printSymb(id, symbframe, symbVar, symb, type);
+    printSymb(id2, symbframe2, symbVar2, symb2, type2);
+}
+
+// Pokud nejsou <symbs> rovny, skoci se na label
+void jumpIfNEq(char label[], bool id, int symbVar, int symbframe, char symb[], int type, bool id2, int symbVar2, int symbframe2, char symb2[], int type2){
+    printf("\nJUMPIFNEQ");
+    printf(" %s", label);
+    printSymb(id, symbframe, symbVar, symb, type);
+    printSymb(id2, symbframe2, symbVar2, symb2, type2);
+}
+
+// Nacte ze vstupu hodnotu do <var>, podle typu <type>
+// Kompatibilni s vestavenymi funkcemi readString, readInt, readDouble
+// <type> -> {int, float, string, bool}
+void cRead(int frame, int var, char type[]){
+    printf("\nREAD");
+    printVar(frame, var);
+    printf(" %s", type);
+}
 
 
 
