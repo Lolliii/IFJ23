@@ -33,7 +33,7 @@ int bVyvazenost(bStrom *root){
     return (bHeightBS(root->lPtr)-bHeightBS(root->rPtr));
 }
 
-bStrom *bCreate(char *key, void *data){
+bStrom *bCreate(char *key, void *data, int data_type){
     bStrom *newElement = (bStrom*)malloc(sizeof(bStrom));
     if( newElement == NULL){
         fprintf(stderr, "Error in malloc(pridanie noveho prvku do bstrom): %d\n", 99);
@@ -42,6 +42,7 @@ bStrom *bCreate(char *key, void *data){
     newElement->data = data;
     newElement->key = strdup(key);
     newElement->height = 1;
+    newElement->data_typ = data_type;
     newElement->lPtr = NULL;
     newElement->rPtr = NULL;
 
@@ -73,18 +74,18 @@ bStrom *bLeftRotate(bStrom *root){
 }
 
 
-bStrom *bInsert(bStrom *root, char *key, void *data){
+bStrom *bInsert(bStrom *root, char *key, void *data, int data_type){
     if( root == NULL){
-        return bCreate(key, data);
+        return bCreate(key, data, data_type);
     }else{
         int compR = strcmp(key, root->key);
         // key < root->key
         if( compR < 0){
-            root->lPtr = bInsert(root->lPtr, key, data);
+            root->lPtr = bInsert(root->lPtr, key, data, data_type);
         }else {
             //key > root->key
             if( compR > 0){
-                root->rPtr = bInsert(root->rPtr, key, data);
+                root->rPtr = bInsert(root->rPtr, key, data, data_type);
             }else{
                 root->data = data;
             }
@@ -160,6 +161,7 @@ bStrom *bDeleteOne(bStrom *root, char *key) {
                 } else { // ziaden dieta
                     *root = *tmp; // Copy the contents of the non-empty child
                 }
+                free(tmp->key);
                 free(tmp);
             } else { // dve deti
                 bStrom *min = (bVyvazenost(root) == -1) ? bMinL(root->rPtr) : bMinR(root->lPtr);
@@ -251,8 +253,17 @@ ListElement *bSearch_all(Tlist *t, char*search){
 
 void bPreOrder(bStrom *root){
   if(root != NULL){
-    char *a = (char *)root->data;
-    printf("Data: %s\n", a);
+    if(root->data_typ = 1){
+        T_param *a = (T_param*)root->data;
+        printf("Data: %s\n", a->pName);
+    }else if(root->data_typ = 2){
+        T_func *b = (T_func*)root->data;
+        printf("Data: %s\n", b->name);
+    }else{
+        T_id *c = (T_id*)root->data;
+        printf("Data: %s\n", c->name);
+    }
+    
     bPreOrder(root->lPtr);
     bPreOrder(root->rPtr);
   }
@@ -260,19 +271,36 @@ void bPreOrder(bStrom *root){
 
 void bInOrder(bStrom *root){
     if(root != NULL){
-        char *a = (char *)root->data;
+        
         bInOrder(root->lPtr);
-        printf("Data: %s\n", a);
+        if(root->data_typ = 1){
+            T_param *a = (T_param*)root->data;
+            printf("Data: %s\n", a->pName);
+        }else if(root->data_typ = 2){
+            T_func *b = (T_func*)root->data;
+            printf("Data: %s\n", b->name);
+        }else{
+            T_id *c = (T_id*)root->data;
+            printf("Data: %s\n", c->name);
+        }
         bInOrder(root->rPtr);
     }
 }
 
 void bPostOrder(bStrom *root){
     if(root != NULL){
-        char *a = (char *)root->data;
         bPostOrder(root->lPtr);
         bPostOrder(root->rPtr);
-        printf("Data: %s\n", a);
+        if(root->data_typ = 1){
+            T_param *a = (T_param*)root->data;
+            printf("Data: %s\n", a->pName);
+        }else if(root->data_typ = 2){
+            T_func *b = (T_func*)root->data;
+            printf("Data: %s\n", b->name);
+        }else{
+            T_id *c = (T_id*)root->data;
+            printf("Data: %s\n", c->name);
+        }
     }
 }
 
@@ -375,5 +403,4 @@ void destroy_Lilall(Tlist *t){
     }
     free(t);
 }
-
 
