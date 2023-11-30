@@ -16,11 +16,12 @@ SYMBOL TABLE
 #include <stdlib.h>
 #include <stdbool.h>
 #include "scanner.h"
+#include <string.h>
 
 
 typedef struct bStrom{
     void *data;          //pozor ked sa bude robit s touto premenou treba ju pretipovat podla toho co do nej budeme ukladat
-    char key;
+    char *key;
     int height;
     struct bStrom *lPtr;
     struct bStrom *rPtr;
@@ -81,7 +82,7 @@ void *bDestroyR(bStrom *root);//zrusi cely strom        // pridana * za void
 void bPreOrder(bStrom *root);//vypisuje
 void bInOrder(bStrom *root);
 void bPostOrder(bStrom *root);
-bStrom *bsearch_one(bStrom *root, char search);
+bStrom *bsearch_one(bStrom *root, char *search);
 
 
 //tu je list
@@ -107,6 +108,6 @@ void DeleteAfter_Lil(Tlist *t);
 void next_Lil(Tlist *t);
 void destroy_LilLast(Tlist *t); //destroy the last element
 void destroy_Lilall(Tlist *t); //will destroy the whole list
-ListElement *bSearch_all(Tlist *t, char search);//perjde vsetko
+ListElement *bSearch_all(Tlist *t, char *search);//perjde vsetko
 
 #endif
