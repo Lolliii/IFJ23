@@ -76,7 +76,14 @@ bool IsType(T_token token){
 // <prog> -> <st-list> 
 bool prog(T_token token, T_queue *queue, FILE *file) {
     // TODO inicializace symtable
-    if(!st_list(token, queue, file)){
+    Tlist *sym_list;
+    sym_list = init_list();
+    bStrom *sym_table = NULL;
+    add_to_Lil(sym_list, sym_table);
+    set_act_first_Lil(sym_list);
+
+
+    if(!st_list(token, queue, file, sym_list)){
         error_caller(SYN_ERROR);
         exit(SYN_ERROR);
     }
@@ -85,18 +92,19 @@ bool prog(T_token token, T_queue *queue, FILE *file) {
 
 // <st-list> -> <stat> <st-list>
 // <st-list> -> EOF
-bool st_list(T_token token, T_queue *queue, FILE *file) {
+bool st_list(T_token token, T_queue *queue, FILE *file, Tlist *sym_list) {
     // EOF
     if (token.type == TOKEN_EOF) {
         return true;
     } else {
         T_func funkce;
+        funkce.name = NULL;
         // <stat>
-        if (stat(token, queue, file, funkce))
+        if (stat(token, queue, file, funkce, sym_list))
         {
             // <st-list>
             token = getToken(queue, file);
-            if (st_list(token, queue, file)) return true;
+            if (st_list(token, queue, file, sym_list)) return true;
         }
     }
     return false;
@@ -104,13 +112,13 @@ bool st_list(T_token token, T_queue *queue, FILE *file) {
 
 // <body> -> <stat> <body>
 // <body> -> eps
-bool body(T_token token, T_queue *queue, FILE *file, T_func *funkce) {
+bool body(T_token token, T_queue *queue, FILE *file, T_func *funkce, Tlist *sym_list) {
     // <stat>
-    if (stat(token, queue, file, *funkce))
+    if (stat(token, queue, file, *funkce, sym_list))
     {
         // <body>
         token = getToken(queue, file);
-        if (body(token, queue, file, funkce))
+        if (body(token, queue, file, funkce, sym_list))
         {
             return true;
         }
@@ -129,13 +137,13 @@ bool body(T_token token, T_queue *queue, FILE *file, T_func *funkce) {
 // <stat> -> var id <id-type>                                    
 // <stat> -> id <id-stat>   
 // <stat> -> return <ret-stat> 
-bool stat(T_token token, T_queue *queue, FILE *file, T_func funkce) {
+bool stat(T_token token, T_queue *queue, FILE *file, T_func funkce, Tlist *sym_list) {
     // <stat> -> while <exp-stat> { <body> }
     if (token.type == TOKEN_KW_WHILE)
     {
         // <exp-stat>
         token = getToken(queue, file);
-        if (exp_stat(token, queue, file))
+        if (exp_stat(token, queue, file, sym_list))
         {
             // {
             token = getToken(queue, file);
@@ -143,7 +151,7 @@ bool stat(T_token token, T_queue *queue, FILE *file, T_func funkce) {
             {
                 // <body>
                 token = getToken(queue, file);
-                if (body(token, queue, file, &funkce))
+                if (body(token, queue, file, &funkce, sym_list))
                 {
                     // }
                     token = getToken(queue, file);
@@ -160,7 +168,7 @@ bool stat(T_token token, T_queue *queue, FILE *file, T_func funkce) {
     } else if (token.type == TOKEN_KW_IF) {
         // <exp-stat>
         token = getToken(queue, file);
-        if (exp_stat(token, queue, file))
+        if (exp_stat(token, queue, file, sym_list))
         {
             // {
             token = getToken(queue, file);
@@ -168,7 +176,7 @@ bool stat(T_token token, T_queue *queue, FILE *file, T_func funkce) {
             {
                 // <body>
                 token = getToken(queue, file);
-                if (body(token, queue, file, &funkce))
+                if (body(token, queue, file, &funkce, sym_list))
                 {
                     // }
                     token = getToken(queue, file);
@@ -184,7 +192,7 @@ bool stat(T_token token, T_queue *queue, FILE *file, T_func funkce) {
                             {
                                 // <body>
                                 token = getToken(queue, file);
-                                if (body(token, queue, file, &funkce))
+                                if (body(token, queue, file, &funkce, sym_list))
                                 {
                                     // }
                                     token = getToken(queue, file);
@@ -216,7 +224,7 @@ bool stat(T_token token, T_queue *queue, FILE *file, T_func funkce) {
             {
                 // <param-list>
                 token = getToken(queue, file);
-                if (param_list(token, queue, file, &funkce))
+                if (param_list(token, queue, file, &funkce, sym_list))
                 {
                     // )
                     token = getToken(queue, file);
@@ -224,7 +232,7 @@ bool stat(T_token token, T_queue *queue, FILE *file, T_func funkce) {
                     {
                         // <f-type>
                         token = getToken(queue, file);
-                        if (f_type(token, queue, file, &funkce))
+                        if (f_type(token, queue, file, &funkce, sym_list))
                         {
                             // {
                             token = getToken(queue, file);
@@ -232,7 +240,7 @@ bool stat(T_token token, T_queue *queue, FILE *file, T_func funkce) {
                             {
                                 // <body>
                                 token = getToken(queue, file);
-                                if (body(token, queue, file, &funkce))
+                                if (body(token, queue, file, &funkce, sym_list))
                                 {
                                     // }
                                     token = getToken(queue, file);
@@ -272,6 +280,19 @@ bool stat(T_token token, T_queue *queue, FILE *file, T_func funkce) {
         if (token.type == TOKEN_ID)
         {
             id.name = token.value;
+            
+            sym_list->act->data = bInsert(sym_list->act->data, id.name, &id, 3);
+
+            bStrom *tmp = bsearch_one(sym_list->act->data, id.name);
+            T_id* tmp_id = (T_id*)&tmp->data;
+            char *a = ((T_id*)&tmp->data)->name;
+            printf("aaa %s\n", a);
+            //(void) tmp_id;
+            if(tmp_id == NULL)
+                printf("nic\n");
+            else
+                printf("%i\n", tmp_id->type);
+
             // printf("%s\n", id.name);
             // printf("%i\n", id.type);
             /* 
@@ -279,7 +300,7 @@ bool stat(T_token token, T_queue *queue, FILE *file, T_func funkce) {
                 ! UNDEF_UNINIT_VARIABLE_ERROR */
             // <id-type>
             token = getToken(queue, file);
-            if(id_type(token, queue, file, id)) return true;
+            if(id_type(token, queue, file, id, sym_list)) return true;
         }
         return false;
         
@@ -300,7 +321,7 @@ bool stat(T_token token, T_queue *queue, FILE *file, T_func funkce) {
                 ! zkontrolovat jestli již není definované 
                 ! UNDEF_UNINIT_VARIABLE_ERROR */
             token = getToken(queue, file);
-            if(id_type(token, queue, file, id)) return true;
+            if(id_type(token, queue, file, id, sym_list)) return true;
         }
         return false;
         
@@ -318,7 +339,7 @@ bool stat(T_token token, T_queue *queue, FILE *file, T_func funkce) {
         // printf("%s\n", id.name);
         // ! printf("%i\n", id.type);
         token = getToken(queue, file);
-        if(id_stat(token, queue, file, id)) return true;
+        if(id_stat(token, queue, file, id, sym_list)) return true;
         
         return false;
 
@@ -326,7 +347,7 @@ bool stat(T_token token, T_queue *queue, FILE *file, T_func funkce) {
     } else if (token.type == TOKEN_KW_RETURN) {
         // <ret_stat>
         token = getToken(queue, file);
-        if(ret_stat(token, queue, file, funkce)) return true;
+        if(ret_stat(token, queue, file, funkce, sym_list)) return true;
 
         return false;
     }
@@ -335,8 +356,9 @@ bool stat(T_token token, T_queue *queue, FILE *file, T_func funkce) {
 
 // <ret-stat> -> <exp>
 // <ret-stat> -> eps
-bool ret_stat(T_token token, T_queue *queue, FILE *file, T_func funkce) {
+bool ret_stat(T_token token, T_queue *queue, FILE *file, T_func funkce, Tlist *sym_list) {
     // <exp>
+    (void) sym_list;
     bool is_void = true;
     if (IsTerm(token) || token.type == TOKEN_ID || token.type == TOKEN_ID_EM || token.type == TOKEN_R_CURL || token.type == TOKEN_L_RND)
     {
@@ -374,7 +396,7 @@ bool ret_stat(T_token token, T_queue *queue, FILE *file, T_func funkce) {
 
 //<id-type> -> : type <assign>
 //<id-type> -> = <call>
-bool id_type(T_token token, T_queue *queue, FILE *file, T_id id){
+bool id_type(T_token token, T_queue *queue, FILE *file, T_id id, Tlist *sym_list){
     // :    
     if(token.type == TOKEN_COLON)
     {
@@ -387,13 +409,13 @@ bool id_type(T_token token, T_queue *queue, FILE *file, T_id id){
             // printf("%i\n", id.type);
             // <assign>
             T_token next_token = getToken(queue, file);
-            return assign(next_token, queue, file, id);
+            return assign(next_token, queue, file, id, sym_list);
         }
     // =
     }else if(token.type == TOKEN_ASSIGN){
         // <call>
         token = getToken(queue, file);
-        return call(token, queue, file, id);
+        return call(token, queue, file, id, sym_list);
     }else{
         return false;
     }
@@ -402,12 +424,12 @@ bool id_type(T_token token, T_queue *queue, FILE *file, T_id id){
 
 // <assign> -> = <call>
 // <assign> -> eps
-bool assign(T_token token, T_queue *queue, FILE *file, T_id id){
+bool assign(T_token token, T_queue *queue, FILE *file, T_id id, Tlist *sym_list){
     // =
     if(token.type == TOKEN_ASSIGN){
         // <call>
         T_token next_token = getToken(queue, file);
-        return call(next_token, queue, file, id);
+        return call(next_token, queue, file, id, sym_list);
     // eps
     }else{
         // ! vložit strukturu ID do symtablu
@@ -421,17 +443,17 @@ bool assign(T_token token, T_queue *queue, FILE *file, T_id id){
 
 //<id-stat> -> = <call>
 //<id-stat> –> ( <term-list> )
-bool id_stat(T_token token, T_queue *queue, FILE *file, T_id id){
+bool id_stat(T_token token, T_queue *queue, FILE *file, T_id id, Tlist *sym_list){
     // =
     if(token.type == TOKEN_ASSIGN){
         // <call>
         T_token next_token = getToken(queue, file);
-        return call(next_token, queue, file, id);
+        return call(next_token, queue, file, id, sym_list);
     // (
     }else if(token.type == TOKEN_L_RND){
         // <term-list>
         T_token next_token = getToken(queue, file);
-        if(term_list(next_token, queue, file)){
+        if(term_list(next_token, queue, file, sym_list)){
             // )
             token = getToken(queue, file);
             if(token.type == TOKEN_R_RND){
@@ -447,7 +469,7 @@ bool id_stat(T_token token, T_queue *queue, FILE *file, T_id id){
 
 // <call> -> id ( <term-list> )
 // <call> -> <exp>
-bool call(T_token token, T_queue *queue, FILE *file, T_id id){
+bool call(T_token token, T_queue *queue, FILE *file, T_id id, Tlist *sym_list){
     // id
     if(token.type == TOKEN_ID){
         // kouknu dopredu na dalsi token
@@ -458,7 +480,7 @@ bool call(T_token token, T_queue *queue, FILE *file, T_id id){
             token = tmp;
             // <term-list>
             token = getToken(queue, file);
-            if(term_list(token, queue, file))
+            if(term_list(token, queue, file, sym_list))
             {
                 // )
                 token = getToken(queue, file);
@@ -519,8 +541,9 @@ bool call(T_token token, T_queue *queue, FILE *file, T_id id){
 
 // <exp-stat> -> <exp>
 // <exp-stat> -> let id
-bool exp_stat(T_token token, T_queue *queue, FILE *file){
+bool exp_stat(T_token token, T_queue *queue, FILE *file, Tlist *sym_list){
     // let
+    (void) sym_list;
     if(token.type == TOKEN_KW_LET){
         // id
         T_token tmp = getToken(queue, file);
@@ -543,13 +566,13 @@ bool exp_stat(T_token token, T_queue *queue, FILE *file){
 
 // <term-list> -> <term> <t-list>
 // <term-list> -> eps
-bool term_list(T_token token, T_queue *queue, FILE *file) {
+bool term_list(T_token token, T_queue *queue, FILE *file, Tlist *sym_list) {
     // <term>
-    if (term(token, queue, file))
+    if (term(token, queue, file, sym_list))
     {
         // <t-list>
         token = getToken(queue, file);
-        return t_list(token, queue, file);
+        return t_list(token, queue, file, sym_list);
     // eps
     } else {
         if (token.type == TOKEN_R_RND)
@@ -563,16 +586,16 @@ bool term_list(T_token token, T_queue *queue, FILE *file) {
 
 // <t-list> -> , <term> <t-list>
 // <t-list> -> eps 
-bool t_list(T_token token, T_queue *queue, FILE *file) {
+bool t_list(T_token token, T_queue *queue, FILE *file, Tlist *sym_list) {
     // ,
     if (token.type == TOKEN_COMMA)
     {
         // <term>
         token = getToken(queue, file);
-        if (term(token, queue, file)) {
+        if (term(token, queue, file, sym_list)) {
             // <t-list>
             token = getToken(queue, file);
-            return t_list(token, queue, file);
+            return t_list(token, queue, file, sym_list);
         }
     // eps
     } else {
@@ -584,12 +607,12 @@ bool t_list(T_token token, T_queue *queue, FILE *file) {
 
 // <term> -> lit
 // <term> -> id <term-name>
-bool term(T_token token, T_queue *queue, FILE *file){
+bool term(T_token token, T_queue *queue, FILE *file, Tlist *sym_list){
     // id
     if (token.type == TOKEN_ID) {
         // <term-name>
         token = getToken(queue, file);
-        return term_name(token, queue, file);
+        return term_name(token, queue, file, sym_list);
 
     // lit
     } else if (IsTerm(token) || token.type == TOKEN_KW_NIL) {
@@ -602,8 +625,9 @@ bool term(T_token token, T_queue *queue, FILE *file){
 
 // <term-name> -> : val
 // <term-name> -> eps 
-bool term_name(T_token token, T_queue *queue, FILE *file) {
+bool term_name(T_token token, T_queue *queue, FILE *file, Tlist *sym_list) {
     // :
+    (void) sym_list;
     if (token.type == TOKEN_COLON)
     {
         // value
@@ -621,9 +645,9 @@ bool term_name(T_token token, T_queue *queue, FILE *file) {
 
 // <f-type> -> -> type
 // <f-type> -> eps  
-bool f_type(T_token token, T_queue *queue, FILE *file, T_func *funkce) {
+bool f_type(T_token token, T_queue *queue, FILE *file, T_func *funkce, Tlist *sym_list) {
     // ->
-    (void) funkce; // nevim
+    (void) sym_list;
     if (token.type == TOKEN_FUNCTION_TYPE)
     {
         // type - Double, Int, String, ?
@@ -645,13 +669,13 @@ bool f_type(T_token token, T_queue *queue, FILE *file, T_func *funkce) {
 
 // <param-list> -> <param> <p-list>
 // <param-list> -> eps
-bool param_list(T_token token, T_queue *queue, FILE *file, T_func *funkce) {
+bool param_list(T_token token, T_queue *queue, FILE *file, T_func *funkce, Tlist *sym_list) {
     // <param>
-    if (param(token, queue, file, funkce))
+    if (param(token, queue, file, funkce, sym_list))
     {
         // <p-list>
         token = getToken(queue, file);
-        return p_list(token, queue, file, funkce);
+        return p_list(token, queue, file, funkce, sym_list);
     // eps
     } else {
         queue_add(queue, token);
@@ -662,17 +686,17 @@ bool param_list(T_token token, T_queue *queue, FILE *file, T_func *funkce) {
 
 // <p-list> -> , <param> <p-list>
 // <p-list> -> eps
-bool p_list(T_token token, T_queue *queue, FILE *file, T_func *funkce){
+bool p_list(T_token token, T_queue *queue, FILE *file, T_func *funkce, Tlist *sym_list){
     // ,
     if (token.type == TOKEN_COMMA)
     {
         // <param>
         token = getToken(queue, file);
-        if (param(token, queue, file, funkce))
+        if (param(token, queue, file, funkce, sym_list))
         {
             // <p-list>
             token = getToken(queue, file);
-            return p_list(token, queue, file, funkce);
+            return p_list(token, queue, file, funkce, sym_list);
         }
     // eps
     } else {
@@ -683,9 +707,9 @@ bool p_list(T_token token, T_queue *queue, FILE *file, T_func *funkce){
 }
 
 // <param> -> p-name id : type
-bool param(T_token token, T_queue *queue, FILE *file, T_func *funkce){
+bool param(T_token token, T_queue *queue, FILE *file, T_func *funkce, Tlist *sym_list){
     // p-name, _
-    (void) funkce;
+    (void) sym_list;
     if (token.type == TOKEN_ID || token.type == TOKEN_UNDERSCORE)
     {
         // id
@@ -716,3 +740,4 @@ bool param(T_token token, T_queue *queue, FILE *file, T_func *funkce){
     }
     return false;
 }
+    

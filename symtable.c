@@ -39,7 +39,7 @@ bStrom *bCreate(char *key, void *data, int data_type){
         fprintf(stderr, "Error in malloc(pridanie noveho prvku do bstrom): %d\n", 99);
         return NULL;
     }
-    newElement->data = data;
+    //newElement->data = data;
     newElement->key = (char *)malloc(strlen(key) + 1);
     if (newElement->key == NULL) {
         fprintf(stderr, "Error in malloc for key: %d\n", 99);
@@ -53,9 +53,48 @@ bStrom *bCreate(char *key, void *data, int data_type){
     newElement->data_typ = data_type;
     newElement->lPtr = NULL;
     newElement->rPtr = NULL;
+        
+        switch (data_type) {
+        case 1: // T_param
+            newElement->data = malloc(sizeof(T_param));
+            if (newElement->data == NULL) {
+                fprintf(stderr, "Error in malloc for T_param data: %d\n", 99);
+                free(newElement->key);
+                free(newElement);
+                return NULL;
+            }
+            memcpy(newElement->data, data, sizeof(T_param));
+            break;
+        case 2: // T_func
+            newElement->data = malloc(sizeof(T_func));
+            if (newElement->data == NULL) {
+                fprintf(stderr, "Error in malloc for T_func data: %d\n", 99);
+                free(newElement->key);
+                free(newElement);
+                return NULL;
+            }
+            memcpy(newElement->data, data, sizeof(T_func));
+            break;
+        case 3: // T_id
+            newElement->data = malloc(sizeof(T_id));
+            if (newElement->data == NULL) {
+                fprintf(stderr, "Error in malloc for T_id data: %d\n", 99);
+                free(newElement->key);
+                free(newElement);
+                return NULL;
+            }
+            memcpy(newElement->data, data, sizeof(T_id));
+            break;
+        default:
+            fprintf(stderr, "Unknown data type: %d\n", data_type);
+            free(newElement->key);
+            free(newElement);
+            return NULL;
+    }
 
-    return (newElement);
+    return newElement;
 }
+
 
 bool bChecknext(bStrom *root){
     return ((root != NULL) ? true : false);
@@ -230,13 +269,13 @@ bStrom *bsearch_one(bStrom *root, char *search){
     }
     int compare = strcmp(search, root->key);
     if(compare > 0){
-        bsearch_one(root->lPtr, search);
+        return bsearch_one(root->rPtr, search);
     }else if(compare < 0){
-        bsearch_one(root->rPtr, search);
+        return bsearch_one(root->lPtr, search);
     }else if(compare == 0){
         return root;
     }
-    return NULL;
+        return NULL;
 }
 
 //prehodi nam act a vracia ten frame kde to najde inak null
