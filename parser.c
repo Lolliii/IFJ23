@@ -280,24 +280,18 @@ bool stat(T_token token, T_queue *queue, FILE *file, T_func funkce, Tlist *sym_l
         if (token.type == TOKEN_ID)
         {
             id.name = token.value;
-            
-            sym_list->act->data = bInsert(sym_list->act->data, id.name, &id, 3);
 
-            bStrom *tmp = bsearch_one(sym_list->act->data, id.name);
-            T_id* tmp_id = (T_id*)&tmp->data;
-            char *a = ((T_id*)&tmp->data)->name;
-            printf("aaa %s\n", a);
-            //(void) tmp_id;
-            if(tmp_id == NULL)
-                printf("nic\n");
-            else
-                printf("%i\n", tmp_id->type);
+            // Kontrola jestli proměnná již není v daném framu
+            // Pokud již existuje -> chyba            
+            bStrom *tmp = bsearch_one(sym_list->first->data, id.name);
+            if(tmp != NULL)
+            {
+                error_caller(UNDEF_REDEF_ERROR);
+                exit(UNDEF_REDEF_ERROR);
+            }
 
             // printf("%s\n", id.name);
             // printf("%i\n", id.type);
-            /* 
-                ! zkontrolovat jestli již není definované 
-                ! UNDEF_UNINIT_VARIABLE_ERROR */
             // <id-type>
             token = getToken(queue, file);
             if(id_type(token, queue, file, id, sym_list)) return true;
@@ -315,11 +309,18 @@ bool stat(T_token token, T_queue *queue, FILE *file, T_func funkce, Tlist *sym_l
         {
             // <id-type>
             id.name = token.value;
+
+            // Kontrola jestli proměnná již není v daném framu
+            // Pokud již existuje -> chyba     
+            bStrom *tmp = bsearch_one(sym_list->first->data, id.name);
+            if(tmp != NULL)
+            {
+                error_caller(UNDEF_REDEF_ERROR);
+                exit(UNDEF_REDEF_ERROR);
+            }
+            
             // printf("%s\n", id.name);
             // printf("%i\n", id.type);
-            /* 
-                ! zkontrolovat jestli již není definované 
-                ! UNDEF_UNINIT_VARIABLE_ERROR */
             token = getToken(queue, file);
             if(id_type(token, queue, file, id, sym_list)) return true;
         }
@@ -328,16 +329,22 @@ bool stat(T_token token, T_queue *queue, FILE *file, T_func funkce, Tlist *sym_l
     // <stat> -> id <id-stat>
     } else if (token.type == TOKEN_ID) {
         // <id-stat>
-        /* 
-            ! zkontrolovat jestli je definovaná 
-            ! UNDEF_UNINIT_VARIABLE_ERROR */
         T_id id;
         id.name = token.value;
-        // ! zjistit typ ze symtablu
-        // ! id.type = symtable search
-        id.type = -2; // zatim
-        // printf("%s\n", id.name);
-        // ! printf("%i\n", id.type);
+
+        // Kontola jestli proměnná existuje
+        ListElement *frame = bSearch_all(sym_list, id.name);
+        if(frame == NULL)
+        {
+            error_caller(UNDEF_REDEF_ERROR);
+            exit(UNDEF_REDEF_ERROR);
+        }
+        // Proměnná existuje -> zjistim její typ ze symtable pro pozdější kontrolu
+        bStrom *item = bsearch_one(frame->data, id.name);
+        T_id *item_id1 = (T_id*)item->data;
+        id.type = item_id1->type;
+        id.modifiable = item_id1->modifiable;
+
         token = getToken(queue, file);
         if(id_stat(token, queue, file, id, sym_list)) return true;
         
@@ -432,9 +439,7 @@ bool assign(T_token token, T_queue *queue, FILE *file, T_id id, Tlist *sym_list)
         return call(next_token, queue, file, id, sym_list);
     // eps
     }else{
-        // ! vložit strukturu ID do symtablu
-        // printf("%s\n", id.name);
-        // printf("%i\n", id.type);
+        sym_list->first->data = bInsert(sym_list->first->data, id.name, (void*)&id, 3);
         queue_add(queue, token);
         return true;
     }
@@ -447,6 +452,11 @@ bool id_stat(T_token token, T_queue *queue, FILE *file, T_id id, Tlist *sym_list
     // =
     if(token.type == TOKEN_ASSIGN){
         // <call>
+        if(!id.modifiable)
+        {
+            error_caller(OTHER_ERROR);
+            exit(OTHER_ERROR);
+        }
         T_token next_token = getToken(queue, file);
         return call(next_token, queue, file, id, sym_list);
     // (
@@ -500,16 +510,23 @@ bool call(T_token token, T_queue *queue, FILE *file, T_id id, Tlist *sym_list){
             printf("expr: %i\n", expr_parser(file, queue));
             // printf("%s\n", id.name);
             // printf("%i\n", id.type);
-            (void) id;
+            bStrom *item = bsearch_one(sym_list->act->data, id.name);
+            // ! pokud není typ definován, definuje se z návratové hodnoty expressionu
+            /*if(id.type == -1)
+                id.type = expr_parser*/
+            if(item == NULL)
+                sym_list->act->data = bInsert(sym_list->act->data, id.name, (void*)&id, 3);
+            else
+            {
             // ! zkontrolovat jestli je proměnná v aktualním frame, přes symtable search
                 // ! pokud ano, tak zjisti typ proměnné ze symtable a nevkládej a zkontroluj typ ze symtable a expression, 
+
+            }
                 // ! jinak:
             // ! kontrola typů z expr_parser a id.type
             // ! vložit strukturu ID do symtable
             
-            // ! pokud není typ definován, definuje se z návratové hodnoty expressionu
-            /*if(id.type == -1)
-                id.type = expr_parser*/
+            
             return true;
         }
         return false;

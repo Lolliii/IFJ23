@@ -252,7 +252,7 @@ void error_caller(int error_code){
         case SYN_ERROR:
             fprintf(stderr, "Error: %d -> Wrong syntax.\n", error_code);
             break;
-        case UNDEF_FUNCTION_ERROR:
+        case UNDEF_REDEF_ERROR:
             fprintf(stderr, "Error: %d -> Undefined function or redefining attempt.\n", error_code);
             break;
         case PARAM_ERROR:
