@@ -261,10 +261,10 @@ ListElement *bSearch_all(Tlist *t, char*search){
 
 void bPreOrder(bStrom *root){
   if(root != NULL){
-    if(root->data_typ = 1){
+    if(root->data_typ == 1){
         T_param *a = (T_param*)root->data;
         printf("Data: %s\n", a->pName);
-    }else if(root->data_typ = 2){
+    }else if(root->data_typ == 2){
         T_func *b = (T_func*)root->data;
         printf("Data: %s\n", b->name);
     }else{
@@ -281,10 +281,10 @@ void bInOrder(bStrom *root){
     if(root != NULL){
         
         bInOrder(root->lPtr);
-        if(root->data_typ = 1){
+        if(root->data_typ == 1){
             T_param *a = (T_param*)root->data;
             printf("Data: %s\n", a->pName);
-        }else if(root->data_typ = 2){
+        }else if(root->data_typ == 2){
             T_func *b = (T_func*)root->data;
             printf("Data: %s\n", b->name);
         }else{
@@ -299,10 +299,10 @@ void bPostOrder(bStrom *root){
     if(root != NULL){
         bPostOrder(root->lPtr);
         bPostOrder(root->rPtr);
-        if(root->data_typ = 1){
+        if(root->data_typ == 1){
             T_param *a = (T_param*)root->data;
             printf("Data: %s\n", a->pName);
-        }else if(root->data_typ = 2){
+        }else if(root->data_typ == 2){
             T_func *b = (T_func*)root->data;
             printf("Data: %s\n", b->name);
         }else{
