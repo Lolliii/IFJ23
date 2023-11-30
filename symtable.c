@@ -214,7 +214,7 @@ bStrom *bDeleteOne(bStrom *root, char *key) {
     }
 }
 
-void *bDestroyR(bStrom *ptr){
+void bDestroyR(bStrom *ptr){
     if(ptr != NULL){
         bDestroyR(ptr->lPtr);
         bDestroyR(ptr->rPtr);
