@@ -75,7 +75,7 @@ bool IsType(T_token token){
 
 // <prog> -> <st-list> 
 bool prog(T_token token, T_queue *queue, FILE *file) {
-    // TODO inicializace symtable
+    // Iincializace symtable
     Tlist *sym_list;
     sym_list = init_list();
     bStrom *sym_table = NULL;
@@ -87,6 +87,9 @@ bool prog(T_token token, T_queue *queue, FILE *file) {
         error_caller(SYN_ERROR);
         exit(SYN_ERROR);
     }
+
+    // TODO: Zrusit symtable
+
     return true;
 }
 
@@ -215,7 +218,8 @@ bool stat(T_token token, T_queue *queue, FILE *file, T_func funkce, Tlist *sym_l
         token = getToken(queue, file);
         if (token.type == TOKEN_ID)
         {
-            
+            // Nasla se definice funkce, napln strukturu pro symtable
+            // TODO: zkontrolovat jestli uz nebyla definovana
             funkce.param_count = 0;
             funkce.name = token.value;
             // (
@@ -272,6 +276,7 @@ bool stat(T_token token, T_queue *queue, FILE *file, T_func funkce, Tlist *sym_l
         
     // <stat> -> let id <id-type>
     } else if (token.type == TOKEN_KW_LET) {
+        // Deklarace ID, napln sturkturu pro symtable
         // id
         T_id id;
         id.modifiable = false;
@@ -300,6 +305,7 @@ bool stat(T_token token, T_queue *queue, FILE *file, T_func funkce, Tlist *sym_l
         
     // <stat> -> var id <id-type>
     } else if (token.type == TOKEN_KW_VAR) {
+        // Deklarace ID, napln sturkturu pro symtable
         // id
         T_id id;
         id.modifiable = true;
@@ -364,15 +370,19 @@ bool stat(T_token token, T_queue *queue, FILE *file, T_func funkce, Tlist *sym_l
 // <ret-stat> -> <exp>
 // <ret-stat> -> eps
 bool ret_stat(T_token token, T_queue *queue, FILE *file, T_func funkce, Tlist *sym_list) {
+    // Kontrola navratove hodnoty funkce
+    // TODO
     // <exp>
     (void) sym_list;
-    bool is_void = true;
+    bool is_void = true;  // Predpokladame ze funkce je void
     if (IsTerm(token) || token.type == TOKEN_ID || token.type == TOKEN_ID_EM || token.type == TOKEN_R_CURL || token.type == TOKEN_L_RND)
     {
         is_void = false;
         queue_add(queue, token);
     }
+
     // ! neco udelat s navratovou hodnotou
+    // TODO: zkontorlovat vraceny typ s typem v definici
     if(!is_void)
     {
         T_token_type result = expr_parser(file, queue);
@@ -404,6 +414,7 @@ bool ret_stat(T_token token, T_queue *queue, FILE *file, T_func funkce, Tlist *s
 //<id-type> -> : type <assign>
 //<id-type> -> = <call>
 bool id_type(T_token token, T_queue *queue, FILE *file, T_id id, Tlist *sym_list){
+    // V deklaraci je i typ promenne
     // :    
     if(token.type == TOKEN_COLON)
     {
@@ -438,7 +449,7 @@ bool assign(T_token token, T_queue *queue, FILE *file, T_id id, Tlist *sym_list)
         T_token next_token = getToken(queue, file);
         return call(next_token, queue, file, id, sym_list);
     // eps
-    }else{
+    }else{  // Pouze deklarace, vloz do symtable
         sym_list->first->data = bInsert(sym_list->first->data, id.name, (void*)&id, 3);
         queue_add(queue, token);
         return true;
@@ -460,8 +471,9 @@ bool id_stat(T_token token, T_queue *queue, FILE *file, T_id id, Tlist *sym_list
         T_token next_token = getToken(queue, file);
         return call(next_token, queue, file, id, sym_list);
     // (
-    }else if(token.type == TOKEN_L_RND){
+    }else if(token.type == TOKEN_L_RND){    // Vola se funkce bez prirazeni
         // <term-list>
+        // TODO: zkontroluj navratovy typ funkce (mel by to byt nejspis void)
         T_token next_token = getToken(queue, file);
         if(term_list(next_token, queue, file, sym_list)){
             // )
@@ -485,6 +497,7 @@ bool call(T_token token, T_queue *queue, FILE *file, T_id id, Tlist *sym_list){
         // kouknu dopredu na dalsi token
         T_token tmp = getToken(queue, file);
         // id ( --> volani funkce
+        // TODO: Prirazeni -> zkontroluj navratovy typ funkce a typ promenne
         if (tmp.type == TOKEN_L_RND)
         {
             token = tmp;
@@ -584,6 +597,8 @@ bool exp_stat(T_token token, T_queue *queue, FILE *file, Tlist *sym_list){
 // <term-list> -> <term> <t-list>
 // <term-list> -> eps
 bool term_list(T_token token, T_queue *queue, FILE *file, Tlist *sym_list) {
+    // ! paramtery funkce
+    // TODO: Zkontoluj volane parametry a ty v definici + navratovy typ a typ promenne
     // <term>
     if (term(token, queue, file, sym_list))
     {
@@ -604,6 +619,7 @@ bool term_list(T_token token, T_queue *queue, FILE *file, Tlist *sym_list) {
 // <t-list> -> , <term> <t-list>
 // <t-list> -> eps 
 bool t_list(T_token token, T_queue *queue, FILE *file, Tlist *sym_list) {
+    // TODO: Pokracovani kontroly z term_list
     // ,
     if (token.type == TOKEN_COMMA)
     {
@@ -643,6 +659,7 @@ bool term(T_token token, T_queue *queue, FILE *file, Tlist *sym_list){
 // <term-name> -> : val
 // <term-name> -> eps 
 bool term_name(T_token token, T_queue *queue, FILE *file, Tlist *sym_list) {
+    // TODO: kontola parametru
     // :
     (void) sym_list;
     if (token.type == TOKEN_COLON)
@@ -687,6 +704,7 @@ bool f_type(T_token token, T_queue *queue, FILE *file, T_func *funkce, Tlist *sy
 // <param-list> -> <param> <p-list>
 // <param-list> -> eps
 bool param_list(T_token token, T_queue *queue, FILE *file, T_func *funkce, Tlist *sym_list) {
+    // TODO: doplnit do struktury T_func
     // <param>
     if (param(token, queue, file, funkce, sym_list))
     {
