@@ -26,22 +26,22 @@ bool IsTerm(T_token token);
 
 // neterminaly z LL gramatiky
 bool prog(T_token token, T_queue *queue, FILE *file);
-bool st_list(T_token token, T_queue *queue, FILE *file);
-bool body(T_token token, T_queue *queue, FILE *file, T_func *funkce);
-bool stat(T_token token, T_queue *queue, FILE *file, T_func funkce);
-bool ret_stat(T_token token, T_queue *queue, FILE *file, T_func funkce);
-bool id_type(T_token token, T_queue *queue, FILE *file, T_id id);
-bool assign(T_token token, T_queue *queue, FILE *file, T_id id);
-bool id_stat(T_token token, T_queue *queue, FILE *file, T_id id);
-bool call(T_token token, T_queue *queue, FILE *file, T_id id);
-bool exp_stat(T_token token, T_queue *queue, FILE *file);
-bool term_list(T_token token, T_queue *queue, FILE *file);
-bool t_list(T_token token, T_queue *queue, FILE *file);
-bool term(T_token token, T_queue *queue, FILE *file);
-bool term_name(T_token token, T_queue *queue, FILE *file);
-bool f_type(T_token token, T_queue *queue, FILE *file, T_func *funkce);
-bool param_list(T_token token, T_queue *queue, FILE *file, T_func *funkce);
-bool p_list(T_token token, T_queue *queue, FILE *file, T_func *funkce);
-bool param(T_token token, T_queue *queue, FILE *file, T_func *funkce);
+bool st_list(T_token token, T_queue *queue, FILE *file, Tlist *sym_list);
+bool body(T_token token, T_queue *queue, FILE *file, T_func *funkce, Tlist *sym_list);
+bool stat(T_token token, T_queue *queue, FILE *file, T_func funkce, Tlist *sym_list);
+bool ret_stat(T_token token, T_queue *queue, FILE *file, T_func funkce, Tlist *sym_list);
+bool id_type(T_token token, T_queue *queue, FILE *file, T_id id, Tlist *sym_list);
+bool assign(T_token token, T_queue *queue, FILE *file, T_id id, Tlist *sym_list);
+bool id_stat(T_token token, T_queue *queue, FILE *file, T_id id, Tlist *sym_list);
+bool call(T_token token, T_queue *queue, FILE *file, T_id id, Tlist *sym_list);
+bool exp_stat(T_token token, T_queue *queue, FILE *file, Tlist *sym_list);
+bool term_list(T_token token, T_queue *queue, FILE *file, Tlist *sym_list);
+bool t_list(T_token token, T_queue *queue, FILE *file, Tlist *sym_list);
+bool term(T_token token, T_queue *queue, FILE *file, Tlist *sym_list);
+bool term_name(T_token token, T_queue *queue, FILE *file, Tlist *sym_list);
+bool f_type(T_token token, T_queue *queue, FILE *file, T_func *funkce, Tlist *sym_list);
+bool param_list(T_token token, T_queue *queue, FILE *file, T_func *funkce, Tlist *sym_list);
+bool p_list(T_token token, T_queue *queue, FILE *file, T_func *funkce, Tlist *sym_list);
+bool param(T_token token, T_queue *queue, FILE *file, T_func *funkce, Tlist *sym_list);
 
 #endif

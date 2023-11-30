@@ -15,7 +15,7 @@ SYMBOL TABLE
 #include <stdio.h>
 #include <stdlib.h>
 #include <stdbool.h>
-
+#include "scanner.h"
 
 
 typedef struct bStrom{
