@@ -40,7 +40,15 @@ bStrom *bCreate(char *key, void *data, int data_type){
         return NULL;
     }
     newElement->data = data;
-    newElement->key = strdup(key);
+    newElement->key = (char *)malloc(strlen(key) + 1);
+    if (newElement->key == NULL) {
+        fprintf(stderr, "Error in malloc for key: %d\n", 99);
+        free(newElement);
+        return NULL;
+    }
+
+    // Copy the key value
+    strcpy(newElement->key, key);
     newElement->height = 1;
     newElement->data_typ = data_type;
     newElement->lPtr = NULL;
