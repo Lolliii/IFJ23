@@ -14,15 +14,17 @@ SYMBOL TABLE
 
 #include <stdio.h>
 #include <stdlib.h>
-#include <stdbool.h>
 #include "scanner.h"
+#include <stdbool.h>
 #include <string.h>
 
+#define type_in_tree 4;
 
 typedef struct bStrom{
     void *data;          //pozor ked sa bude robit s touto premenou treba ju pretipovat podla toho co do nej budeme ukladat
     char *key;
     int height;
+    int data_typ;       //tu treba definovat co tam vkladame 1 pre T_pram 2 pre T_func 3 pre T_id
     struct bStrom *lPtr;
     struct bStrom *rPtr;
 }bStrom;
@@ -30,22 +32,21 @@ typedef struct bStrom{
 typedef struct param{
     char *pName;                // Jmeno parametru
     char *paramId;              // ID parametru
-    T_token_type   pType;                
-} T_param;
+    int   pType;                // Typ -> Int(0), String(1), Double(2)??
+}T_param;
 
 typedef struct func {
     char *name;                 // Nazev fuknce
-    T_token_type   returnType;           
-    struct param params[20];   // Parametry (je potreba se na ne odkazovat takhle foo.params[0]->pName)
-    int param_count;
-} T_func;
+    int   returnType;           // Typ -> Int(0), String(1), Double(2), void(3)??
+    struct param *params[20];   // Parametry (je potreba se na ne odkazovat takhle foo.params[0]->pName)
+}T_func;
 
 typedef struct id{
     char *name;                 // Nazev promenne
     bool  initialized;          // Je inicializovana?
-    T_token_type   type;              
+    int   type;                 // Typ -> Int(0), String(1), Double(2)
     bool  modifiable;           // Lze menit?
-} T_id;
+}T_id;
 
 // Priklad 
 // param parameter;
@@ -70,14 +71,14 @@ typedef struct id{
 int max(int n1, int n2);    //vracia vecsie cislo
 int bHeightBS(bStrom *root);    //vracia vysku stromu
 int bVyvazenost(bStrom *root);  //vracia 0 ak je vyvazeni 1 ak je lavi podstrom o jedno tazsi alebo -1 ak je pravi tazsi
-bStrom *bCreate(char key, void *data);//vytvori novy prvok
+bStrom *bCreate(char *key, void *data, int data_type);//vytvori novy prvok
 bool bChecknext(bStrom *root);//pozrie sa ci je root NULL, pouzitie pre pozretie sa dopredu
 bStrom *bRightRotate(bStrom *root);//otoci do prava
 bStrom *bLeftRotate(bStrom *root);//otoci do lava
-bStrom *bInsert(bStrom *root, char key, void *data);//vlozi prvok
+bStrom *bInsert(bStrom *root, char *key, void *data, int data_type);//vlozi prvok
 bStrom *bMinL(bStrom *root);//vrati najavejsi prvok stormu
 bStrom *bMinR(bStrom *root);//vrati najpravejsi prvok stromu
-bStrom *bDeleteOne(bStrom *root, char key);//odstrani jeden
+bStrom *bDeleteOne(bStrom *root, char *key);//odstrani jeden
 void *bDestroyR(bStrom *root);//zrusi cely strom        // pridana * za void
 void bPreOrder(bStrom *root);//vypisuje
 void bInOrder(bStrom *root);
@@ -109,5 +110,6 @@ void next_Lil(Tlist *t);
 void destroy_LilLast(Tlist *t); //destroy the last element
 void destroy_Lilall(Tlist *t); //will destroy the whole list
 ListElement *bSearch_all(Tlist *t, char *search);//perjde vsetko
+
 
 #endif
