@@ -208,6 +208,7 @@ void *bDestroyR(bStrom *ptr){
     if(ptr != NULL){
         bDestroyR(ptr->lPtr);
         bDestroyR(ptr->rPtr);
+        free(ptr->key);
         free(ptr);
     }
 }
