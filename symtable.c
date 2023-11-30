@@ -33,14 +33,14 @@ int bVyvazenost(bStrom *root){
     return (bHeightBS(root->lPtr)-bHeightBS(root->rPtr));
 }
 
-bStrom *bCreate(char key, void *data){
+bStrom *bCreate(char *key, void *data){
     bStrom *newElement = (bStrom*)malloc(sizeof(bStrom));
     if( newElement == NULL){
         fprintf(stderr, "Error in malloc(pridanie noveho prvku do bstrom): %d\n", 99);
         return NULL;
     }
     newElement->data = data;
-    newElement->key = key;
+    newElement->key = strdup(key);
     newElement->height = 1;
     newElement->lPtr = NULL;
     newElement->rPtr = NULL;
@@ -73,10 +73,10 @@ bStrom *bLeftRotate(bStrom *root){
 }
 
 
-bStrom *bInsert(bStrom *root, char key, void *data){
+bStrom *bInsert(bStrom *root, char *key, void *data){
     if( root == NULL){
         return bCreate(key, data);
-    }else{`
+    }else{
         int compR = strcmp(key, root->key);
         // key < root->key
         if( compR < 0){
@@ -139,7 +139,7 @@ bStrom *bMinR(bStrom *root){
 
 
 
-bStrom *bDeleteOne(bStrom *root, char key) {
+bStrom *bDeleteOne(bStrom *root, char *key) {
     if (root == NULL) {
         return NULL;
     } else {
@@ -213,7 +213,7 @@ void *bDestroyR(bStrom *ptr){
 }
 
 
-bStrom *bsearch_one(bStrom *root, char search){
+bStrom *bsearch_one(bStrom *root, char *search){
     if(root == NULL){
         return NULL;
     }
@@ -229,7 +229,7 @@ bStrom *bsearch_one(bStrom *root, char search){
 }
 
 //prehodi nam act a vracia ten frame kde to najde inak null
-ListElement *bSearch_all(Tlist *t, char search){
+ListElement *bSearch_all(Tlist *t, char*search){
     if( t == NULL || t->first == NULL){
         return NULL;
     }
@@ -243,7 +243,7 @@ ListElement *bSearch_all(Tlist *t, char search){
         tmp = bsearch_one(t->act->data, search);
     }
     if(tmp != NULL){
-        return tmp;
+        return t->act;
     }
     return NULL;
 }
