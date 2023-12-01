@@ -17,32 +17,42 @@ void check_e_id(T_elem *element, Tlist *list){
     if(frame != NULL){
         // hledani v strome
         bStrom *found = bsearch_one(frame->data, element->value);
-        if(found != NULL){
-            T_id *id_data = (T_id *)(found->data);
-            // neni inicializovana
-            if(!id_data->initialized){
+        T_id *id_data = (T_id *)(found->data);
+        // neni inicializovana
+        if(!id_data->initialized){
+            error_caller(UNDEF_UNINIT_VARIABLE_ERROR);
+            exit(UNDEF_UNINIT_VARIABLE_ERROR);
+        }
+
+        switch(id_data->type){
+            case TOKEN_KW_INT:
+                element->symb = e_num;
+                break;
+            case TOKEN_KW_STRING:
+                element->symb = e_str;
+                break;
+            case TOKEN_KW_DOUBLE:
+                element->symb = e_dbl;
+                break;
+            case TOKEN_TYPE_INT:
+                element->symb = e_num;
+                break;
+            case TOKEN_TYPE_FLOAT:
+                element->symb = e_dbl;
+                break;
+            case TOKEN_TYPE_STRING:
+                element->symb = e_str;
+                break;
+            default:
+
                 error_caller(UNDEF_UNINIT_VARIABLE_ERROR);
                 exit(UNDEF_UNINIT_VARIABLE_ERROR);
-            }
-            switch(id_data->type){
-                case TOKEN_KW_INT:
-                    element->symb = e_num;
-                    break;
-                case TOKEN_KW_STRING:
-                    element->symb = e_str;
-                    break;
-                case TOKEN_KW_DOUBLE:
-                    element->symb = e_dbl;
-                    break;
-                default:
-                    error_caller(UNDEF_UNINIT_VARIABLE_ERROR);
-                    exit(UNDEF_UNINIT_VARIABLE_ERROR);
-                    break;
-            }
+                break;
         }
+    } else {
+        error_caller(UNDEF_UNINIT_VARIABLE_ERROR);
+        exit(UNDEF_UNINIT_VARIABLE_ERROR);
     }
-    error_caller(UNDEF_UNINIT_VARIABLE_ERROR);
-    exit(UNDEF_UNINIT_VARIABLE_ERROR);
 }
 
 void check_id_exc(T_elem *l_op, Tlist *sym_list){
@@ -51,34 +61,33 @@ void check_id_exc(T_elem *l_op, Tlist *sym_list){
     if(search != NULL) {
         // hledani v strome
         bStrom *item = bsearch_one(search->data, l_op->value);
-        if(item != NULL) {
-            T_id *id_item = (T_id *)item->data;
-            // neni inicializovana
-            if (!id_item->initialized) {
+        T_id *id_item = (T_id *)item->data;
+        // neni inicializovana
+        if (!id_item->initialized) {
+            error_caller(UNDEF_UNINIT_VARIABLE_ERROR);
+            exit(UNDEF_UNINIT_VARIABLE_ERROR);
+        }
+
+        switch (id_item->type)
+        {
+            case TOKEN_TYPE_INT:
+                l_op->symb = e_num;
+                break;
+            case TOKEN_TYPE_FLOAT:
+                l_op->symb = e_dbl;
+                break;
+            case TOKEN_TYPE_STRING:
+                l_op->symb = e_str;
+                break;
+            default:
                 error_caller(UNDEF_UNINIT_VARIABLE_ERROR);
                 exit(UNDEF_UNINIT_VARIABLE_ERROR);
-            }
-
-            switch (id_item->type)
-            {
-                case TOKEN_TYPE_INT:
-                    l_op->symb = e_num;
-                    break;
-                case TOKEN_TYPE_FLOAT:
-                    l_op->symb = e_dbl;
-                    break;
-                case TOKEN_TYPE_STRING:
-                    l_op->symb = e_str;
-                    break;
-                default:
-                    error_caller(UNDEF_UNINIT_VARIABLE_ERROR);
-                    exit(UNDEF_UNINIT_VARIABLE_ERROR);
-                    break;
-            }
+                break;
         }
+    } else {
+        error_caller(UNDEF_UNINIT_VARIABLE_ERROR);
+        exit(UNDEF_UNINIT_VARIABLE_ERROR);
     }
-    error_caller(UNDEF_UNINIT_VARIABLE_ERROR);
-    exit(UNDEF_UNINIT_VARIABLE_ERROR);
 }
 
 prec_symb get_prec_value(T_token token, int *end_expr, T_queue *queue, FILE* file)
@@ -167,11 +176,7 @@ void rule_plus(T_stack *stack, Tlist *sym_list)
     r_op = stack_get_val(stack, 0);
     check_two_operands(*l_op, *r_op);
 
-    if((l_op->symb == e_str && r_op->symb == e_str)||
-       (l_op->symb == e_str && r_op->symb == e_id) || 
-       (l_op->symb == e_id && r_op->symb == e_str) ||
-       (l_op->symb == e_str && r_op->symb == e_id_exc) ||
-       (l_op->symb == e_id_exc && r_op->symb == e_str))
+    if(l_op->symb == e_str && r_op->symb == e_str)
     {
         //printf("conca ");
         l_op->symb = e_str;
@@ -191,18 +196,70 @@ void rule_plus(T_stack *stack, Tlist *sym_list)
     }
     else if(l_op->symb == e_id || r_op->symb == e_id || l_op->symb == e_id_exc || r_op->symb == e_id_exc)
     {
-        if (l_op->symb == e_id){
+        if (l_op->symb == e_id || l_op->symb == e_id_exc){
             check_e_id(l_op, sym_list);
-            
-
-        } else if (l_op->symb == e_id_exc) {
-            check_id_exc(l_op, sym_list);
+            // l_op = ID/ID!, r_op != ID/ID!
+            if (r_op->symb != e_id && r_op->symb != e_id_exc)
+            {
+// printf("syymbLL%u\n", l_op->symb);
+// printf("syymbRR%u\n", r_op->symb);
+                // kontrola typu
+                if ((l_op->symb == e_num && r_op->symb == e_num ) ||
+                    (l_op->symb == e_dbl && r_op->symb == e_dbl ) ||
+                    (l_op->symb == e_str && r_op->symb == e_str ))
+                {
+                    l_op->symb = r_op->symb;
+                } else if ((l_op->symb == e_num || l_op->symb == e_dbl) &&
+                            (r_op->symb == e_num || r_op->symb == e_dbl)){
+                    l_op->symb = e_dbl;
+                } else {
+                    error_caller(TYPE_COMP_ERROR);
+                    exit(TYPE_COMP_ERROR);
+                }
+            // l_op = ID/ID!, r_op = ID/ID!
+            } else if(r_op->symb == e_id || r_op->symb == e_id_exc) {
+                check_e_id(r_op, sym_list);
+                // kontrola typu
+                if ((l_op->symb == e_num && r_op->symb == e_num ) ||
+                    (l_op->symb == e_dbl && r_op->symb == e_dbl ) ||
+                    (l_op->symb == e_str && r_op->symb == e_str ))
+                {
+                    l_op->symb = r_op->symb;
+                } else if ((l_op->symb == e_num || l_op->symb == e_dbl) &&
+                            (r_op->symb == e_num || r_op->symb == e_dbl)){
+                    l_op->symb = e_dbl;
+                } else {
+                    error_caller(TYPE_COMP_ERROR);
+                    exit(TYPE_COMP_ERROR);
+                }
+            }
+        } else if (l_op->symb != e_id && l_op->symb != e_id_exc){
+            // l_op != ID/ID!, r_op = ID/ID!
+            if (r_op->symb == e_id || r_op->symb == e_id_exc)
+            {
+                check_e_id(r_op, sym_list);
+                // kontrola typu
+                if ((l_op->symb == e_num && r_op->symb == e_num ) ||
+                    (l_op->symb == e_dbl && r_op->symb == e_dbl ) ||
+                    (l_op->symb == e_str && r_op->symb == e_str ))
+                {
+                    l_op->symb = r_op->symb;
+                } else if ((l_op->symb == e_num || l_op->symb == e_dbl) &&
+                            (r_op->symb == e_num || r_op->symb == e_dbl)){
+                    l_op->symb = e_dbl;
+                } else {
+                    error_caller(TYPE_COMP_ERROR);
+                    exit(TYPE_COMP_ERROR);
+                }
+            }
         }
+        
+
         // TODO
         // musí být stejné typy, bez konverze (Int Int, Dbl Dbl, Str Str)
         // Pro typy s nil ? potřeba předtím operátor !
         //printf("+ ");
-        l_op->symb = e_id;
+        // l_op->symb = e_id;
     }
     else
     {
@@ -235,10 +292,61 @@ void rule_min_mul(T_stack *stack, Tlist *sym_list)
     }
     else if(l_op->symb == e_id || r_op->symb == e_id || l_op->symb == e_id_exc || r_op->symb == e_id_exc)
     {
+        if (l_op->symb == e_id || l_op->symb == e_id_exc){
+            check_e_id(l_op, sym_list);
+            // l_op = ID/ID!, r_op != ID/ID!
+            if (r_op->symb != e_id && r_op->symb != e_id_exc)
+            {
+                // kontrola typu
+                if ((l_op->symb == e_num && r_op->symb == e_num ) ||
+                    (l_op->symb == e_dbl && r_op->symb == e_dbl ))
+                {
+                    l_op->symb = r_op->symb;
+                } else if ((l_op->symb == e_num || l_op->symb == e_dbl) &&
+                            (r_op->symb == e_num || r_op->symb == e_dbl)){
+                    l_op->symb = e_dbl;
+                } else {
+                    error_caller(TYPE_COMP_ERROR);
+                    exit(TYPE_COMP_ERROR);
+                }
+            // l_op = ID/ID!, r_op = ID/ID!
+            } else if(r_op->symb == e_id || r_op->symb == e_id_exc) {
+                check_e_id(r_op, sym_list);
+                // kontrola typu
+                if ((l_op->symb == e_num && r_op->symb == e_num ) ||
+                    (l_op->symb == e_dbl && r_op->symb == e_dbl ))
+                {
+                    l_op->symb = r_op->symb;
+                } else if ((l_op->symb == e_num || l_op->symb == e_dbl) &&
+                            (r_op->symb == e_num || r_op->symb == e_dbl)){
+                    l_op->symb = e_dbl;
+                } else {
+                    error_caller(TYPE_COMP_ERROR);
+                    exit(TYPE_COMP_ERROR);
+                }
+            }
+        } else if (l_op->symb != e_id && l_op->symb != e_id_exc){
+            // l_op != ID/ID!, r_op = ID/ID!
+            if (r_op->symb == e_id || r_op->symb == e_id_exc)
+            {
+                check_e_id(r_op, sym_list);
+                // kontrola typu
+                if ((l_op->symb == e_num && r_op->symb == e_num ) ||
+                    (l_op->symb == e_dbl && r_op->symb == e_dbl ))
+                {
+                    l_op->symb = r_op->symb;
+                } else if ((l_op->symb == e_num || l_op->symb == e_dbl) &&
+                            (r_op->symb == e_num || r_op->symb == e_dbl)){
+                    l_op->symb = e_dbl;
+                } else {
+                    error_caller(TYPE_COMP_ERROR);
+                    exit(TYPE_COMP_ERROR);
+                }
+            }
+        }
         // TODO
         // musí být stejné typy, bez konverze (Int Int, Dbl Dbl, Str Str)
         // Pro typy s nil ? potřeba předtím operátor !
-        l_op->symb = e_id;
     }
     else
     {
@@ -271,10 +379,53 @@ void rule_div(T_stack *stack, Tlist *sym_list)
     }
     else if(l_op->symb == e_id || r_op->symb == e_id || l_op->symb == e_id_exc || r_op->symb == e_id_exc)
     {
+        if (l_op->symb == e_id || l_op->symb == e_id_exc){
+            check_e_id(l_op, sym_list);
+            // l_op = ID/ID!, r_op != ID/ID!
+            if (r_op->symb != e_id && r_op->symb != e_id_exc)
+            {
+                // kontrola typu
+                if ((l_op->symb == e_num && r_op->symb == e_num ) ||
+                    (l_op->symb == e_dbl && r_op->symb == e_dbl ))
+                {
+                    l_op->symb = r_op->symb;
+                } else {
+                    error_caller(TYPE_COMP_ERROR);
+                    exit(TYPE_COMP_ERROR);
+                }
+            // l_op = ID/ID!, r_op = ID/ID!
+            } else if(r_op->symb == e_id || r_op->symb == e_id_exc) {
+                check_e_id(r_op, sym_list);
+                // kontrola typu
+                if ((l_op->symb == e_num && r_op->symb == e_num ) ||
+                    (l_op->symb == e_dbl && r_op->symb == e_dbl ))
+                {
+                    l_op->symb = r_op->symb;
+                } else {
+                    error_caller(TYPE_COMP_ERROR);
+                    exit(TYPE_COMP_ERROR);
+                }
+            }
+        } else if (l_op->symb != e_id && l_op->symb != e_id_exc){
+            // l_op != ID/ID!, r_op = ID/ID!
+            if (r_op->symb == e_id || r_op->symb == e_id_exc)
+            {
+                check_e_id(r_op, sym_list);
+                // kontrola typu
+                if ((l_op->symb == e_num && r_op->symb == e_num ) ||
+                    (l_op->symb == e_dbl && r_op->symb == e_dbl ))
+                {
+                    l_op->symb = r_op->symb;
+                } else {
+                    error_caller(TYPE_COMP_ERROR);
+                    exit(TYPE_COMP_ERROR);
+                }
+            }
+        }
+        
         // TODO
         // musí být stejné typy, bez konverze (Int Int, Dbl Dbl, Str Str)
         // Pro typy s nil ? potřeba předtím operátor !
-        l_op->symb = e_id;
     }
     else
     {
@@ -311,11 +462,57 @@ void rule_rela(T_stack *stack, Tlist *sym_list)
     }
     else if(l_op->symb == e_id || r_op->symb == e_id || l_op->symb == e_id_exc || r_op->symb == e_id_exc)
     {
+        if (l_op->symb == e_id || l_op->symb == e_id_exc){
+            check_e_id(l_op, sym_list);
+            // l_op = ID/ID!, r_op != ID/ID!
+            if (r_op->symb != e_id && r_op->symb != e_id_exc)
+            {
+                // kontrola typu
+                if ((l_op->symb == e_num && r_op->symb == e_num ) ||
+                    (l_op->symb == e_dbl && r_op->symb == e_dbl ) ||
+                    (l_op->symb == e_str && r_op->symb == e_str ))
+                {
+                    l_op->symb = e_bool;
+                } else {
+                    error_caller(TYPE_COMP_ERROR);
+                    exit(TYPE_COMP_ERROR);
+                }
+            // l_op = ID/ID!, r_op = ID/ID!
+            } else if(r_op->symb == e_id || r_op->symb == e_id_exc) {
+                check_e_id(r_op, sym_list);
+                // kontrola typu
+                if ((l_op->symb == e_num && r_op->symb == e_num ) ||
+                    (l_op->symb == e_dbl && r_op->symb == e_dbl ) ||
+                    (l_op->symb == e_str && r_op->symb == e_str ))
+                {
+                    l_op->symb = e_bool;
+                } else {
+                    error_caller(TYPE_COMP_ERROR);
+                    exit(TYPE_COMP_ERROR);
+                }
+            }
+        } else if (l_op->symb != e_id && l_op->symb != e_id_exc){
+            // l_op != ID/ID!, r_op = ID/ID!
+            if (r_op->symb == e_id || r_op->symb == e_id_exc)
+            {
+                check_e_id(r_op, sym_list);
+                // kontrola typu
+                if ((l_op->symb == e_num && r_op->symb == e_num ) ||
+                    (l_op->symb == e_dbl && r_op->symb == e_dbl ) ||
+                    (l_op->symb == e_str && r_op->symb == e_str ))
+                {
+                    l_op->symb = e_bool;
+                } else {
+                    error_caller(TYPE_COMP_ERROR);
+                    exit(TYPE_COMP_ERROR);
+                }
+            }
+        }
+
         // TODO: potřeba Tabulky symbolů
         // můsí být stejné typy a bez nil (takže pro String? musí být před tím !)
         stack_pop(stack);
         stack_pop(stack);
-        l_op->symb = e_bool;
     }
     else
     {
@@ -343,11 +540,78 @@ void rule_rela_equal(T_stack *stack, Tlist *sym_list)
     }
     else if(l_op->symb == e_id || r_op->symb == e_id || l_op->symb == e_id_exc || r_op->symb == e_id_exc)
     {
+        if (l_op->symb == e_id || l_op->symb == e_id_exc){
+            check_e_id(l_op, sym_list);
+            // l_op = ID/ID!, r_op != ID/ID!
+            if (r_op->symb != e_id && r_op->symb != e_id_exc)
+            {
+                // TODO pretypovani ciselneho literalu: int->double, double->int
+                // // int->double
+                // if (l_op->symb == e_dbl && r_op->symb == e_num)
+                // {
+                //     r_op->symb = e_dbl;
+                // // double->int
+                // } else if (l_op->symb == e_num && r_op->symb == e_dbl){
+                //     r_op->symb = e_num;
+                // }
+
+                // kontrola typu
+                if ((l_op->symb == e_num && r_op->symb == e_num ) ||
+                    (l_op->symb == e_dbl && r_op->symb == e_dbl ) ||
+                    (l_op->symb == e_str && r_op->symb == e_str ))
+                {
+                    l_op->symb = e_bool;
+                } else {
+                    error_caller(TYPE_COMP_ERROR);
+                    exit(TYPE_COMP_ERROR);
+                }
+            // l_op = ID/ID!, r_op = ID/ID!
+            } else if(r_op->symb == e_id || r_op->symb == e_id_exc) {
+                check_e_id(r_op, sym_list);
+                // kontrola typu
+                if ((l_op->symb == e_num && r_op->symb == e_num ) ||
+                    (l_op->symb == e_dbl && r_op->symb == e_dbl ) ||
+                    (l_op->symb == e_str && r_op->symb == e_str ))
+                {
+                    l_op->symb = e_bool;
+                } else {
+                    error_caller(TYPE_COMP_ERROR);
+                    exit(TYPE_COMP_ERROR);
+                }
+            }
+        } else if (l_op->symb != e_id && l_op->symb != e_id_exc){
+            // l_op != ID/ID!, r_op = ID/ID!
+            if (r_op->symb == e_id || r_op->symb == e_id_exc)
+            {
+                check_e_id(r_op, sym_list);
+
+                // TODO pretypovani ciselneho literalu: int->double, double->int
+                // // int->double
+                // if (l_op->symb == e_dbl && r_op->symb == e_num)
+                // {
+                //     l_op->symb = e_num;
+                // // double->int
+                // } else if (l_op->symb == e_num && r_op->symb == e_dbl){
+                //     l_op->symb = e_dbl;
+                // }
+
+                // kontrola typu
+                if ((l_op->symb == e_num && r_op->symb == e_num ) ||
+                    (l_op->symb == e_dbl && r_op->symb == e_dbl ) ||
+                    (l_op->symb == e_str && r_op->symb == e_str ))
+                {
+                    l_op->symb = e_bool;
+                } else {
+                    error_caller(TYPE_COMP_ERROR);
+                    exit(TYPE_COMP_ERROR);
+                }
+            }
+        }
+
         // TODO: potřeba Tabulky symbolů
         // můsí být také stejné typy (bez implicitní konverze) může být NIL type
         stack_pop(stack);
         stack_pop(stack);
-        l_op->symb = e_bool;
     }
     else
     {
@@ -376,6 +640,7 @@ void rule_nil_coal(T_stack *stack, Tlist *sym_list)
     }
     else if(l_op->symb == e_id || r_op->symb == e_id || l_op->symb == e_id_exc || r_op->symb == e_id_exc)
     {
+        
         // TODO: potřeba Tabulky symbolů
         stack_pop(stack);
         stack_pop(stack);
@@ -630,5 +895,6 @@ const char preced_tab [20][20] = {
         token_res = TOKEN_ERROR;
         break;
     }
+    printf("rrrr%d\n", token_res);
     return token_res;
 }
