@@ -16,10 +16,13 @@ Hlavičkový soubor pro parser na vyhodnocování výrazů
 #include "scanner.h"
 #include "expr_stack.h"
 #include "expr_parser.h"
+#include "symtable.h"
 
 #include <stdio.h>
 #include <string.h>
 #include <stdlib.h>
+
+// void check_id_exc();
 
 /* Funkce vybere typu tokenu (token.type) odpovídající index v precedenční tabulce
    Parametry jsou: token, ukazatel na příznak end_expr, ukazatel na frontu tokenů a ukazatel na soubor
@@ -35,6 +38,11 @@ void reduce_rule(T_stack *stack, T_elem *stack_top);
    Parametry jsou levý a pravý operand operátoru, který je nejvrchnějším terminálem na zásobníku 
    Bez návratové hodnoty*/
 void check_two_operands(T_elem l_op, T_elem r_op);
+
+
+void check_e_id(Tlist *list, T_elem *element);
+void check_id_exc(T_elem *l_op, Tlist *sym_list);
+
 
 /* Funkce pro aplikaci odpovídajícího pravidla
    Parametrem je ukazatel na zásobník

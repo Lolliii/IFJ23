@@ -11,6 +11,76 @@ Implementace parseru pro vyhodnocování výrazů
 
 #include "expr_parser.h"
 
+void check_e_id(Tlist *list, T_elem *element){
+    // hledani v listu
+    ListElement *frame = bSearch_all(list, element->value);
+    if(frame != NULL){
+        // hledani v strome
+        bStrom *found = bsearch_one(frame->data, element->value);
+        if(found != NULL){
+            T_id *id_data = (T_id *)(found->data);
+            // neni inicializovana
+            if(!id_data->initialized){
+                error_caller(UNDEF_UNINIT_VARIABLE_ERROR);
+                exit(UNDEF_UNINIT_VARIABLE_ERROR);
+            }
+            switch(id_data->type){
+                case TOKEN_KW_INT:
+                    element->symb = e_num;
+                    break;
+                case TOKEN_KW_STRING:
+                    element->symb = e_str;
+                    break;
+                case TOKEN_KW_DOUBLE:
+                    element->symb = e_dbl;
+                    break;
+                default:
+                    error_caller(UNDEF_UNINIT_VARIABLE_ERROR);
+                    exit(UNDEF_UNINIT_VARIABLE_ERROR);
+                    break;
+            }
+        }
+    }
+    error_caller(UNDEF_UNINIT_VARIABLE_ERROR);
+    exit(UNDEF_UNINIT_VARIABLE_ERROR);
+}
+
+void check_id_exc(T_elem *l_op, Tlist *sym_list){
+    // hledani v listu
+    ListElement *search = bSearch_all(sym_list, l_op->value);
+    if(search != NULL) {
+        // hledani v strome
+        bStrom *item = bsearch_one(search->data, l_op->value);
+        if(item != NULL) {
+            T_id *id_item = (T_id *)item->data;
+            // neni inicializovana
+            if (!id_item->initialized) {
+                error_caller(UNDEF_UNINIT_VARIABLE_ERROR);
+                exit(UNDEF_UNINIT_VARIABLE_ERROR);
+            }
+
+            switch (id_item->type)
+            {
+                case TOKEN_TYPE_INT:
+                    l_op->symb = e_num;
+                    break;
+                case TOKEN_TYPE_FLOAT:
+                    l_op->symb = e_dbl;
+                    break;
+                case TOKEN_TYPE_STRING:
+                    l_op->symb = e_str;
+                    break;
+                default:
+                    error_caller(UNDEF_UNINIT_VARIABLE_ERROR);
+                    exit(UNDEF_UNINIT_VARIABLE_ERROR);
+                    break;
+            }
+        }
+    }
+    error_caller(UNDEF_UNINIT_VARIABLE_ERROR);
+    exit(UNDEF_UNINIT_VARIABLE_ERROR);
+}
+
 prec_symb get_prec_value(T_token token, int *end_expr, T_queue *queue, FILE* file)
 {
     switch (token.type)
@@ -121,6 +191,11 @@ void rule_plus(T_stack *stack)
     }
     else if(l_op->symb == e_id || r_op->symb == e_id || l_op->symb == e_id_exc || r_op->symb == e_id_exc)
     {
+        // if (l_op->symb == e_id){
+        //     check_e_id();
+        // } else if (l_op->symb == e_id_exc) {
+        //     check_id_exc();
+        // }
         // TODO
         // musí být stejné typy, bez konverze (Int Int, Dbl Dbl, Str Str)
         // Pro typy s nil ? potřeba předtím operátor !
