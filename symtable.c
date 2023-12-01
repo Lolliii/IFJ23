@@ -262,6 +262,17 @@ void bDestroyR(bStrom *ptr){
     }
 }
 
+//updatne given root
+bStrom *bUpdate_root(bStrom *root, bool init){
+    if(root != NULL){
+        if(root->data_typ == 3){
+            T_id *id_data = (T_id *)(root->data);
+            id_data->initialized = init;
+            return root;
+        }
+    }
+    return NULL;
+}
 
 bStrom *bsearch_one(bStrom *root, char *search){
     if(root == NULL){
