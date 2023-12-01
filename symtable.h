@@ -111,6 +111,6 @@ void next_Lil(Tlist *t);
 void destroy_LilLast(Tlist *t); //destroy the last element
 void destroy_Lilall(Tlist *t); //will destroy the whole list
 ListElement *bSearch_all(Tlist *t, char *search);//perjde vsetko
-
+void destroy_Lilfirst(Tlist *t);
 
 #endif
