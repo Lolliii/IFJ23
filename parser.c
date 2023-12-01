@@ -162,6 +162,10 @@ bool stat(T_token token, T_queue *queue, FILE *file, T_func funkce, Tlist *sym_l
             token = getToken(queue, file);
             if (token.type == TOKEN_L_CURL)
             {
+                // Vytvoření nového rámce
+                bStrom *sym_table_frame = NULL;
+                add_to_Lil(sym_list, sym_table_frame);
+                set_act_first_Lil(sym_list);
                 // <body>
                 token = getToken(queue, file);
                 if (body(token, queue, file, &funkce, sym_list))
@@ -170,6 +174,9 @@ bool stat(T_token token, T_queue *queue, FILE *file, T_func funkce, Tlist *sym_l
                     token = getToken(queue, file);
                     if (token.type == TOKEN_R_CURL)
                     {
+                        // Zrušení rámce
+                        destroy_Lilfirst(sym_list);
+                        set_act_first_Lil(sym_list);
                         return true;
                     }
                 }
@@ -199,6 +206,7 @@ bool stat(T_token token, T_queue *queue, FILE *file, T_func funkce, Tlist *sym_l
                     token = getToken(queue, file);
                     if (token.type == TOKEN_R_CURL)
                     {
+                        // Zrušení rámce
                         destroy_Lilfirst(sym_list);
                         set_act_first_Lil(sym_list);
                         // else
@@ -222,6 +230,7 @@ bool stat(T_token token, T_queue *queue, FILE *file, T_func funkce, Tlist *sym_l
                                     token = getToken(queue, file);
                                     if (token.type == TOKEN_R_CURL)
                                     {
+                                        // Zrušení rámce
                                         destroy_Lilfirst(sym_list);
                                         set_act_first_Lil(sym_list);
                                         return true;
@@ -245,6 +254,11 @@ bool stat(T_token token, T_queue *queue, FILE *file, T_func funkce, Tlist *sym_l
             // TODO: zkontrolovat jestli uz nebyla definovana
             funkce.param_count = 0;
             funkce.name = token.value;
+            
+            // Vytvoření nového rámce
+            bStrom *sym_table_frame = NULL;
+            add_to_Lil(sym_list, sym_table_frame);
+            set_act_first_Lil(sym_list);
             // (
             token = getToken(queue, file);
             if (token.type == TOKEN_L_RND)
@@ -286,6 +300,9 @@ bool stat(T_token token, T_queue *queue, FILE *file, T_func funkce, Tlist *sym_l
                                             printf("%i\n", funkce.params[i].pType);
 
                                         }
+                                        // Zrušení rámce
+                                        destroy_Lilfirst(sym_list);
+                                        set_act_first_Lil(sym_list);
                                         return true;
                                     }
                                 }
@@ -428,8 +445,6 @@ bool id_type(T_token token, T_queue *queue, FILE *file, T_id id, Tlist *sym_list
         if (IsType(tmp))
         {
             id.type = tmp.type;
-            // printf("%s\n", id.name);   
-            // printf("%i\n", id.type);
             // <assign>
             T_token next_token = getToken(queue, file);
             return assign(next_token, queue, file, id, sym_list);
@@ -551,7 +566,6 @@ bool call(T_token token, T_queue *queue, FILE *file, T_id id, Tlist *sym_list){
             {
                 if((id.type != result && !IsTokenTypeCheck(id.type, result)))
                 {
-                    printf("s");
                     error_caller(TYPE_COMP_ERROR);
                     exit(TYPE_COMP_ERROR);
                 }
@@ -579,7 +593,6 @@ bool call(T_token token, T_queue *queue, FILE *file, T_id id, Tlist *sym_list){
                 }
                 else    // Typy nejsou shodné
                 {
-                    printf("s");
                     error_caller(TYPE_COMP_ERROR);
                     exit(TYPE_COMP_ERROR);
                 }
@@ -601,7 +614,6 @@ bool call(T_token token, T_queue *queue, FILE *file, T_id id, Tlist *sym_list){
                 id.type = result;
             else
             {
-                //printf("%s, %i: %i\n", id.name, id.type, result);
                 if((id.type != result && !IsTokenTypeCheck(id.type, result)))
                 {
                     error_caller(TYPE_COMP_ERROR);
