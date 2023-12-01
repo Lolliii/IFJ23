@@ -73,6 +73,16 @@ bool IsType(T_token token){
     return false;
 }
 
+bool IsTokenTypeCheck(T_token_type type, T_token_type result)
+{
+    if((result == TOKEN_KW_INT && type == TOKEN_TYPE_INT) ||
+    (result == TOKEN_KW_DOUBLE && type == TOKEN_TYPE_FLOAT) ||
+    (result == TOKEN_KW_STRING && type == TOKEN_TYPE_STRING))
+        return true;
+    else
+        return false;
+}
+
 // <prog> -> <st-list> 
 bool prog(T_token token, T_queue *queue, FILE *file) {
     // Iincializace symtable
@@ -280,12 +290,11 @@ bool stat(T_token token, T_queue *queue, FILE *file, T_func funkce, Tlist *sym_l
         // id
         T_id id;
         id.modifiable = 0;
-        id.type = -1;
+        id.type = 999;
         token = getToken(queue, file);
         if (token.type == TOKEN_ID)
         {
             id.name = token.value;
-
             // Kontrola jestli proměnná již není v daném framu
             // Pokud již existuje -> chyba            
             bStrom *tmp = bsearch_one(sym_list->first->data, id.name);
@@ -295,8 +304,6 @@ bool stat(T_token token, T_queue *queue, FILE *file, T_func funkce, Tlist *sym_l
                 exit(UNDEF_REDEF_ERROR);
             }
 
-            // printf("%s\n", id.name);
-            // printf("%i\n", id.type);
             // <id-type>
             token = getToken(queue, file);
             if(id_type(token, queue, file, id, sym_list)) return true;
@@ -315,7 +322,6 @@ bool stat(T_token token, T_queue *queue, FILE *file, T_func funkce, Tlist *sym_l
         {
             // <id-type>
             id.name = token.value;
-
             // Kontrola jestli proměnná již není v daném framu
             // Pokud již existuje -> chyba     
             bStrom *tmp = bsearch_one(sym_list->first->data, id.name);
@@ -324,9 +330,8 @@ bool stat(T_token token, T_queue *queue, FILE *file, T_func funkce, Tlist *sym_l
                 error_caller(UNDEF_REDEF_ERROR);
                 exit(UNDEF_REDEF_ERROR);
             }
-            
-            // printf("%s\n", id.name);
-            // printf("%i\n", id.type);
+
+            // <id-type>
             token = getToken(queue, file);
             if(id_type(token, queue, file, id, sym_list)) return true;
         }
@@ -337,19 +342,6 @@ bool stat(T_token token, T_queue *queue, FILE *file, T_func funkce, Tlist *sym_l
         // <id-stat>
         T_id id;
         id.name = token.value;
-
-        // Kontola jestli proměnná existuje
-        ListElement *frame = bSearch_all(sym_list, id.name);
-        if(frame == NULL)
-        {
-            error_caller(UNDEF_REDEF_ERROR);
-            exit(UNDEF_REDEF_ERROR);
-        }
-        // Proměnná existuje -> zjistim její typ ze symtable pro pozdější kontrolu
-        bStrom *item = bsearch_one(frame->data, id.name);
-        T_id *item_id1 = (T_id*)item->data;
-        id.type = item_id1->type;
-        id.modifiable = item_id1->modifiable;
 
         token = getToken(queue, file);
         if(id_stat(token, queue, file, id, sym_list)) return true;
@@ -449,7 +441,8 @@ bool assign(T_token token, T_queue *queue, FILE *file, T_id id, Tlist *sym_list)
         T_token next_token = getToken(queue, file);
         return call(next_token, queue, file, id, sym_list);
     // eps
-    }else{  // Pouze deklarace, vloz do symtable
+    }else{  // Pouze deklarace, vloz do symtable, není inicializovaná
+        id.initialized = false;
         sym_list->first->data = bInsert(sym_list->first->data, id.name, (void*)&id, 3);
         queue_add(queue, token);
         return true;
@@ -463,11 +456,27 @@ bool id_stat(T_token token, T_queue *queue, FILE *file, T_id id, Tlist *sym_list
     // =
     if(token.type == TOKEN_ASSIGN){
         // <call>
-        if(!id.modifiable)
+        // Je to přiřazení do proměnné
+        id.modifiable = -1;
+        // Kontola jestli proměnná existuje
+        ListElement *frame = bSearch_all(sym_list, id.name);
+        if(frame == NULL)
+        {
+            error_caller(UNDEF_REDEF_ERROR);
+            exit(UNDEF_REDEF_ERROR);
+        }
+        // Proměnná existuje -> zjistim její typ ze symtable pro pozdější kontrolu
+        bStrom *item = bsearch_one(frame->data, id.name);
+        T_id *item_id1 = (T_id*)item->data;
+        id.type = item_id1->type;
+
+        // Proměnná je definovaná typu LET -> nemodifikovatelná
+        if(!item_id1->modifiable)
         {
             error_caller(OTHER_ERROR);
             exit(OTHER_ERROR);
         }
+
         T_token next_token = getToken(queue, file);
         return call(next_token, queue, file, id, sym_list);
     // (
@@ -519,27 +528,49 @@ bool call(T_token token, T_queue *queue, FILE *file, T_id id, Tlist *sym_list){
             queue_add(queue, token);
             queue_add(queue, tmp);
 
-            // ! printf("expression return")
-            printf("expr: %i\n", expr_parser(file, queue));
-            // printf("%s\n", id.name);
-            // printf("%i\n", id.type);
-            bStrom *item = bsearch_one(sym_list->act->data, id.name);
-            // ! pokud není typ definován, definuje se z návratové hodnoty expressionu
-            /*if(id.type == -1)
-                id.type = expr_parser*/
-            if(item == NULL)
-                sym_list->act->data = bInsert(sym_list->act->data, id.name, (void*)&id, 3);
+            T_token_type result = expr_parser(file, queue);
+            id.initialized = true;
+            // Pokud není typ definován, definuje se z návratové hodnoty expressionu
+            // Jinak se zkontroluje jestli souhlasí s typem expressionu
+            if(id.type == 999)
+                id.type = result;
             else
             {
-            // ! zkontrolovat jestli je proměnná v aktualním frame, přes symtable search
-                // ! pokud ano, tak zjisti typ proměnné ze symtable a nevkládej a zkontroluj typ ze symtable a expression, 
-
+                if((id.type != result && IsTokenTypeCheck(result, id.type)))
+                {
+                    printf("s");
+                    error_caller(TYPE_COMP_ERROR);
+                    exit(TYPE_COMP_ERROR);
+                }
             }
-                // ! jinak:
-            // ! kontrola typů z expr_parser a id.type
-            // ! vložit strukturu ID do symtable
             
-            
+            bStrom *item = bsearch_one(sym_list->act->data, id.name);
+            // Pokud proměnná ještě není definována v symtable, tak ji vlož
+            // Pokud je id.modifiable == -1, to znamená, že proměnná již existuje v jiném rámci
+            if(item == NULL && id.modifiable != -1)
+                sym_list->act->data = bInsert(sym_list->act->data, id.name, (void*)&id, 3);
+            // Proměnná již je definovaná
+            if(item != NULL)
+            {
+                T_id *item_id1 = (T_id*)item->data;
+                // Kontrola jestli typ proměnná a vráceného výrazu je stejný
+                if(item_id1->type == result || IsTokenTypeCheck(item_id1->type, result))
+                {
+                    // Proměnná již je definovaná, ale nebyla inicializovaná (nyní už je)
+                    if(!item_id1->initialized)
+                    {
+                        ListElement *frame = bSearch_all(sym_list, item_id1->name);
+                        bStrom *cur_root = bsearch_one(frame->data, item_id1->name);
+                        bUpdate_root(cur_root, true);
+                    }
+                }
+                else    // Typy nejsou shodné
+                {
+                    printf("s");
+                    error_caller(TYPE_COMP_ERROR);
+                    exit(TYPE_COMP_ERROR);
+                }
+            }
             return true;
         }
         return false;
@@ -550,20 +581,46 @@ bool call(T_token token, T_queue *queue, FILE *file, T_id id, Tlist *sym_list){
             queue_add(queue, token);
         }
 
-        // ! printf("expression return")
-        printf("expr: %i\n", expr_parser(file, queue));
-        // printf("%s\n", id.name);
-        // printf("%i\n", id.type);
-
-        // ! zkontrolovat jestli je proměnná v aktualním frame, přes symtable search
-            // ! pokud ano, tak zjisti typ proměnné ze symtable a nevkládej a zkontroluj typ ze symtable a expression, 
-            // ! jinak:
-        // ! kontrola typů z expr_parser a id.type
-        // ! vložit strukturu ID do symtable
-
-        // ! pokud není typ definován, definuje se z návratové hodnoty expressionu
-        /*if(id.type == -1)
-            id.type = expr_parser*/
+        T_token_type result = expr_parser(file, queue);
+        id.initialized = true;
+            //  pokud není typ definován, definuje se z návratové hodnoty expressionu
+            if(id.type == 999)
+                id.type = result;
+            else
+            {
+                if((id.type != result && IsTokenTypeCheck(result, id.type)))
+                {
+                    error_caller(TYPE_COMP_ERROR);
+                    exit(TYPE_COMP_ERROR);
+                }
+            }
+            
+            bStrom *item = bsearch_one(sym_list->act->data, id.name);
+            // Pokud proměnná ještě není definována v symtable, tak ji vlož
+            // Pokud je id.modifiable == -1, to znamená, že proměnná již existuje v jiném rámci
+            if(item == NULL && id.modifiable != -1)
+                sym_list->act->data = bInsert(sym_list->act->data, id.name, (void*)&id, 3);
+            // Proměnná již je definovaná
+            if(item != NULL)
+            {
+                T_id *item_id1 = (T_id*)item->data;
+                // Kontrola jestli typ proměnná a vráceného výrazu je stejný
+                if(item_id1->type == result || IsTokenTypeCheck(item_id1->type, result))
+                {
+                    // Proměnná již je definovaná, ale nebyla inicializovaná (nyní už je)
+                    if(!item_id1->initialized )
+                    {
+                        ListElement *frame = bSearch_all(sym_list, item_id1->name);
+                        bStrom *cur_root = bsearch_one(frame->data, item_id1->name);
+                        bUpdate_root(cur_root, true);
+                    }
+                }
+                else    // Typy nejsou shodné
+                {
+                    error_caller(TYPE_COMP_ERROR);
+                    exit(TYPE_COMP_ERROR);
+                }
+            }
         return true;
     }
     return false;
