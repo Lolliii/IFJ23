@@ -85,7 +85,7 @@ void bPreOrder(bStrom *root);//vypisuje
 void bInOrder(bStrom *root);
 void bPostOrder(bStrom *root);
 bStrom *bsearch_one(bStrom *root, char *search);
-
+bStrom *bUpdate_root(bStrom *root, bool init);
 
 //tu je list
 typedef struct ListE{
