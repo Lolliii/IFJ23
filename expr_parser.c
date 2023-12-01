@@ -11,7 +11,7 @@ Implementace parseru pro vyhodnocování výrazů
 
 #include "expr_parser.h"
 
-void check_e_id(Tlist *list, T_elem *element){
+void check_e_id(T_elem *element, Tlist *list){
     // hledani v listu
     ListElement *frame = bSearch_all(list, element->value);
     if(frame != NULL){
@@ -160,7 +160,7 @@ void check_two_operands(T_elem l_op, T_elem r_op)
     }
 }
 
-void rule_plus(T_stack *stack)
+void rule_plus(T_stack *stack, Tlist *sym_list)
 {
     T_elem *l_op, *r_op;
     l_op = stack_get_val(stack, 2);
@@ -191,11 +191,13 @@ void rule_plus(T_stack *stack)
     }
     else if(l_op->symb == e_id || r_op->symb == e_id || l_op->symb == e_id_exc || r_op->symb == e_id_exc)
     {
-        // if (l_op->symb == e_id){
-        //     check_e_id();
-        // } else if (l_op->symb == e_id_exc) {
-        //     check_id_exc();
-        // }
+        if (l_op->symb == e_id){
+            check_e_id(l_op, sym_list);
+            
+
+        } else if (l_op->symb == e_id_exc) {
+            check_id_exc(l_op, sym_list);
+        }
         // TODO
         // musí být stejné typy, bez konverze (Int Int, Dbl Dbl, Str Str)
         // Pro typy s nil ? potřeba předtím operátor !
@@ -212,8 +214,9 @@ void rule_plus(T_stack *stack)
     stack_pop(stack);
 }
 
-void rule_min_mul(T_stack *stack)
+void rule_min_mul(T_stack *stack, Tlist *sym_list)
 {
+    (void)sym_list;
     T_elem *l_op, *r_op;
     l_op = stack_get_val(stack, 2);
     r_op = stack_get_val(stack, 0);
@@ -247,8 +250,10 @@ void rule_min_mul(T_stack *stack)
     stack_pop(stack);
 }
 
-void rule_div(T_stack *stack)
+void rule_div(T_stack *stack, Tlist *sym_list)
 {
+    (void)sym_list;
+
     T_elem *l_op, *r_op;
     l_op = stack_get_val(stack, 2);
     r_op = stack_get_val(stack, 0);
@@ -287,8 +292,10 @@ void rule_div(T_stack *stack)
     stack_pop(stack);
 }
 
-void rule_rela(T_stack *stack)
+void rule_rela(T_stack *stack, Tlist *sym_list)
 {
+    (void)sym_list;
+
     T_elem *l_op, *r_op;
     l_op = stack_get_val(stack, 2);
     r_op = stack_get_val(stack, 0);
@@ -317,8 +324,10 @@ void rule_rela(T_stack *stack)
     }
 }
 
-void rule_rela_equal(T_stack *stack)
+void rule_rela_equal(T_stack *stack, Tlist *sym_list)
 {
+    (void)sym_list;
+
     T_elem *l_op, *r_op;
     l_op = stack_get_val(stack, 2);
     r_op = stack_get_val(stack, 0);
@@ -348,8 +357,10 @@ void rule_rela_equal(T_stack *stack)
 }
 
 // Nil coalescing operator
-void rule_nil_coal(T_stack *stack)
+void rule_nil_coal(T_stack *stack, Tlist *sym_list)
 {
+    (void)sym_list;
+
     T_elem *l_op, *r_op;
     l_op = stack_get_val(stack, 2);
     r_op = stack_get_val(stack, 0);
@@ -377,51 +388,53 @@ void rule_nil_coal(T_stack *stack)
     }
 }
 
-void reduce_rule(T_stack *stack, T_elem *stack_top)
+void reduce_rule(T_stack *stack, T_elem *stack_top, Tlist *sym_list)
 {
+    (void)sym_list;
+
     // Podle terminálu na vrcholu zásobníku (expressions jsou přeskočeny) vybere pravidlo
     switch (stack_top->symb)
     {
     // Pravidla se dvěma operandy
     case prec_add:
-        rule_plus(stack);
+        rule_plus(stack, sym_list);
         break;
     case prec_sub:
-        rule_min_mul(stack);
+        rule_min_mul(stack, sym_list);
         //printf("- ");
         break;
     case prec_mul:
-        rule_min_mul(stack);
+        rule_min_mul(stack, sym_list);
         //printf("* ");
         break;
     case prec_divi:
         //printf("/ ");
-        rule_div(stack);
+        rule_div(stack, sym_list);
         break;
         
     case prec_lt:
         //printf("< ");
-        rule_rela(stack);
+        rule_rela(stack, sym_list);
         break;
     case prec_lt_eq:
         //printf("<= ");
-        rule_rela(stack);
+        rule_rela(stack, sym_list);
         break;
     case prec_gt:
         //printf("> ");
-        rule_rela(stack);
+        rule_rela(stack, sym_list);
         break;
     case prec_gt_eq:
         //printf(">= ");
-        rule_rela(stack);
+        rule_rela(stack, sym_list);
         break;
     case prec_eq:
         //printf("== ");
-        rule_rela_equal(stack);
+        rule_rela_equal(stack, sym_list);
         break;
     case prec_n_eq:
         //printf("!= ");
-        rule_rela_equal(stack);
+        rule_rela_equal(stack, sym_list);
         break;
     
     // Pravidlo E->id!
@@ -447,7 +460,7 @@ void reduce_rule(T_stack *stack, T_elem *stack_top)
     
     case prec_que:
         //printf("??");
-        rule_nil_coal(stack);
+        rule_nil_coal(stack, sym_list);
         break;
     
     // Pravidla typu: E->id, E->int atd, jsou vyřešeny změnou indexu tokenu (stack_top->symb) na vrcholu zásobníku
@@ -481,8 +494,10 @@ void reduce_rule(T_stack *stack, T_elem *stack_top)
 
 
 
-T_token_type expr_parser(FILE* file, T_queue *queue)
+T_token_type expr_parser(FILE* file, T_queue *queue, Tlist *sym_list)
 {
+    (void)sym_list;
+
 // Precedenční tabulka:
 const char preced_tab [20][20] = {
 /* +    -    *    /   id!   (    )    <   <=    >   >=   ==   !=    id  int  dbl  str  ??    $*/
@@ -551,14 +566,14 @@ const char preced_tab [20][20] = {
 
         // Proveď redukci a aplikuj pravidlo
         case '>':
-            reduce_rule(stack, stack_top);
+            reduce_rule(stack, stack_top, sym_list);
             break;
 
         // Pro vyhodnocení závorek -> je to vlastně operace shift a zároveň redukce
         case '=':
             stack_push(stack, token, token.value, idx_col);
             stack_top = stack_get_val(stack, 0);
-            reduce_rule(stack, stack_top);
+            reduce_rule(stack, stack_top, sym_list);
             if(token.valueLength)
                 free(token.value);
             token = getToken(queue, file);

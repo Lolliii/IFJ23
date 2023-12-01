@@ -32,7 +32,7 @@ prec_symb get_prec_value(T_token token, int *end_expr, T_queue *queue, FILE* fil
 /* Funkce pro vybrání pravidla pro prvek z vrcholu zásobníku
    Parametry jsou: ukazatele na zásobník a na prvek z vrcholu zásobníku
    Bez návratové hodnoty*/
-void reduce_rule(T_stack *stack, T_elem *stack_top);
+void reduce_rule(T_stack *stack, T_elem *stack_top, Tlist *sym_list);
 
 /* Funkce, která zkontroluje, zdali je levý a pravý operand literál nebo ID
    Parametry jsou levý a pravý operand operátoru, který je nejvrchnějším terminálem na zásobníku 
@@ -40,23 +40,23 @@ void reduce_rule(T_stack *stack, T_elem *stack_top);
 void check_two_operands(T_elem l_op, T_elem r_op);
 
 
-void check_e_id(Tlist *list, T_elem *element);
-void check_id_exc(T_elem *l_op, Tlist *sym_list);
+void check_e_id(T_elem *element, Tlist *sym_list);
+void check_id_exc(T_elem *element, Tlist *sym_list);
 
 
 /* Funkce pro aplikaci odpovídajícího pravidla
    Parametrem je ukazatel na zásobník
    Bez návratové hodnoty, v případě Syntaktické/Sématické chyby funkce ukončí program*/
-void rule_plus(T_stack *stack);
-void rule_min_mul(T_stack *stack);
-void rule_div(T_stack *stack);
-void rule_rela(T_stack *stack);
-void rule_rela_equal(T_stack *stack);
-void rule_nil_coal(T_stack *stack);
+void rule_plus(T_stack *stack, Tlist *sym_list);
+void rule_min_mul(T_stack *stack, Tlist *sym_list);
+void rule_div(T_stack *stack, Tlist *sym_list);
+void rule_rela(T_stack *stack, Tlist *sym_list);
+void rule_rela_equal(T_stack *stack, Tlist *sym_list);
+void rule_nil_coal(T_stack *stack, Tlist *sym_list);
 
 /* Funkce podle indexu prvku z vrcholu zásobníku a aktualního tokenu vybere operaci (<, >, =, x)
    Parametry jsou ukazatel na soubor a na frontu
    Bez návratové hodnoty, v případě operace 'x' funkce ukončí program*/
-T_token_type expr_parser(FILE* file, T_queue *queue);
+T_token_type expr_parser(FILE* file, T_queue *queue, Tlist *sym_list);
 
 #endif

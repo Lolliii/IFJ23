@@ -832,4 +832,3 @@ bool param(T_token token, T_queue *queue, FILE *file, T_func *funkce, Tlist *sym
     }
     return false;
 }
-    
