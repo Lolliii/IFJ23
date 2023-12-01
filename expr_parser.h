@@ -22,8 +22,6 @@ Hlavičkový soubor pro parser na vyhodnocování výrazů
 #include <string.h>
 #include <stdlib.h>
 
-// void check_id_exc();
-
 /* Funkce vybere typu tokenu (token.type) odpovídající index v precedenční tabulce
    Parametry jsou: token, ukazatel na příznak end_expr, ukazatel na frontu tokenů a ukazatel na soubor
    Funkce vrací číslo indexu v precedenční tabulce*/
@@ -37,13 +35,14 @@ void reduce_rule(T_stack *stack, T_elem *stack_top, Tlist *sym_list);
 /* Funkce, která zkontroluje, zdali je levý a pravý operand literál nebo ID
    Parametry jsou levý a pravý operand operátoru, který je nejvrchnějším terminálem na zásobníku 
    Bez návratové hodnoty*/
-void check_two_operands(T_elem l_op, T_elem r_op);
+void check_two_operands(T_elem l_op, T_elem r_op);    
 
+void check_e_id(T_elem *element, Tlist *sym_list);    //hledani typu id
+void check_id_exc(T_elem *element, Tlist *sym_list);  //funkci nepouzivame
 
-void check_e_id(T_elem *element, Tlist *sym_list);
-void check_id_exc(T_elem *element, Tlist *sym_list);
-void id_rule_plus(T_elem *l_op, T_elem *r_op);
-void id_rule_min_mul(T_elem *l_op, T_elem *r_op);
+//kontroly komatibility
+void id_rule_plus(T_elem *l_op, T_elem *r_op);        
+void id_rule_min_mul(T_elem *l_op, T_elem *r_op);     
 void id_rule_div(T_elem *l_op, T_elem *r_op);
 void id_rule_rela(T_elem *l_op, T_elem *r_op);
 void id_rule_rela_equal(T_elem *l_op, T_elem *r_op);
