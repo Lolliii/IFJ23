@@ -450,6 +450,16 @@ void destroy_LilLast(Tlist *t){
     }
 }
 
+void destroy_Lilfirst(Tlist *t){
+    if( t->act == t->first){
+        t->act = t->first->rPtr;
+    }
+    ListElement *tmp = t->first;
+    t->first = t->first->rPtr;
+    bDestroyR(tmp->data);
+    free(tmp);
+}
+
 //will free even the Tlist *t
 void destroy_Lilall(Tlist *t){
     t->act = NULL;
