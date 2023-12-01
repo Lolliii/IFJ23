@@ -279,7 +279,7 @@ bool stat(T_token token, T_queue *queue, FILE *file, T_func funkce, Tlist *sym_l
         // Deklarace ID, napln sturkturu pro symtable
         // id
         T_id id;
-        id.modifiable = false;
+        id.modifiable = 0;
         id.type = -1;
         token = getToken(queue, file);
         if (token.type == TOKEN_ID)
@@ -308,7 +308,7 @@ bool stat(T_token token, T_queue *queue, FILE *file, T_func funkce, Tlist *sym_l
         // Deklarace ID, napln sturkturu pro symtable
         // id
         T_id id;
-        id.modifiable = true;
+        id.modifiable = 1;
         id.type = -1;
         token = getToken(queue, file);
         if (token.type == TOKEN_ID)

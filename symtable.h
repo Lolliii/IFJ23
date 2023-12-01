@@ -46,7 +46,7 @@ typedef struct id{
     char *name;                 // Nazev promenne
     bool  initialized;          // Je inicializovana?
     T_token_type type;
-    bool  modifiable;           // Lze menit?
+    int  modifiable;           // 0 -> let, 1 -> var, -1 -> ani jedno
 }T_id;
 
 // Priklad 
