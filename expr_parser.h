@@ -42,6 +42,12 @@ void check_two_operands(T_elem l_op, T_elem r_op);
 
 void check_e_id(T_elem *element, Tlist *sym_list);
 void check_id_exc(T_elem *element, Tlist *sym_list);
+void id_rule_plus(T_elem *l_op, T_elem *r_op);
+void id_rule_min_mul(T_elem *l_op, T_elem *r_op);
+void id_rule_div(T_elem *l_op, T_elem *r_op);
+void id_rule_rela(T_elem *l_op, T_elem *r_op);
+void id_rule_rela_equal(T_elem *l_op, T_elem *r_op);
+void id_rule_nil_coal(T_elem *l_op, T_elem *r_op);
 
 
 /* Funkce pro aplikaci odpovídajícího pravidla
