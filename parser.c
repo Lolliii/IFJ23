@@ -377,7 +377,7 @@ bool ret_stat(T_token token, T_queue *queue, FILE *file, T_func funkce, Tlist *s
     // TODO: zkontorlovat vraceny typ s typem v definici
     if(!is_void)
     {
-        T_token_type result = expr_parser(file, queue);
+        T_token_type result = expr_parser(file, queue, sym_list);
         printf("expr: %i\n", result);
         printf("%i", funkce.returnType);
 
@@ -528,7 +528,7 @@ bool call(T_token token, T_queue *queue, FILE *file, T_id id, Tlist *sym_list){
             queue_add(queue, token);
             queue_add(queue, tmp);
 
-            T_token_type result = expr_parser(file, queue);
+            T_token_type result = expr_parser(file, queue, sym_list);
             id.initialized = true;
             // Pokud není typ definován, definuje se z návratové hodnoty expressionu
             // Jinak se zkontroluje jestli souhlasí s typem expressionu
@@ -581,7 +581,7 @@ bool call(T_token token, T_queue *queue, FILE *file, T_id id, Tlist *sym_list){
             queue_add(queue, token);
         }
 
-        T_token_type result = expr_parser(file, queue);
+        T_token_type result = expr_parser(file, queue, sym_list);
         id.initialized = true;
             //  pokud není typ definován, definuje se z návratové hodnoty expressionu
             if(id.type == 999)
@@ -645,7 +645,7 @@ bool exp_stat(T_token token, T_queue *queue, FILE *file, Tlist *sym_list){
             queue_add(queue, token);
         }
         // ! neco udelat s navratovou hodnotou
-        printf("expr: %i\n", expr_parser(file, queue));
+        printf("expr: %i\n", expr_parser(file, queue, sym_list));
         return true;
     }
     return false;
