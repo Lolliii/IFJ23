@@ -85,6 +85,93 @@ bool IsTokenTypeCheck(T_token_type type, T_token_type result)
         return false;
 }
 
+// Funkce pro kontrolu, zdali parametry volané funkce souhlasí s její definicí
+void defined_fun_check(T_func *def_fun, T_func fun_called)
+{
+    if(def_fun->param_count == fun_called.param_count)              // kontrola počtu parametrů
+    {
+        for(int i = 0; i < def_fun->param_count; i++)
+        {
+            if(def_fun->params[i].pType == fun_called.params[i].pType)      // kontrola typu parametru
+            {
+                if(def_fun->params[i].pName == NULL && fun_called.params[i].pName == NULL)      // Nemá pName
+                    continue;
+                else if(def_fun->params[i].pName != NULL && fun_called.params[i].pName != NULL)    // definice nebo volání má pName
+                {
+                    if(strcmp(def_fun->params[i].pName, fun_called.params[i].pName) == 0)          // kontrola pName
+                    {
+                        continue;
+                    }
+                }
+            }
+            error_caller(PARAM_ERROR);
+            exit(PARAM_ERROR);
+        }
+    }
+    else
+    {
+        error_caller(PARAM_ERROR);
+        exit(PARAM_ERROR);
+    }
+}
+
+// Funkce pro vložení ID do symtable, pokud ještě v tabulce není
+// Připadně upraví záznam v symtable na inicialized
+// Volá se při přiřazovaní do proměnné
+void insert_var_to_symtable(Tlist *sym_list, T_id id, T_token_type result)
+{
+    bStrom *item = bsearch_one(sym_list->first->data, id.name);
+
+    // Pokud proměnná ještě není definována v symtable, tak ji vlož
+    // Pokud je id.modifiable == -1, to znamená, že proměnná již existuje v jiném rámci -> nevkládej
+    if(item == NULL && id.modifiable != -1)
+        sym_list->first->data = bInsert(sym_list->first->data, id.name, (void*)&id, 3);
+
+    // Proměnná již je definovaná
+    if(item != NULL)
+    {
+        T_id *item_id1 = (T_id*)item->data;
+        // Kontrola jestli typ proměnné a vráceného výrazu je stejný
+        if(item_id1->type == result || IsTokenTypeCheck(item_id1->type, result))
+        {
+            // Proměnná již je definovaná, ale nebyla inicializovaná (nyní už je)
+            if(!item_id1->initialized)
+            {
+                ListElement *frame = bSearch_all(sym_list, item_id1->name);
+                bStrom *cur_root = bsearch_one(frame->data, item_id1->name);
+                bUpdate_root(cur_root, true);
+            }
+        }
+        else    // Typy nejsou shodné
+        {
+            error_caller(TYPE_COMP_ERROR);
+            exit(TYPE_COMP_ERROR);
+        }
+    }
+}
+
+// Překlad mezi typy tokenů a keywords
+T_token_type token_to_keyword(T_token_type tok_type)
+{
+    switch (tok_type)
+    {
+        case TOKEN_INT:
+        case TOKEN_INT_EXP:
+        case TOKEN_INT_EXP_PM:
+            return TOKEN_KW_INT;
+        case TOKEN_DOUBLE:
+        case TOKEN_DOUBLE_EXP:
+        case TOKEN_DOUBLE_EXP_PM:
+            return TOKEN_KW_DOUBLE;
+        case TOKEN_STRING:
+        case TOKEN_ML_STRING:
+            return TOKEN_KW_STRING;
+        default:
+            return tok_type;
+    }
+}
+
+
 // <prog> -> <st-list> 
 bool prog(T_token token, T_queue *queue, FILE *file) {
     // Incializace symtable
@@ -94,7 +181,7 @@ bool prog(T_token token, T_queue *queue, FILE *file) {
     add_to_Lil(sym_list, sym_table);
     set_act_first_Lil(sym_list);
 
-    // Strom pro deklarace funkcí
+    // Strom pro deklarace funkcí - je to také seznam, který má pouze jeden list
     Tlist *fun_list;
     fun_list = init_list();
     bStrom *fun_tree = NULL;
@@ -123,7 +210,7 @@ bool st_list(T_token token, T_queue *queue, FILE *file, Tlist *sym_list, Tlist *
     if (token.type == TOKEN_EOF) {
         return true;
     } else {
-        T_func funkce;
+        T_func funkce;              // Struktura pro případnou definici funkce, v případě definice se postupně naplňuje údaji
         funkce.name = NULL;
         // <stat>
         if (stat(token, queue, file, funkce, sym_list, fun_list, fun_call_list))
@@ -346,7 +433,7 @@ bool stat(T_token token, T_queue *queue, FILE *file, T_func funkce, Tlist *sym_l
             bStrom *tmp = bsearch_one(sym_list->first->data, id.name);
             if(tmp != NULL)
             {
-                // Pokud již existuje -> chyba            
+                // Pokud již existuje -> chyba
                 error_caller(UNDEF_REDEF_ERROR);
                 exit(UNDEF_REDEF_ERROR);
             }
@@ -480,7 +567,7 @@ bool assign(T_token token, T_queue *queue, FILE *file, T_id id, Tlist *sym_list,
         return call(next_token, queue, file, id, sym_list, fun_list);
     // eps
     }else{  
-        // Pouze deklarace, vloz do symtable, není inicializovaná
+        // Pouze deklarace proměnné, vlož ji do symtable, není inicializovaná
         id.initialized = false;
         sym_list->first->data = bInsert(sym_list->first->data, id.name, (void*)&id, 3);
         queue_add(queue, token);
@@ -525,52 +612,24 @@ bool id_stat(T_token token, T_queue *queue, FILE *file, T_id id, Tlist *sym_list
     }else if(token.type == TOKEN_L_RND){    // Vola se funkce bez prirazeni
         // <term-list>
         // Jedná se o volání funkce, plním strukturu pro funce
-        T_func fun_called;
-        fun_called.param_count = 0;
-        fun_called.name = id.name;          // Jméno funkce bylo v předchozím tokenu a je uloženo v id.name
+        T_func fun_called = {.param_count = 0, .name = id.name}; // Jméno funkce bylo v předchozím tokenu a je uloženo v id.name
 
         T_token next_token = getToken(queue, file);
         if(term_list(next_token, queue, file, sym_list, &fun_called)){
             // )
             token = getToken(queue, file);
             if(token.type == TOKEN_R_RND){
-
-                (void) fun_called_list;
+(void) fun_called_list;
                 bStrom *fun_tmp = bsearch_one(fun_list->first->data, fun_called.name);
-                
-                // FUNKCE UŽ JE DEFINOVANA -> kontrola
                 if(fun_tmp != NULL)
                 {
+                    // FUNKCE UŽ JE DEFINOVANA -> kontrola
                     T_func *def_fun = (T_func*)fun_tmp->data;
-                    if(def_fun->param_count == fun_called.param_count)
-                    {
-                        for(int i = 0; i < def_fun->param_count; i++)
-                        {
-                            if(def_fun->params[i].pType == fun_called.params[i].pType)
-                            {
-                                if(def_fun->params[i].pName == NULL && fun_called.params[i].pName == NULL)
-                                    continue;
-                                else if(def_fun->params[i].pName != NULL && fun_called.params[i].pName != NULL)
-                                {
-                                    if(strcmp(def_fun->params[i].pName, fun_called.params[i].pName) == 0)
-                                    {
-                                        continue;
-                                    }
-                                }
-                            }
-                            error_caller(PARAM_ERROR);
-                            exit(PARAM_ERROR);
-                        }
-                    }
-                    else
-                    {
-                        error_caller(PARAM_ERROR);
-                        exit(PARAM_ERROR);
-                    }
+                    defined_fun_check(def_fun, fun_called);
                 }
-                // JEŠTĚ NENÍ DEFINOVANÁ
                 else
                 {
+                    // JEŠTĚ NENÍ DEFINOVANÁ
                     printf("NENI DEF\n");   
                 }
                 return true;
@@ -590,16 +649,14 @@ bool call(T_token token, T_queue *queue, FILE *file, T_id id, Tlist *sym_list, T
     if(token.type == TOKEN_ID){
         // kouknu dopredu na dalsi token
         T_token tmp = getToken(queue, file);
+        
         // id ( --> volani funkce
-        // TODO: Prirazeni -> zkontroluj navratovy typ funkce a typ promenne
         if (tmp.type == TOKEN_L_RND)
         {
-            T_func fun_called;
-            fun_called.name = token.value;
-            fun_called.param_count = 0;
-
+            T_func fun_called = {.name = token.value, .param_count = 0};
             token = tmp;
             // <term-list>
+            
             token = getToken(queue, file);
             if(term_list(token, queue, file, sym_list, &fun_called))
             {
@@ -608,54 +665,29 @@ bool call(T_token token, T_queue *queue, FILE *file, T_id id, Tlist *sym_list, T
                 if(token.type == TOKEN_R_RND){
                     bStrom *fun_tmp = bsearch_one(fun_list->first->data, fun_called.name);
                     
-                    // FUNKCE UŽ JE DEFINOVANA -> kontrola
                     if(fun_tmp != NULL)
                     {
+                        // FUNKCE UŽ JE DEFINOVANA -> kontrola
                         T_func *def_fun = (T_func*)fun_tmp->data;
-                        if(def_fun->param_count == fun_called.param_count)
-                        {
-                            for(int i = 0; i < def_fun->param_count; i++)
-                            {
-                                if(def_fun->params[i].pType == fun_called.params[i].pType)
-                                {
-                                    if(def_fun->params[i].pName == NULL && fun_called.params[i].pName == NULL)
-                                        continue;
-                                    else if(def_fun->params[i].pName != NULL && fun_called.params[i].pName != NULL)
-                                    {
-                                        if(strcmp(def_fun->params[i].pName, fun_called.params[i].pName) == 0)
-                                        {
-                                            continue;
-                                        }
-                                    }
-                                }
-                                error_caller(PARAM_ERROR);
-                                exit(PARAM_ERROR);
-                            }
-                        }
-                        else
-                        {
-                            error_caller(PARAM_ERROR);
-                            exit(PARAM_ERROR);
-                        }
+                        defined_fun_check(def_fun, fun_called);
 
                         // VLOŽENÍ DO SYMTABLE
                         id.initialized = true;
                         // Nyní mám celou definici proměnné nebo přiřazení do proměnné
 
                         // Pokud není typ definován (zůstala hodnota 999), definuje se z návratové hodnoty expressionu
-                        // Jinak se zkontroluje jestli souhlasí s typem expressionu
                         if(id.type == 999)
                             if(def_fun->returnType == TOKEN_VOID)
                             {
-                                // TODO pridat do error caller
+                                // Přiřazuji typ void do proměnné, která nemá definovaný typ -> chyba 8
                                 error_caller(MISSING_TYPE_ERROR);
-                                fprintf(stderr, "ERROR -> 8: Missing type\n");
                                 exit(MISSING_TYPE_ERROR);
                             }
                             else
                                 id.type = def_fun->returnType;
                         else
                         {
+                            // Souhlasí typ proměnné s typem, který vrací funkce?
                             if((id.type != def_fun->returnType && !IsTokenTypeCheck(id.type, def_fun->returnType)))
                             {
                                 if(!IsTokenTypeCheck(def_fun->returnType, id.type))
@@ -665,49 +697,18 @@ bool call(T_token token, T_queue *queue, FILE *file, T_id id, Tlist *sym_list, T
                                 }
                             }
                         }
-                        
-                        bStrom *item = bsearch_one(sym_list->first->data, id.name);
-
-                        // Pokud proměnná ještě není definována v symtable, tak ji vlož
-                        // Pokud je id.modifiable == -1, to znamená, že proměnná již existuje v jiném rámci -> nevkládej
-                        if(item == NULL && id.modifiable != -1)
-                            sym_list->first->data = bInsert(sym_list->first->data, id.name, (void*)&id, 3);
-                        
-                        // Proměnná již je definovaná
-                        if(item != NULL)
-                        {
-                            T_id *item_id1 = (T_id*)item->data;
-                            // Kontrola jestli typ proměnné a vráceného výrazu je stejný
-                            if(item_id1->type == def_fun->returnType || IsTokenTypeCheck(item_id1->type, def_fun->returnType))
-                            {
-                                // Proměnná již je definovaná, ale nebyla inicializovaná (nyní už je)
-                                if(!item_id1->initialized)
-                                {
-                                    ListElement *frame = bSearch_all(sym_list, item_id1->name);
-                                    bStrom *cur_root = bsearch_one(frame->data, item_id1->name);
-                                    bUpdate_root(cur_root, true);
-                                }
-                            }
-                            else    // Typy nejsou shodné
-                            {
-                                error_caller(TYPE_COMP_ERROR);
-                                exit(TYPE_COMP_ERROR);
-                            }
-                        }
+                        // Vlož proměnnou do tabulky symbolů
+                        insert_var_to_symtable(sym_list, id, def_fun->returnType);
                     }
                     else
                     {
+                        // TODO
                         printf("NENI DEF\n");
-                        return true;
                     }
-
-
-
                     return true;
                 }
             }
             return false;
-            
 
         // neni to volani funkce --> je to vyraz
         // id <exp>
@@ -730,35 +731,8 @@ bool call(T_token token, T_queue *queue, FILE *file, T_id id, Tlist *sym_list, T
                     exit(TYPE_COMP_ERROR);
                 }
             }
-            
-            bStrom *item = bsearch_one(sym_list->first->data, id.name);
-
-            // Pokud proměnná ještě není definována v symtable, tak ji vlož
-            // Pokud je id.modifiable == -1, to znamená, že proměnná již existuje v jiném rámci -> nevkládej
-            if(item == NULL && id.modifiable != -1)
-                sym_list->first->data = bInsert(sym_list->first->data, id.name, (void*)&id, 3);
-            
-            // Proměnná již je definovaná
-            if(item != NULL)
-            {
-                T_id *item_id1 = (T_id*)item->data;
-                // Kontrola jestli typ proměnné a vráceného výrazu je stejný
-                if(item_id1->type == result || IsTokenTypeCheck(item_id1->type, result))
-                {
-                    // Proměnná již je definovaná, ale nebyla inicializovaná (nyní už je)
-                    if(!item_id1->initialized)
-                    {
-                        ListElement *frame = bSearch_all(sym_list, item_id1->name);
-                        bStrom *cur_root = bsearch_one(frame->data, item_id1->name);
-                        bUpdate_root(cur_root, true);
-                    }
-                }
-                else    // Typy nejsou shodné
-                {
-                    error_caller(TYPE_COMP_ERROR);
-                    exit(TYPE_COMP_ERROR);
-                }
-            }
+            // Vlož proměnnou do tabulky symbolů
+            insert_var_to_symtable(sym_list, id, result);
             return true;
         }
         return false;
@@ -784,35 +758,8 @@ bool call(T_token token, T_queue *queue, FILE *file, T_id id, Tlist *sym_list, T
                 exit(TYPE_COMP_ERROR);
             }
         }
-        
-        bStrom *item = bsearch_one(sym_list->first->data, id.name);
-
-        // Pokud proměnná ještě není definována v symtable, tak ji vlož
-        // Pokud je id.modifiable == -1, to znamená, že proměnná již existuje v jiném rámci -> nevkládej
-        if(item == NULL && id.modifiable != -1)
-            sym_list->first->data = bInsert(sym_list->first->data, id.name, (void*)&id, 3);
-
-        // Proměnná již je definovaná
-        if(item != NULL)
-        {
-            T_id *item_id1 = (T_id*)item->data;
-            // Kontrola jestli typ proměnné a vráceného výrazu je stejný
-            if(item_id1->type == result || IsTokenTypeCheck(item_id1->type, result))
-            {
-                // Proměnná již je definovaná, ale nebyla inicializovaná (nyní už je)
-                if(!item_id1->initialized )
-                {
-                    ListElement *frame = bSearch_all(sym_list, item_id1->name);
-                    bStrom *cur_root = bsearch_one(frame->data, item_id1->name);
-                    bUpdate_root(cur_root, true);
-                }
-            }
-            else    // Typy nejsou shodné
-            {
-                error_caller(TYPE_COMP_ERROR);
-                exit(TYPE_COMP_ERROR);
-            }
-        }
+        // Vlož proměnnou do tabulky symbolů
+        insert_var_to_symtable(sym_list, id, result);
         return true;
     }
     return false;
@@ -842,7 +789,6 @@ bool exp_stat(T_token token, T_queue *queue, FILE *file, Tlist *sym_list){
         {
             queue_add(queue, token);
         }
-        // ! neco udelat s navratovou hodnotou
         T_token_type result = expr_parser(file, queue, sym_list);
         if(result != TOKEN_BOOL)
         {
@@ -857,7 +803,6 @@ bool exp_stat(T_token token, T_queue *queue, FILE *file, Tlist *sym_list){
 // <term-list> -> <term> <t-list>
 // <term-list> -> eps
 bool term_list(T_token token, T_queue *queue, FILE *file, Tlist *sym_list, T_func *fun_called) {
-    // ! paramtery funkce
     // <term>
     if (term(token, queue, file, sym_list, fun_called))
     {
@@ -878,7 +823,6 @@ bool term_list(T_token token, T_queue *queue, FILE *file, Tlist *sym_list, T_fun
 // <t-list> -> , <term> <t-list>
 // <t-list> -> eps 
 bool t_list(T_token token, T_queue *queue, FILE *file, Tlist *sym_list, T_func *fun_called) {
-    // TODO: Pokracovani kontroly z term_list
     // ,
     if (token.type == TOKEN_COMMA)
     {
@@ -912,25 +856,7 @@ bool term(T_token token, T_queue *queue, FILE *file, Tlist *sym_list, T_func *fu
     } else if (IsTerm(token) || token.type == TOKEN_KW_NIL) {
         // Je to literál, nastavím hodnotu token.type jako typ parametru funkce
         fun_called->params[fun_called->param_count].pType = token.type;
-        switch (fun_called->params[fun_called->param_count].pType)
-        {
-        case TOKEN_INT:
-        case TOKEN_INT_EXP:
-        case TOKEN_INT_EXP_PM:
-            fun_called->params[fun_called->param_count].pType = TOKEN_KW_INT;
-            break;
-        case TOKEN_DOUBLE:
-        case TOKEN_DOUBLE_EXP:
-        case TOKEN_DOUBLE_EXP_PM:
-            fun_called->params[fun_called->param_count].pType = TOKEN_KW_DOUBLE;
-            break;
-        case TOKEN_STRING:
-        case TOKEN_ML_STRING:
-            fun_called->params[fun_called->param_count].pType = TOKEN_KW_STRING;
-            break;
-        default:
-            break;
-        }
+        fun_called->params[fun_called->param_count].pType = token_to_keyword(fun_called->params[fun_called->param_count].pType);
         fun_called->param_count++;
         return true;
     } else {
@@ -942,64 +868,44 @@ bool term(T_token token, T_queue *queue, FILE *file, Tlist *sym_list, T_func *fu
 // <term-name> -> : val
 // <term-name> -> eps 
 bool term_name(T_token token, T_queue *queue, FILE *file, Tlist *sym_list, T_func *fun_called) {
-    // TODO: kontola parametru
     // :
     T_token token_2 = getToken(queue, file);
     if (token_2.type == TOKEN_COLON)
     {
-        // Mám
         // Nový token
         token = getToken(queue, file);
         if(IsTerm(token) || token.type == TOKEN_ID) {
             if(token.type == TOKEN_ID)
             {
                 // Je to identifikátor, najdu ho v tabulce symbolů a zjistím jeho typ
-                    ListElement *frame = bSearch_all(sym_list, token.value);
-                    if(frame != NULL){
-                        // hledani v strome
-                        bStrom *found = bsearch_one(frame->data, token.value);
-                        T_id *id_data = (T_id *)(found->data);
-                        // Nastavím typ proměnné do typu ID ve volání funkce
-                        fun_called->params[fun_called->param_count].pType = id_data->type;
-                    }
-                    else
-                    {
-                        error_caller(UNDEF_UNINIT_VARIABLE_ERROR);
-                        exit(UNDEF_UNINIT_VARIABLE_ERROR);
-                    }
-                
+                ListElement *frame = bSearch_all(sym_list, token.value);
+                if(frame != NULL){
+                    // hledani v strome
+                    bStrom *found = bsearch_one(frame->data, token.value);
+                    T_id *id_data = (T_id *)(found->data);
+                    // Nastavím typ proměnné do typu ID ve volání funkce
+                    fun_called->params[fun_called->param_count].pType = id_data->type;
+                }
+                else
+                {
+                    error_caller(UNDEF_UNINIT_VARIABLE_ERROR);
+                    exit(UNDEF_UNINIT_VARIABLE_ERROR);
+                }
+            
             }
             else
             {
                 // Je to literál, nastavím hodnotu token.type jako typ parametru funkce
                 fun_called->params[fun_called->param_count].pType = token.type;
-                switch (fun_called->params[fun_called->param_count].pType)
-                {
-                    case TOKEN_INT:
-                    case TOKEN_INT_EXP:
-                    case TOKEN_INT_EXP_PM:
-                        fun_called->params[fun_called->param_count].pType = TOKEN_KW_INT;
-                        break;
-                    case TOKEN_DOUBLE:
-                    case TOKEN_DOUBLE_EXP:
-                    case TOKEN_DOUBLE_EXP_PM:
-                        fun_called->params[fun_called->param_count].pType = TOKEN_KW_DOUBLE;
-                        break;
-                    case TOKEN_STRING:
-                    case TOKEN_ML_STRING:
-                        fun_called->params[fun_called->param_count].pType = TOKEN_KW_STRING;
-                        break;
-                    default:
-                        break;
-                }
+                fun_called->params[fun_called->param_count].pType = token_to_keyword(fun_called->params[fun_called->param_count].pType);
             }
             fun_called->param_count++;
             return true;
         }
     // eps
     } else {
-        // V token je ještě token z předchozí funkce, ID
-        fun_called->params[fun_called->param_count].pName = NULL;
+        // V proměnné token je ještě token z předchozí funkce, jméno identifikátoru
+        fun_called->params[fun_called->param_count].pName = NULL;           // nemá pName
         ListElement *frame = bSearch_all(sym_list, token.value);
         if(frame != NULL){
             // hledani v strome
@@ -1047,7 +953,6 @@ bool f_type(T_token token, T_queue *queue, FILE *file, T_func *funkce, Tlist *sy
 // <param-list> -> <param> <p-list>
 // <param-list> -> eps
 bool param_list(T_token token, T_queue *queue, FILE *file, T_func *funkce, Tlist *sym_list) {
-    // TODO: doplnit do struktury T_func
     // <param>
     if (param(token, queue, file, funkce, sym_list))
     {
