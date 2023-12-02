@@ -132,7 +132,8 @@ void insert_var_to_symtable(Tlist *sym_list, T_id id, T_token_type result)
     {
         T_id *item_id1 = (T_id*)item->data;
         // Kontrola jestli typ proměnné a vráceného výrazu je stejný
-        if(item_id1->type == result || IsTokenTypeCheck(item_id1->type, result))
+        // Nefungovalo pro Double?, už funguje
+        if(item_id1->type == result || IsTokenTypeCheck(item_id1->type, result) || IsTokenTypeCheck(result ,item_id1->type))
         {
             // Proměnná již je definovaná, ale nebyla inicializovaná (nyní už je)
             if(!item_id1->initialized)
