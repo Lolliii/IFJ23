@@ -980,6 +980,9 @@ bool call(T_token token, T_queue *queue, FILE *file, T_id id, Tlist *sym_list, T
                         add_to_Lil(fun_call_list, not_def_fun);
                         set_act_first_Lil(fun_call_list);
                         fun_call_list->first->data = bInsert(fun_call_list->first->data, fun_called.name, (void*)&fun_called, 2);
+
+                        // Vlož proměnnou do tabulky symbolů
+                        insert_var_to_symtable(sym_list, id, id.type);
                     }
                     return true;
                 }
