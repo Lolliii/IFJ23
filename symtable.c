@@ -257,6 +257,7 @@ void bDestroyR(bStrom *ptr){
     if(ptr != NULL){
         bDestroyR(ptr->lPtr);
         bDestroyR(ptr->rPtr);
+        free(ptr->data);
         free(ptr->key);
         free(ptr);
     }
@@ -365,7 +366,7 @@ void bPostOrder(bStrom *root){
 
 
 
-Tlist *init_list(){
+Tlist *init_list(void){
     Tlist *t = (Tlist *)malloc(sizeof(Tlist));
     if( t == NULL){
         fprintf(stderr, "Error in malloc(init list): %d\n", 99);

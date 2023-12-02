@@ -99,7 +99,7 @@ typedef struct tlist{
 }Tlist;
 
 
-Tlist *init_list(); //inicalizacie treba pouzit ako prve
+Tlist *init_list(void); //inicalizacie treba pouzit ako prve
 //za add_to_Lil treba pouzit hned set_act_first_Lil
 void add_to_Lil(Tlist *t, bStrom *data);//vlozi na prvi prvok treba pouzit na zaciatku
 void set_act_first_Lil(Tlist *t);//nastavi act na prvi prvok

@@ -825,8 +825,17 @@ const char preced_tab [20][20] = {
             break;
         }
     }
+
+    // pokud prijde jenom id do vyrazu
+    if (result == e_id){
+        check_e_id(stack->top, sym_list);
+        result = stack->top->symb;
+    }
+    
     stack_empty(stack);
     
+    
+
     T_token_type token_res;
     switch (result)
     {
@@ -841,11 +850,7 @@ const char preced_tab [20][20] = {
         break;
     case e_bool:
         token_res = TOKEN_BOOL;
-        break;
-    // zatim takhle, pak oddelat
-    case e_id:
-        token_res = TOKEN_ID;
-        break;    
+        break;  
     default:
         token_res = TOKEN_VOID;
         break;

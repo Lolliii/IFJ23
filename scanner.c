@@ -410,8 +410,6 @@ T_token getNextToken(FILE* file){
                     else {
                         error_caller(LEX_ERROR);
                         exit(LEX_ERROR); 
-                        // state = S_ERROR;
-                        // break;
                     }
                 break; 
 
@@ -457,11 +455,32 @@ T_token getNextToken(FILE* file){
                     int type = check_id_types(value);
                     switch(type){
                         case 0:
-                            // Prislo ID s ?, jestli to neni jeden z typu, je to chyba
+                            // Prislo ID s ?, jestli to neni jeden z typu, zkontroluj jestli je tam jeste jeden (a??b)
+                            c = fgetc(file);
+
+                            if(c == '?'){ // Je to ID a ?? -> vrat zpatky ?? a vrat TOKEN_ID (?? se seberou na dalsi zavolani)
+                                value[length - 1] = '\0';
+                                length--;
+                                return_back(c, file);
+                                return_back('?', file);
+
+                                token.type = TOKEN_ID;
+                            
+                                token.value = malloc(length+1);
+                                if(token.value == NULL)
+                                {
+                                    error_caller(INTER_ERROR);
+                                    exit(INTER_ERROR);
+                                }
+                                strcpy(token.value, value);
+                                token.valueLength = length; 
+                                return token;
+                                break;      
+                            }
+                            
                             error_caller(SYN_ERROR);
                             exit(SYN_ERROR);
-                            // token.type = TOKEN_ERROR;
-                            // return token;
+
                             break;
                         case 1:
                             token.type = TOKEN_TYPE_FLOAT;
@@ -732,8 +751,6 @@ T_token getNextToken(FILE* file){
                 } else {
                     error_caller(LEX_ERROR);
                     exit(LEX_ERROR); 
-                    // token.type = TOKEN_ERROR;
-                    // return token;
                 }
                 break; 
 
@@ -821,8 +838,6 @@ T_token getNextToken(FILE* file){
                 } else {
                     error_caller(LEX_ERROR);
                     exit(LEX_ERROR); 
-                    // token.type = TOKEN_ERROR;
-                    // return token;
                 }
                 break; 
 
@@ -873,8 +888,6 @@ T_token getNextToken(FILE* file){
                 } else if (c == EOF || c == '\n'){ 
                     error_caller(LEX_ERROR);
                     exit(LEX_ERROR); 
-                    // token.type = TOKEN_ERROR;
-                    // return token;
                 } else {
                     state = S_STRING_FILL;
                     break;
@@ -915,8 +928,6 @@ T_token getNextToken(FILE* file){
                 } else if (c == EOF || c == '\n'){  
                     error_caller(LEX_ERROR);
                     exit(LEX_ERROR); 
-                    // token.type = TOKEN_ERROR;
-                    // return token;
                 } 
                 break;
 
@@ -963,8 +974,6 @@ T_token getNextToken(FILE* file){
                 else {
                     error_caller(LEX_ERROR);
                     exit(LEX_ERROR); 
-                    // token.type = TOKEN_ERROR;
-                    // return token;
                 }
                 break;
 
@@ -975,8 +984,6 @@ T_token getNextToken(FILE* file){
                 } else {
                     error_caller(LEX_ERROR);
                     exit(LEX_ERROR); 
-                    // token.type = TOKEN_ERROR;
-                    // return token;
                 }
 
             case(S_BS_UC):
@@ -994,8 +1001,6 @@ T_token getNextToken(FILE* file){
                 } else {
                     error_caller(LEX_ERROR);
                     exit(LEX_ERROR); 
-                    // token.type = TOKEN_ERROR;
-                    // return token;
                 }
                 break;
 
@@ -1020,8 +1025,6 @@ T_token getNextToken(FILE* file){
                     } else {
                         error_caller(LEX_ERROR);
                         exit(LEX_ERROR); 
-                        // token.type = TOKEN_ERROR;
-                        // return token;
                     }
                     if(hexLength > 7){
                         error_caller(SYN_ERROR);
@@ -1103,7 +1106,28 @@ T_token getNextToken(FILE* file){
                         value[length++] = '3';
                         c = fgetc(file);
                         continue;
-                    }
+                    } else if(c == '\0'){
+                        value[length++] = '\\';
+                        value[length++] = '0';
+                        value[length++] = '0';
+                        value[length++] = '0';
+                        c = fgetc(file);
+                        continue;
+                    } else if(c == 11){ // vertical tab
+                        value[length++] = '\\';
+                        value[length++] = '0';
+                        value[length++] = '1';
+                        value[length++] = '1';
+                        c = fgetc(file);
+                        continue;
+                    } else if(c == 12){ // form feed
+                        value[length++] = '\\';
+                        value[length++] = '0';
+                        value[length++] = '1';
+                        value[length++] = '2';
+                        c = fgetc(file);
+                        continue;
+                    } 
                     value[length] = c;
                     length++;
                     c = fgetc(file);
@@ -1120,8 +1144,6 @@ T_token getNextToken(FILE* file){
                 } else if (c == EOF){ 
                     error_caller(LEX_ERROR);
                     exit(LEX_ERROR);  
-                    // token.type = TOKEN_ERROR;
-                    // return token;
                 }
                 break; 
 
@@ -1162,8 +1184,6 @@ T_token getNextToken(FILE* file){
                 } else {
                     error_caller(LEX_ERROR);
                     exit(LEX_ERROR); 
-                    // token.type = TOKEN_ERROR;
-                    // return token;
                 }
                 break;
 
@@ -1174,8 +1194,6 @@ T_token getNextToken(FILE* file){
                 } else {
                     error_caller(LEX_ERROR);
                     exit(LEX_ERROR); 
-                    // token.type = TOKEN_ERROR;
-                    // return token;
                 }
                 break;
 //-----------
@@ -1194,8 +1212,6 @@ T_token getNextToken(FILE* file){
                 } else {
                     error_caller(LEX_ERROR);
                     exit(LEX_ERROR); 
-                    // token.type = TOKEN_ERROR;
-                    // return token;
                 }
                 break;
 
@@ -1220,8 +1236,6 @@ T_token getNextToken(FILE* file){
                     } else {
                         error_caller(LEX_ERROR);
                         exit(LEX_ERROR); 
-                        // token.type = TOKEN_ERROR;
-                        // return token;
                     }
                     if(hexLength > 7){
                         error_caller(SYN_ERROR);
@@ -1291,9 +1305,6 @@ T_token getNextToken(FILE* file){
             default:  // Vsechno ostatni by mela byt chyba
                 error_caller(LEX_ERROR);
                 exit(LEX_ERROR); 
-                // token.type = TOKEN_ERROR;
-                // return token;
-
         }
     }
 
