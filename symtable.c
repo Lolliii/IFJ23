@@ -386,7 +386,7 @@ void add_to_Lil(Tlist *t, bStrom *data){
     newElement->data = data;
     newElement->rPtr = t->first;
     t->first = newElement;    
-    printf("add_to ide dobre\n");
+    //printf("add_to ide dobre\n");
 }
 
 void set_act_first_Lil(Tlist *t){
