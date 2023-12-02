@@ -1106,7 +1106,28 @@ T_token getNextToken(FILE* file){
                         value[length++] = '3';
                         c = fgetc(file);
                         continue;
-                    }
+                    } else if(c == '\0'){
+                        value[length++] = '\\';
+                        value[length++] = '0';
+                        value[length++] = '0';
+                        value[length++] = '0';
+                        c = fgetc(file);
+                        continue;
+                    } else if(c == 11){ // vertical tab
+                        value[length++] = '\\';
+                        value[length++] = '0';
+                        value[length++] = '1';
+                        value[length++] = '1';
+                        c = fgetc(file);
+                        continue;
+                    } else if(c == 12){ // form feed
+                        value[length++] = '\\';
+                        value[length++] = '0';
+                        value[length++] = '1';
+                        value[length++] = '2';
+                        c = fgetc(file);
+                        continue;
+                    } 
                     value[length] = c;
                     length++;
                     c = fgetc(file);
