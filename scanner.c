@@ -267,6 +267,9 @@ void error_caller(int error_code){
         case TYPE_COMP_ERROR:
             fprintf(stderr, "Error: %d -> Wrong type in aritmetics, string, and relation expressions.\n", error_code);
             break;
+        case MISSING_TYPE_ERROR:
+            fprintf(stderr, "Error: %d -> Missing type in ID definition\n", error_code);
+            break;
         case OTHER_ERROR:
             fprintf(stderr, "Error: %d -> Other semantic error.\n", error_code);
             break;
