@@ -152,7 +152,7 @@ bStrom *bInsert(bStrom *root, char *key, void *data, int data_type){
                 return bLeftRotate(root);
             }
         }else if( balanc > 1){//lavi podstrom je vetsi
-            int cmptmp2 = strcmp(key, root->rPtr->key);
+            int cmptmp2 = strcmp(key, root->lPtr->key);
             //key < root->lPtr->key
             if( cmptmp2 < 0){ //LL                
                 return bRightRotate(root);
