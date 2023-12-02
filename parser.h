@@ -45,10 +45,10 @@ bool st_list(T_token token, T_queue *queue, FILE *file, Tlist *sym_list, Tlist *
 bool body(T_token token, T_queue *queue, FILE *file, T_func *funkce, Tlist *sym_list, Tlist *fun_list, Tlist *fun_call_list);
 bool stat(T_token token, T_queue *queue, FILE *file, T_func funkce, Tlist *sym_list, Tlist *fun_list, Tlist *fun_call_list);
 bool ret_stat(T_token token, T_queue *queue, FILE *file, T_func funkce, Tlist *sym_list);
-bool id_type(T_token token, T_queue *queue, FILE *file, T_id id, Tlist *sym_list, Tlist *fun_list);
-bool assign(T_token token, T_queue *queue, FILE *file, T_id id, Tlist *sym_list, Tlist *fun_list);
+bool id_type(T_token token, T_queue *queue, FILE *file, T_id id, Tlist *sym_list, Tlist *fun_list, Tlist *fun_call_list);
+bool assign(T_token token, T_queue *queue, FILE *file, T_id id, Tlist *sym_list, Tlist *fun_list, Tlist *fun_call_list);
 bool id_stat(T_token token, T_queue *queue, FILE *file, T_id id, Tlist *sym_list, Tlist *fun_list, Tlist *fun_call_list);
-bool call(T_token token, T_queue *queue, FILE *file, T_id id, Tlist *sym_list, Tlist *fun_list);
+bool call(T_token token, T_queue *queue, FILE *file, T_id id, Tlist *sym_list, Tlist *fun_list, Tlist *fun_call_list);
 bool exp_stat(T_token token, T_queue *queue, FILE *file, Tlist *sym_list);
 bool term_list(T_token token, T_queue *queue, FILE *file, Tlist *sym_list, T_func *fun_called);
 bool t_list(T_token token, T_queue *queue, FILE *file, Tlist *sym_list, T_func *fun_called);

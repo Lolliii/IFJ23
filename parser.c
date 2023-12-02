@@ -188,7 +188,7 @@ bool prog(T_token token, T_queue *queue, FILE *file) {
     add_to_Lil(fun_list, fun_tree);
     set_act_first_Lil(fun_list);
 
-    // List pro definice funkcí, které ještě nebyli deklarovány
+    // List pro volané funkce, které ještě nebyli definovány
     Tlist *fun_call_list;
     fun_call_list = init_list();
 
@@ -391,10 +391,19 @@ bool stat(T_token token, T_queue *queue, FILE *file, T_func funkce, Tlist *sym_l
                             {
                                 // Naplnění stromu s definicemi funkcí
                                 fun_list->first->data = bInsert(fun_list->first->data, funkce.name, (void*)&funkce, 2);
-                                // TODO: zkontrolovat list s voláním, funkcí, které ještě nejsou definované
-                                // TODO: bStrom *found_fun = bsearch_one(fun_tree, funkce.name);
-
-                                // TODO: T_func *fce = (T_func*)found_fun->data;
+                                
+                                // KONTROLA jestli již nebyla nějaká funkce s tímto ID volána ještě před definicí
+                                while(1)
+                                {
+                                    ListElement *frame = bSearch_all(fun_call_list, funkce.name);
+                                    if(frame == NULL)
+                                        break;
+                                    // Funkce byla volána, zkontroluj ji (všechna volání, která předcházeli definici)
+                                    bStrom *item = bsearch_one(frame->data, funkce.name);
+                                    T_func *fun_called = (T_func*)item->data;
+                                    defined_fun_check(fun_called, funkce);
+                                    bDeleteOne(frame->data, funkce.name);
+                                }
                                 
                                 // <body>
                                 token = getToken(queue, file);
@@ -440,7 +449,7 @@ bool stat(T_token token, T_queue *queue, FILE *file, T_func funkce, Tlist *sym_l
 
             // <id-type>
             token = getToken(queue, file);
-            if(id_type(token, queue, file, id, sym_list, fun_list)) return true;
+            if(id_type(token, queue, file, id, sym_list, fun_list, fun_call_list)) return true;
         }
         return false;
         
@@ -467,7 +476,7 @@ bool stat(T_token token, T_queue *queue, FILE *file, T_func funkce, Tlist *sym_l
 
             // <id-type>
             token = getToken(queue, file);
-            if(id_type(token, queue, file, id, sym_list, fun_list)) return true;
+            if(id_type(token, queue, file, id, sym_list, fun_list, fun_call_list)) return true;
         }
         return false;
         
@@ -532,7 +541,7 @@ bool ret_stat(T_token token, T_queue *queue, FILE *file, T_func funkce, Tlist *s
 
 //<id-type> -> : type <assign>
 //<id-type> -> = <call>
-bool id_type(T_token token, T_queue *queue, FILE *file, T_id id, Tlist *sym_list, Tlist *fun_list){
+bool id_type(T_token token, T_queue *queue, FILE *file, T_id id, Tlist *sym_list, Tlist *fun_list, Tlist *fun_call_list){
     // V deklaraci je i typ promenne
     // :    
     if(token.type == TOKEN_COLON)
@@ -544,13 +553,13 @@ bool id_type(T_token token, T_queue *queue, FILE *file, T_id id, Tlist *sym_list
             id.type = tmp.type;             // Už znám i typ proměnné
             // <assign>
             T_token next_token = getToken(queue, file);
-            return assign(next_token, queue, file, id, sym_list, fun_list);
+            return assign(next_token, queue, file, id, sym_list, fun_list, fun_call_list);
         }
     // =
     }else if(token.type == TOKEN_ASSIGN){
         // <call>
         token = getToken(queue, file);
-        return call(token, queue, file, id, sym_list, fun_list);
+        return call(token, queue, file, id, sym_list, fun_list, fun_call_list);
     }else{
         return false;
     }
@@ -559,12 +568,12 @@ bool id_type(T_token token, T_queue *queue, FILE *file, T_id id, Tlist *sym_list
 
 // <assign> -> = <call>
 // <assign> -> eps
-bool assign(T_token token, T_queue *queue, FILE *file, T_id id, Tlist *sym_list, Tlist *fun_list){
+bool assign(T_token token, T_queue *queue, FILE *file, T_id id, Tlist *sym_list, Tlist *fun_list, Tlist *fun_call_list){
     // =
     if(token.type == TOKEN_ASSIGN){
         // <call>
         T_token next_token = getToken(queue, file);
-        return call(next_token, queue, file, id, sym_list, fun_list);
+        return call(next_token, queue, file, id, sym_list, fun_list, fun_call_list);
     // eps
     }else{  
         // Pouze deklarace proměnné, vlož ji do symtable, není inicializovaná
@@ -578,7 +587,7 @@ bool assign(T_token token, T_queue *queue, FILE *file, T_id id, Tlist *sym_list,
 
 //<id-stat> -> = <call>
 //<id-stat> –> ( <term-list> )
-bool id_stat(T_token token, T_queue *queue, FILE *file, T_id id, Tlist *sym_list, Tlist *fun_list, Tlist *fun_called_list){
+bool id_stat(T_token token, T_queue *queue, FILE *file, T_id id, Tlist *sym_list, Tlist *fun_list, Tlist *fun_call_list){
     // =
     // PŘIŘAZENÍ DO PROMĚNNÉ
     if(token.type == TOKEN_ASSIGN){
@@ -605,7 +614,7 @@ bool id_stat(T_token token, T_queue *queue, FILE *file, T_id id, Tlist *sym_list
         }
 
         T_token next_token = getToken(queue, file);
-        return call(next_token, queue, file, id, sym_list, fun_list);
+        return call(next_token, queue, file, id, sym_list, fun_list, fun_call_list);
     
     // VOLÁNÍ FUNKCE
     // (
@@ -619,7 +628,6 @@ bool id_stat(T_token token, T_queue *queue, FILE *file, T_id id, Tlist *sym_list
             // )
             token = getToken(queue, file);
             if(token.type == TOKEN_R_RND){
-(void) fun_called_list;
                 bStrom *fun_tmp = bsearch_one(fun_list->first->data, fun_called.name);
                 if(fun_tmp != NULL)
                 {
@@ -629,8 +637,11 @@ bool id_stat(T_token token, T_queue *queue, FILE *file, T_id id, Tlist *sym_list
                 }
                 else
                 {
-                    // JEŠTĚ NENÍ DEFINOVANÁ
-                    printf("NENI DEF\n");   
+                    // JEŠTĚ NENÍ DEFINOVANÁ -> přidám ji do seznamu nedefinovaných
+                    bStrom *not_def_fun = NULL;
+                    add_to_Lil(fun_call_list, not_def_fun);
+                    set_act_first_Lil(fun_call_list);
+                    fun_call_list->first->data = bInsert(fun_call_list->first->data, fun_called.name, (void*)&fun_called, 2);
                 }
                 return true;
             }
@@ -644,7 +655,7 @@ bool id_stat(T_token token, T_queue *queue, FILE *file, T_id id, Tlist *sym_list
 
 // <call> -> id ( <term-list> )
 // <call> -> <exp>
-bool call(T_token token, T_queue *queue, FILE *file, T_id id, Tlist *sym_list, Tlist *fun_list){
+bool call(T_token token, T_queue *queue, FILE *file, T_id id, Tlist *sym_list, Tlist *fun_list, Tlist *fun_call_list){
     // id
     if(token.type == TOKEN_ID){
         // kouknu dopredu na dalsi token
@@ -702,8 +713,10 @@ bool call(T_token token, T_queue *queue, FILE *file, T_id id, Tlist *sym_list, T
                     }
                     else
                     {
-                        // TODO
-                        printf("NENI DEF\n");
+                        bStrom *not_def_fun = NULL;
+                        add_to_Lil(fun_call_list, not_def_fun);
+                        set_act_first_Lil(fun_call_list);
+                        fun_call_list->first->data = bInsert(fun_call_list->first->data, fun_called.name, (void*)&fun_called, 2);
                     }
                     return true;
                 }
