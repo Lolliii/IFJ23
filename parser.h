@@ -24,6 +24,21 @@ bool IsType(T_token token);
 // numericke a retezcove literaly
 bool IsTerm(T_token token);
 
+// Funkce pro porovnání NILable typů s normálními
+// Protože expression parser vrací pouze typy bez ?
+bool IsTokenTypeCheck(T_token_type type, T_token_type result);
+
+// Funkce pro kontrolu, zdali parametry volané funkce souhlasí s její definicí
+void defined_fun_check(T_func *def_fun, T_func fun_called);
+
+// Funkce pro vložení ID do symtable, pokud ještě v tabulce není
+// Připadně upraví záznam v symtable na inicialized
+// Volá se při přiřazovaní do proměnné
+void insert_var_to_symtable(Tlist *sym_list, T_id id, T_token_type result);
+
+// Překlad mezi typy tokenů a keywords
+T_token_type token_to_keyword(T_token_type tok_type);
+
 // neterminaly z LL gramatiky
 bool prog(T_token token, T_queue *queue, FILE *file);
 bool st_list(T_token token, T_queue *queue, FILE *file, Tlist *sym_list, Tlist *fun_list, Tlist *fun_call_list);
