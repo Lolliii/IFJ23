@@ -92,7 +92,7 @@ void defined_fun_check(T_func *def_fun, T_func fun_called)
     {
         for(int i = 0; i < def_fun->param_count; i++)
         {
-            if(def_fun->params[i].pType == fun_called.params[i].pType)      // kontrola typu parametru
+            if(def_fun->params[i].pType == fun_called.params[i].pType || IsTokenTypeCheck(fun_called.params[i].pType, def_fun->params[i].pType) || IsTokenTypeCheck(def_fun->params[i].pType, fun_called.params[i].pType))      // kontrola typu parametru
             {
                 if(def_fun->params[i].pName == NULL && fun_called.params[i].pName == NULL)      // Nemá pName
                     continue;
