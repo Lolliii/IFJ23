@@ -337,30 +337,33 @@ bool IsTokenTypeCheck(T_token_type type, T_token_type result)
 // Funkce pro kontrolu, zdali parametry volané funkce souhlasí s její definicí
 void defined_fun_check(T_func *def_fun, T_func fun_called)
 {
-    if(def_fun->param_count == fun_called.param_count)              // kontrola počtu parametrů
+    if(strcmp(fun_called.name, "write") != 0)   // vestavěná funkce write má nekonečný počet parametrů a tudíž ji nemá smysl kontrolovat
     {
-        for(int i = 0; i < def_fun->param_count; i++)
+        if(def_fun->param_count == fun_called.param_count)              // kontrola počtu parametrů
         {
-            if(def_fun->params[i].pType == fun_called.params[i].pType || IsTokenTypeCheck(fun_called.params[i].pType, def_fun->params[i].pType) || IsTokenTypeCheck(def_fun->params[i].pType, fun_called.params[i].pType))      // kontrola typu parametru
+            for(int i = 0; i < def_fun->param_count; i++)
             {
-                if(def_fun->params[i].pName == NULL && fun_called.params[i].pName == NULL)      // Nemá pName
-                    continue;
-                else if(def_fun->params[i].pName != NULL && fun_called.params[i].pName != NULL)    // definice nebo volání má pName
+                if(def_fun->params[i].pType == fun_called.params[i].pType || IsTokenTypeCheck(fun_called.params[i].pType, def_fun->params[i].pType) || IsTokenTypeCheck(def_fun->params[i].pType, fun_called.params[i].pType))      // kontrola typu parametru
                 {
-                    if(strcmp(def_fun->params[i].pName, fun_called.params[i].pName) == 0)          // kontrola pName
-                    {
+                    if(def_fun->params[i].pName == NULL && fun_called.params[i].pName == NULL)      // Nemá pName
                         continue;
+                    else if(def_fun->params[i].pName != NULL && fun_called.params[i].pName != NULL)    // definice nebo volání má pName
+                    {
+                        if(strcmp(def_fun->params[i].pName, fun_called.params[i].pName) == 0)          // kontrola pName
+                        {
+                            continue;
+                        }
                     }
                 }
+                error_caller(PARAM_ERROR);
+                exit(PARAM_ERROR);
             }
+        }
+        else
+        {
             error_caller(PARAM_ERROR);
             exit(PARAM_ERROR);
         }
-    }
-    else
-    {
-        error_caller(PARAM_ERROR);
-        exit(PARAM_ERROR);
     }
 }
 
