@@ -242,7 +242,8 @@ void check_two_operands(T_elem l_op, T_elem r_op)
     if(!((l_op.symb == e_num || l_op.symb == e_dbl || l_op.symb == e_str || l_op.symb == e_id || l_op.symb == e_id_exc) && 
     (r_op.symb == e_num || r_op.symb == e_dbl || r_op.symb == e_str || r_op.symb == e_id || r_op.symb == e_id_exc)))
     {
-        fprintf(stderr, "ERROR: Syntax error, need 2 literals or ID as operands\n");
+        // fprintf(stderr, "ERROR: Syntax error, need 2 literals or ID as operands\n");
+        error_caller(SYN_ERROR);
         exit(SYN_ERROR);
     }
 }
@@ -305,7 +306,8 @@ void rule_plus(T_stack *stack, Tlist *sym_list)
     }
     else
     {
-        fprintf(stderr, "ERROR: Expression error, invalid data types\n");
+        // fprintf(stderr, "ERROR: Expression error, invalid data types\n");
+        error_caller(TYPE_COMP_ERROR);
         exit(TYPE_COMP_ERROR);
     }
     
@@ -315,7 +317,6 @@ void rule_plus(T_stack *stack, Tlist *sym_list)
 
 void rule_min_mul(T_stack *stack, Tlist *sym_list)
 {
-    (void)sym_list;
     T_elem *l_op, *r_op;
     l_op = stack_get_val(stack, 2);
     r_op = stack_get_val(stack, 0);
@@ -360,7 +361,8 @@ void rule_min_mul(T_stack *stack, Tlist *sym_list)
     }
     else
     {
-        fprintf(stderr, "ERROR: Expression error, invalid data types\n");
+        // fprintf(stderr, "ERROR: Expression error, invalid data types\n");
+        error_caller(TYPE_COMP_ERROR);
         exit(TYPE_COMP_ERROR);
     }
     
@@ -370,8 +372,6 @@ void rule_min_mul(T_stack *stack, Tlist *sym_list)
 
 void rule_div(T_stack *stack, Tlist *sym_list)
 {
-    (void)sym_list;
-
     T_elem *l_op, *r_op;
     l_op = stack_get_val(stack, 2);
     r_op = stack_get_val(stack, 0);
@@ -416,13 +416,15 @@ void rule_div(T_stack *stack, Tlist *sym_list)
     }
     else
     {
-        fprintf(stderr, "ERROR: Expression error, invalid data types\n");
+        // fprintf(stderr, "ERROR: Expression error, invalid data types\n");
+        error_caller(TYPE_COMP_ERROR);
         exit(TYPE_COMP_ERROR);
     }
     
     if(strcmp(r_op->value, "0") == 0)
     {
-        fprintf(stderr, "ERROR: Cannot divide by 0 \n");
+        // fprintf(stderr, "ERROR: Cannot divide by 0 \n");
+        error_caller(OTHER_ERROR);
         exit(OTHER_ERROR);
     }
 
@@ -432,8 +434,6 @@ void rule_div(T_stack *stack, Tlist *sym_list)
 
 void rule_rela(T_stack *stack, Tlist *sym_list)
 {
-    (void)sym_list;
-
     T_elem *l_op, *r_op;
     l_op = stack_get_val(stack, 2);
     r_op = stack_get_val(stack, 0);
@@ -477,15 +477,14 @@ void rule_rela(T_stack *stack, Tlist *sym_list)
     }
     else
     {
-        fprintf(stderr, "ERROR: Expression error, invalid data types\n");
+        // fprintf(stderr, "ERROR: Expression error, invalid data types\n");
+        error_caller(TYPE_COMP_ERROR);
         exit(TYPE_COMP_ERROR);
     }
 }
 
 void rule_rela_equal(T_stack *stack, Tlist *sym_list)
 {
-    (void)sym_list;
-
     T_elem *l_op, *r_op;
     l_op = stack_get_val(stack, 2);
     r_op = stack_get_val(stack, 0);
@@ -550,7 +549,8 @@ void rule_rela_equal(T_stack *stack, Tlist *sym_list)
     }
     else
     {
-        fprintf(stderr, "ERROR: Expression error, invalid data types\n");
+        // fprintf(stderr, "ERROR: Expression error, invalid data types\n");
+        error_caller(TYPE_COMP_ERROR);
         exit(TYPE_COMP_ERROR);
     }
 }
@@ -558,8 +558,6 @@ void rule_rela_equal(T_stack *stack, Tlist *sym_list)
 // Nil coalescing operator
 void rule_nil_coal(T_stack *stack, Tlist *sym_list)
 {
-    (void)sym_list;
-
     T_elem *l_op, *r_op;
     l_op = stack_get_val(stack, 2);
     r_op = stack_get_val(stack, 0);
@@ -603,15 +601,14 @@ void rule_nil_coal(T_stack *stack, Tlist *sym_list)
     }
     else
     {
-        fprintf(stderr, "ERROR: Expression error, invalid data types\n");
+        // fprintf(stderr, "ERROR: Expression error, invalid data types\n");
+        error_caller(TYPE_COMP_ERROR);
         exit(TYPE_COMP_ERROR);
     }
 }
 
 void reduce_rule(T_stack *stack, T_elem *stack_top, Tlist *sym_list)
 {
-    (void)sym_list;
-
     // Podle terminálu na vrcholu zásobníku (expressions jsou přeskočeny) vybere pravidlo
     switch (stack_top->symb)
     {
@@ -707,7 +704,8 @@ void reduce_rule(T_stack *stack, T_elem *stack_top, Tlist *sym_list)
         break;
     
     default:
-        fprintf(stderr, "ERROR: Syntax error\n");
+        // fprintf(stderr, "ERROR: Syntax error\n");
+        error_caller(SYN_ERROR);
         exit(SYN_ERROR);
     }
 }
@@ -716,7 +714,6 @@ void reduce_rule(T_stack *stack, T_elem *stack_top, Tlist *sym_list)
 
 T_token_type expr_parser(FILE* file, T_queue *queue, Tlist *sym_list)
 {
-    (void)sym_list;
 
 // Precedenční tabulka:
 const char preced_tab [20][20] = {
@@ -805,12 +802,14 @@ const char preced_tab [20][20] = {
             if((idx_col == prec_str && (idx_row == prec_sub || idx_row == prec_mul || idx_row == prec_divi)) ||
                (idx_row == prec_str && (idx_col == prec_sub || idx_col == prec_mul || idx_col == prec_divi)))
             {
-                fprintf(stderr, "ERROR: Expression error, invalid data types\n");
+                // fprintf(stderr, "ERROR: Expression error, invalid data types\n");
+                error_caller(TYPE_COMP_ERROR);
                 exit(TYPE_COMP_ERROR);
             }
             else
             {
-                fprintf(stderr, "ERROR: Syntax error, prec table fail\n");
+                // fprintf(stderr, "ERROR: Syntax error, prec table fail\n");
+                error_caller(SYN_ERROR);
                 exit(SYN_ERROR);
             }
         
@@ -827,14 +826,12 @@ const char preced_tab [20][20] = {
     }
 
     // pokud prijde jenom id do vyrazu
-    if (result == e_id){
+    if (result == e_id || result == e_id_exc){
         check_e_id(stack->top, sym_list);
         result = stack->top->symb;
     }
-    
+
     stack_empty(stack);
-    
-    
 
     T_token_type token_res;
     switch (result)
@@ -855,6 +852,6 @@ const char preced_tab [20][20] = {
         token_res = TOKEN_VOID;
         break;
     }
-    printf("rrrr%d\n", token_res);
+    // printf("rrrr%d\n", token_res);
     return token_res;
 }

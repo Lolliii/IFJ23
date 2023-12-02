@@ -147,7 +147,7 @@ void insert_Double2Int(Tlist *list){
     }
 }
 
-void insert_lenght(Tlist *list){
+void insert_length(Tlist *list){
     if( list != NULL){
         set_act_first_Lil(list);
         //inicializujeme strukturu
@@ -157,7 +157,7 @@ void insert_lenght(Tlist *list){
             exit(INTER_ERROR);
         }
         //dame do nej parametre
-        func->name = "lenght";
+        func->name = "length";
         func->returnType = TOKEN_KW_INT;
         //params
         func->params[0].pName = NULL;
@@ -251,12 +251,12 @@ void insert_chr(Tlist *list){
 
 void insert_all(Tlist *list){
     insert_readString(list);
-    insert_readDouble(list);
+    insert_readInt(list);
     insert_readDouble(list);
     insert_write(list);
     insert_Int2Double(list);
     insert_Double2Int(list);
-    insert_lenght(list);
+    insert_length(list);
     insert_substring(list);
     insert_ord(list);
     insert_chr(list);
