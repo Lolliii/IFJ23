@@ -457,11 +457,30 @@ T_token getNextToken(FILE* file){
                     int type = check_id_types(value);
                     switch(type){
                         case 0:
-                            // Prislo ID s ?, jestli to neni jeden z typu, je to chyba
+                            // Prislo ID s ?, jestli to neni jeden z typu, zkontroluj jestli je tam jeste jeden (a??b)
+                            c = fgetc(file);
+
+                            if(c == '?'){ // Je to ID a ?? -> vrat zpatky ?? a vrat TOKEN_ID (?? se seberou na dalsi zavolani)
+                                return_back(c, file);
+                                return_back('?', file);
+
+                                token.type = TOKEN_ID;
+                            
+                                token.value = malloc(length+1);
+                                if(token.value == NULL)
+                                {
+                                    error_caller(INTER_ERROR);
+                                    exit(INTER_ERROR);
+                                }
+                                strcpy(token.value, value);
+                                token.valueLength = length; 
+                                return token;
+                                break;      
+                            }
+                            
                             error_caller(SYN_ERROR);
                             exit(SYN_ERROR);
-                            // token.type = TOKEN_ERROR;
-                            // return token;
+
                             break;
                         case 1:
                             token.type = TOKEN_TYPE_FLOAT;
