@@ -366,7 +366,7 @@ void bPostOrder(bStrom *root){
 
 
 
-Tlist *init_list(){
+Tlist *init_list(void){
     Tlist *t = (Tlist *)malloc(sizeof(Tlist));
     if( t == NULL){
         fprintf(stderr, "Error in malloc(init list): %d\n", 99);
