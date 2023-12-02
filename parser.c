@@ -198,6 +198,11 @@ bool prog(T_token token, T_queue *queue, FILE *file) {
         exit(SYN_ERROR);
     }
 
+    if(fun_call_list->first != NULL)
+    {
+        error_caller(UNDEF_REDEF_ERROR);
+        exit(UNDEF_REDEF_ERROR);
+    }
     // TODO: Zrusit symtable
 
     return true;
@@ -402,7 +407,9 @@ bool stat(T_token token, T_queue *queue, FILE *file, T_func funkce, Tlist *sym_l
                                     bStrom *item = bsearch_one(frame->data, funkce.name);
                                     T_func *fun_called = (T_func*)item->data;
                                     defined_fun_check(fun_called, funkce);
-                                    bDeleteOne(frame->data, funkce.name);
+                                    
+                                    destroy_Lilfirst(fun_call_list);
+                                    set_act_first_Lil(fun_call_list);
                                 }
                                 
                                 // <body>
