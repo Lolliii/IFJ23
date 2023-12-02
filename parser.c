@@ -378,6 +378,12 @@ void insert_var_to_symtable(Tlist *sym_list, T_id id, T_token_type result)
     // Pokud je id.modifiable == -1, to znamená, že proměnná již existuje v jiném rámci -> nevkládej
     if(item == NULL && id.modifiable != -1)
         sym_list->first->data = bInsert(sym_list->first->data, id.name, (void*)&id, 3);
+    else if(id.modifiable == -1)
+    {
+        ListElement *frame = bSearch_all(sym_list, id.name);
+        bStrom *cur_root = bsearch_one(frame->data, id.name);
+        bUpdate_root(cur_root, true);
+    }
 
     // Proměnná již je definovaná
     if(item != NULL)
