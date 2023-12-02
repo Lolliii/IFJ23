@@ -13,6 +13,255 @@ PARSER
 
 bool is_def = false;
 
+//treba tu dat list a act ukazujicim kam to chceme ulozit
+void insert_readString(Tlist *list){
+    if( list != NULL){
+        set_act_first_Lil(list);
+        //inicializujeme strukturu
+        T_func *func = (T_func*)malloc(sizeof(T_func));
+        if(func == NULL){
+            error_caller(INTER_ERROR);
+            exit(INTER_ERROR);
+        }
+        //dame do nej parametre
+        func->name = "readString";
+        func->returnType = TOKEN_TYPE_STRING;
+        func->params[0].pName = NULL;
+        func->param_count = 0;
+        list->act->data = bInsert(list->act->data, func->name, (void *)func, 2);
+        
+        //uvolnime
+        free(func);
+    }
+}
+
+void insert_readInt(Tlist *list){
+    if( list != NULL){
+        set_act_first_Lil(list);
+        //inicializujeme strukturu
+        T_func *func = (T_func*)malloc(sizeof(T_func));
+        if(func == NULL){
+            error_caller(INTER_ERROR);
+            exit(INTER_ERROR);
+        }
+        //dame do nej parametre
+        func->name = "readInt";
+        func->returnType = TOKEN_TYPE_INT;
+        func->params[0].pName = NULL;
+        func->param_count = 0;
+        list->act->data = bInsert(list->act->data, func->name, (void *)func, 2);
+        
+        //uvolnime
+        free(func);
+    }
+}
+
+void insert_readDouble(Tlist *list){
+    if( list != NULL){
+        set_act_first_Lil(list);
+        //inicializujeme strukturu
+        T_func *func = (T_func*)malloc(sizeof(T_func));
+        if(func == NULL){
+            error_caller(INTER_ERROR);
+            exit(INTER_ERROR);
+        }
+        //dame do nej parametre
+        func->name = "readDouble";
+        func->returnType = TOKEN_TYPE_FLOAT;
+        func->params[0].pName = NULL;
+        func->param_count = 0;
+        list->act->data = bInsert(list->act->data, func->name, (void *)func, 2);
+        
+        //uvolnime
+        free(func);
+    }
+}
+
+//!treba davat pozor na to ze tata funkcia ma nekonecno parametrov
+void insert_write(Tlist *list){
+    if( list != NULL){
+        set_act_first_Lil(list);
+        //inicializujeme strukturu
+        T_func *func = (T_func*)malloc(sizeof(T_func));
+        if(func == NULL){
+            error_caller(INTER_ERROR);
+            exit(INTER_ERROR);
+        }
+        //dame do nej parametre
+        func->name = "write";
+        func->returnType = TOKEN_VOID;//!nie sm si isti co tu dat 
+        func->params[0].pName = NULL;
+        func->param_count = 0;
+        list->act->data = bInsert(list->act->data, func->name, (void *)func, 2);
+        
+        //uvolnime
+        free(func);
+    }
+}
+
+void insert_Int2Double(Tlist *list){
+    if( list != NULL){
+        set_act_first_Lil(list);
+        //inicializujeme strukturu
+        T_func *func = (T_func*)malloc(sizeof(T_func));
+        if(func == NULL){
+            error_caller(INTER_ERROR);
+            exit(INTER_ERROR);
+        }
+        //dame do nej parametre
+        func->name = "Int2Double";
+        func->returnType = TOKEN_KW_DOUBLE;
+        //params
+        func->params[0].pName = NULL;
+        func->params[0].paramId = "term";
+        func->params[0].pType = TOKEN_KW_INT;
+        func->param_count = 1;
+        list->act->data = bInsert(list->act->data, func->name, (void *)func, 2);
+        
+        //uvolnime
+        free(func);
+    }
+}
+
+void insert_Double2Int(Tlist *list){
+    if( list != NULL){
+        set_act_first_Lil(list);
+        //inicializujeme strukturu
+        T_func *func = (T_func*)malloc(sizeof(T_func));
+        if(func == NULL){
+            error_caller(INTER_ERROR);
+            exit(INTER_ERROR);
+        }
+        //dame do nej parametre
+        func->name = "Double2Int";
+        func->returnType = TOKEN_KW_INT;
+        //params
+        func->params[0].pName = NULL;
+        func->params[0].paramId = "term";
+        func->params[0].pType = TOKEN_KW_DOUBLE;
+        func->param_count = 1;
+        list->act->data = bInsert(list->act->data, func->name, (void *)func, 2);
+        
+        //uvolnime
+        free(func);
+    }
+}
+
+void insert_lenght(Tlist *list){
+    if( list != NULL){
+        set_act_first_Lil(list);
+        //inicializujeme strukturu
+        T_func *func = (T_func*)malloc(sizeof(T_func));
+        if(func == NULL){
+            error_caller(INTER_ERROR);
+            exit(INTER_ERROR);
+        }
+        //dame do nej parametre
+        func->name = "lenght";
+        func->returnType = TOKEN_KW_INT;
+        //params
+        func->params[0].pName = NULL;
+        func->params[0].paramId = "s";
+        func->params[0].pType = TOKEN_KW_STRING;
+        func->param_count = 1;
+        list->act->data = bInsert(list->act->data, func->name, (void *)func, 2);
+        
+        //uvolnime
+        free(func);
+    }
+}
+
+void insert_substring(Tlist *list){
+    if( list != NULL){
+        set_act_first_Lil(list);
+        //inicializujeme strukturu
+        T_func *func = (T_func*)malloc(sizeof(T_func));
+        if(func == NULL){
+            error_caller(INTER_ERROR);
+            exit(INTER_ERROR);
+        }
+        //dame do nej parametre
+        func->name = "substring";
+        func->returnType = TOKEN_TYPE_STRING;
+        //params
+        func->params[0].pName = "of";
+        func->params[0].paramId = "s";
+        func->params[0].pType = TOKEN_KW_STRING;
+        func->params[1].pName = "startingAt";
+        func->params[1].paramId = "𝑖";
+        func->params[1].pType = TOKEN_KW_INT;
+        func->params[2].pName = "endingBefore";
+        func->params[2].paramId = "𝑗";
+        func->params[2].pType = TOKEN_KW_INT;
+        func->param_count = 3;
+        list->act->data = bInsert(list->act->data, func->name, (void *)func, 2);
+        
+        //uvolnime
+        free(func);
+    }
+}
+
+void insert_ord(Tlist *list){
+    if( list != NULL){
+        set_act_first_Lil(list);
+        //inicializujeme strukturu
+        T_func *func = (T_func*)malloc(sizeof(T_func));
+        if(func == NULL){
+            error_caller(INTER_ERROR);
+            exit(INTER_ERROR);
+        }
+        //dame do nej parametre
+        func->name = "ord";
+        func->returnType = TOKEN_KW_INT;
+        //params
+        func->params[0].pName = NULL;
+        func->params[0].paramId = "c";
+        func->params[0].pType = TOKEN_KW_STRING;
+        func->param_count = 1;
+        list->act->data = bInsert(list->act->data, func->name, (void *)func, 2);
+        
+        //uvolnime
+        free(func);
+    }
+}
+
+void insert_chr(Tlist *list){
+    if( list != NULL){
+        set_act_first_Lil(list);
+        //inicializujeme strukturu
+        T_func *func = (T_func*)malloc(sizeof(T_func));
+        if(func == NULL){
+            error_caller(INTER_ERROR);
+            exit(INTER_ERROR);
+        }
+        //dame do nej parametre
+        func->name = "chr";
+        func->returnType = TOKEN_KW_STRING;
+        //params
+        func->params[0].pName = NULL;
+        func->params[0].paramId = "i";
+        func->params[0].pType = TOKEN_KW_INT;
+        func->param_count = 1;
+        list->act->data = bInsert(list->act->data, func->name, (void *)func, 2);
+        
+        //uvolnime
+        free(func);
+    }
+}
+
+void insert_all(Tlist *list){
+    insert_readString(list);
+    insert_readDouble(list);
+    insert_readDouble(list);
+    insert_write(list);
+    insert_Int2Double(list);
+    insert_Double2Int(list);
+    insert_lenght(list);
+    insert_substring(list);
+    insert_ord(list);
+    insert_chr(list);
+}
+
 bool IsTerm(T_token token){
     switch(token.type){
         case TOKEN_INT:
@@ -192,6 +441,9 @@ bool prog(T_token token, T_queue *queue, FILE *file) {
     // List pro volané funkce, které ještě nebyli definovány
     Tlist *fun_call_list;
     fun_call_list = init_list();
+
+    // Vložení vestavěných funkcí
+    insert_all(fun_list);
 
 
     if(!st_list(token, queue, file, sym_list, fun_list, fun_call_list)){
