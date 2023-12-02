@@ -668,11 +668,26 @@ bool call(T_token token, T_queue *queue, FILE *file, T_id id, Tlist *sym_list){
 // <exp-stat> -> let id
 bool exp_stat(T_token token, T_queue *queue, FILE *file, Tlist *sym_list){
     // let
-    (void) sym_list;
     if(token.type == TOKEN_KW_LET){
         // id
         T_token tmp = getToken(queue, file);
         if(tmp.type == TOKEN_ID){
+            // Kontrola jestli je LET ID definované a jestli se jedná o nemodifikovatelnou proměnnou
+            ListElement *frame = bSearch_all(sym_list, tmp.value);
+            if(frame == NULL)
+            {
+                error_caller(UNDEF_UNINIT_VARIABLE_ERROR);
+                exit(UNDEF_UNINIT_VARIABLE_ERROR);
+            }
+            bStrom *item = bsearch_one(frame->data, tmp.value);
+            T_id *item_id1 = (T_id*)item->data;
+
+            // Proměnná je definovaná typu VAR, my potřebujeme LET
+            if(item_id1->modifiable)
+            {
+                error_caller(OTHER_ERROR);
+                exit(OTHER_ERROR);
+            }
             return true;
         }
         return false;
@@ -683,7 +698,12 @@ bool exp_stat(T_token token, T_queue *queue, FILE *file, Tlist *sym_list){
             queue_add(queue, token);
         }
         // ! neco udelat s navratovou hodnotou
-        printf("expr: %i\n", expr_parser(file, queue, sym_list));
+        T_token_type result = expr_parser(file, queue, sym_list);
+        if(result != TOKEN_BOOL)
+        {
+            error_caller(OTHER_ERROR);
+            exit(OTHER_ERROR);
+        }
         return true;
     }
     return false;

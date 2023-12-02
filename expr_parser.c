@@ -847,7 +847,7 @@ const char preced_tab [20][20] = {
         token_res = TOKEN_ID;
         break;    
     default:
-        token_res = TOKEN_ERROR;
+        token_res = TOKEN_VOID;
         break;
     }
     printf("rrrr%d\n", token_res);
