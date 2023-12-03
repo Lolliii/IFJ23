@@ -230,7 +230,7 @@ prec_symb get_prec_value(T_token token, int *end_expr, T_queue *queue, FILE* fil
         return prec_str;
 
     case TOKEN_DOUBLE_QUESTION_MARK:
-        return prec_que;    
+        return prec_que;
     // Token, který není v precedenční tabulce, je brán za standardní ukončení výrazu
     default:    
         return prec_end;
@@ -439,10 +439,22 @@ void rule_rela(T_stack *stack, Tlist *sym_list)
     r_op = stack_get_val(stack, 0);
     check_two_operands(*l_op, *r_op);
 
-    if((l_op->symb == e_num && r_op->symb == e_num) || 
-       (l_op->symb == e_dbl && r_op->symb == e_dbl) || 
-       (l_op->symb == e_str && r_op->symb == e_str))
+    // if((l_op->symb == e_num && r_op->symb == e_num) || 
+    //    (l_op->symb == e_dbl && r_op->symb == e_dbl) || 
+    //    (l_op->symb == e_str && r_op->symb == e_str))
+    if (((l_op->symb == e_num || l_op->symb == e_dbl) && 
+        (r_op->symb == e_num || r_op->symb == e_dbl)) || (l_op->symb == e_str && r_op->symb == e_str))
     {
+        // pretypovani r_op na int->double
+        if (l_op->symb == e_dbl && r_op->symb == e_num)
+        {
+            r_op->symb = e_dbl;
+        }
+        // pretypovani l_op na int->double
+        else if (l_op->symb == e_num && r_op->symb == e_dbl){
+            l_op->symb = e_dbl;
+        }
+
         stack_pop(stack);
         stack_pop(stack);
         l_op->symb = e_bool;
@@ -454,6 +466,12 @@ void rule_rela(T_stack *stack, Tlist *sym_list)
             // l_op = ID/ID!, r_op != ID/ID!
             if (r_op->symb != e_id && r_op->symb != e_id_exc)
             {
+                // pretypovani int->double
+                if (l_op->symb == e_dbl && r_op->symb == e_num)
+                {
+                    r_op->symb = e_dbl;
+                }
+
                 id_rule_rela(l_op, r_op);
 
             // l_op = ID/ID!, r_op = ID/ID!
@@ -466,6 +484,12 @@ void rule_rela(T_stack *stack, Tlist *sym_list)
             if (r_op->symb == e_id || r_op->symb == e_id_exc)
             {
                 check_e_id(r_op, sym_list);
+                
+                // pretypovani int->double
+                if (l_op->symb == e_num && r_op->symb == e_dbl){
+                    l_op->symb = e_dbl;
+                }
+
                 id_rule_rela(l_op, r_op);
             }
         }
@@ -493,7 +517,16 @@ void rule_rela_equal(T_stack *stack, Tlist *sym_list)
     if(((l_op->symb == e_num || l_op->symb == e_dbl) && 
         (r_op->symb == e_num || r_op->symb == e_dbl)) || (l_op->symb == e_str && r_op->symb == e_str))
     {
-        // Pro Int,Dbl neob Dbl,Int provést implicitní konverzi
+        // pretypovani r_op na int->double
+        if (l_op->symb == e_dbl && r_op->symb == e_num)
+        {
+            r_op->symb = e_dbl;
+        }
+        // pretypovani l_op na int->double
+        else if (l_op->symb == e_num && r_op->symb == e_dbl){
+            l_op->symb = e_dbl;
+        }
+
         stack_pop(stack);
         stack_pop(stack);
         l_op->symb = e_bool;
@@ -505,15 +538,11 @@ void rule_rela_equal(T_stack *stack, Tlist *sym_list)
             // l_op = ID/ID!, r_op != ID/ID!
             if (r_op->symb != e_id && r_op->symb != e_id_exc)
             {
-                // TODO pretypovani ciselneho literalu: int->double, double->int
-                // // int->double
-                // if (l_op->symb == e_dbl && r_op->symb == e_num)
-                // {
-                //     r_op->symb = e_dbl;
-                // // double->int
-                // } else if (l_op->symb == e_num && r_op->symb == e_dbl){
-                //     r_op->symb = e_num;
-                // }
+                // pretypovani r_op na int->double
+                if (l_op->symb == e_dbl && r_op->symb == e_num)
+                {
+                    r_op->symb = e_dbl;
+                }
 
                 id_rule_rela_equal(l_op, r_op);
                 
@@ -528,15 +557,10 @@ void rule_rela_equal(T_stack *stack, Tlist *sym_list)
             {
                 check_e_id(r_op, sym_list);
 
-                // TODO pretypovani ciselneho literalu: int->double, double->int
-                // // int->double
-                // if (l_op->symb == e_dbl && r_op->symb == e_num)
-                // {
-                //     l_op->symb = e_num;
-                // // double->int
-                // } else if (l_op->symb == e_num && r_op->symb == e_dbl){
-                //     l_op->symb = e_dbl;
-                // }
+                // pretypovani l_op na int->double
+                if (l_op->symb == e_num && r_op->symb == e_dbl){
+                    l_op->symb = e_dbl;
+                }
 
                 id_rule_rela_equal(l_op, r_op);
             }
@@ -852,6 +876,6 @@ const char preced_tab [20][20] = {
         token_res = TOKEN_VOID;
         break;
     }
-    // printf("rrrr%d\n", token_res);
+    //  printf("rrrr%d\n", token_res);
     return token_res;
 }
