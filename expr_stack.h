@@ -34,6 +34,7 @@ typedef enum {
     prec_num,
     prec_dbl,
     prec_str,
+    prec_nil,
     prec_que,
     prec_end,
 
@@ -44,6 +45,7 @@ typedef enum {
     e_str,
     e_bool,
     e_id_exc,
+    e_nil,
     e_end,
 } prec_symb;
 

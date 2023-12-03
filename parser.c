@@ -289,6 +289,9 @@ bool IsTerm(T_token token){
         case TOKEN_ML_STRING:
             return true;
             break;
+        case TOKEN_KW_NIL:
+            return true;
+            break;
         default:
             return false;
             break;
@@ -1174,7 +1177,7 @@ bool term(T_token token, T_queue *queue, FILE *file, Tlist *sym_list, T_func *fu
         return term_name(token, queue, file, sym_list, fun_called);
 
     // lit
-    } else if (IsTerm(token) || token.type == TOKEN_KW_NIL) {
+    } else if (IsTerm(token)) {
         // Je to literál, nastavím hodnotu token.type jako typ parametru funkce
         fun_called->params[fun_called->param_count].pType = token.type;
         fun_called->params[fun_called->param_count].pType = token_to_keyword(fun_called->params[fun_called->param_count].pType);
