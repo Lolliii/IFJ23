@@ -11,7 +11,6 @@ PARSER
 
 #include "parser.h"
 
-bool is_def = false;
 // ! act_frame??
 
 //treba tu dat list a act ukazujicim kam to chceme ulozit
@@ -332,7 +331,10 @@ bool IsTokenTypeCheck(T_token_type type, T_token_type result)
 {
     if((result == TOKEN_KW_INT && type == TOKEN_TYPE_INT) ||
     (result == TOKEN_KW_DOUBLE && type == TOKEN_TYPE_FLOAT) ||
-    (result == TOKEN_KW_STRING && type == TOKEN_TYPE_STRING))
+    (result == TOKEN_KW_STRING && type == TOKEN_TYPE_STRING) ||
+    (result == TOKEN_KW_NIL && type == TOKEN_TYPE_INT) ||
+    (result == TOKEN_KW_NIL && type == TOKEN_TYPE_FLOAT) ||
+    (result == TOKEN_KW_NIL && type == TOKEN_TYPE_STRING))
         return true;
     else
         return false;
@@ -484,7 +486,7 @@ bool st_list(T_token token, T_queue *queue, FILE *file, Tlist *sym_list, Tlist *
         T_func funkce;              // Struktura pro případnou definici funkce, v případě definice se postupně naplňuje údaji
         funkce.name = NULL;
         // <stat>
-        if (stat(token, queue, file, funkce, sym_list, fun_list, fun_call_list))
+        if (stat(token, queue, file, &funkce, sym_list, fun_list, fun_call_list))
         {
             // <st-list>
             token = getToken(queue, file);
@@ -498,7 +500,7 @@ bool st_list(T_token token, T_queue *queue, FILE *file, Tlist *sym_list, Tlist *
 // <body> -> eps
 bool body(T_token token, T_queue *queue, FILE *file, T_func *funkce, Tlist *sym_list, Tlist *fun_list, Tlist *fun_call_list) {
     // <stat>
-    if (stat(token, queue, file, *funkce, sym_list, fun_list, fun_call_list))
+    if (stat(token, queue, file, funkce, sym_list, fun_list, fun_call_list))
     {
         // <body>
         token = getToken(queue, file);
@@ -521,7 +523,7 @@ bool body(T_token token, T_queue *queue, FILE *file, T_func *funkce, Tlist *sym_
 // <stat> -> var id <id-type>                                    
 // <stat> -> id <id-stat>   
 // <stat> -> return <ret-stat> 
-bool stat(T_token token, T_queue *queue, FILE *file, T_func funkce, Tlist *sym_list, Tlist *fun_list, Tlist *fun_call_list) {
+bool stat(T_token token, T_queue *queue, FILE *file, T_func *funkce, Tlist *sym_list, Tlist *fun_list, Tlist *fun_call_list) {
     // <stat> -> while <exp-stat> { <body> }
     if (token.type == TOKEN_KW_WHILE)
     {
@@ -544,7 +546,7 @@ bool stat(T_token token, T_queue *queue, FILE *file, T_func funkce, Tlist *sym_l
 
                 // <body>
                 token = getToken(queue, file);
-                if (body(token, queue, file, &funkce, sym_list, fun_list, fun_call_list))
+                if (body(token, queue, file, funkce, sym_list, fun_list, fun_call_list))
                 {
                     // }
                     token = getToken(queue, file);
@@ -581,7 +583,7 @@ bool stat(T_token token, T_queue *queue, FILE *file, T_func funkce, Tlist *sym_l
 
                 // <body>
                 token = getToken(queue, file);
-                if (body(token, queue, file, &funkce, sym_list, fun_list, fun_call_list))
+                if (body(token, queue, file, funkce, sym_list, fun_list, fun_call_list))
                 {
                     // }
                     token = getToken(queue, file);
@@ -613,7 +615,7 @@ bool stat(T_token token, T_queue *queue, FILE *file, T_func funkce, Tlist *sym_l
 
                                 // <body>
                                 token = getToken(queue, file);
-                                if (body(token, queue, file, &funkce, sym_list, fun_list, fun_call_list))
+                                if (body(token, queue, file, funkce, sym_list, fun_list, fun_call_list))
                                 {
                                     // }
                                     token = getToken(queue, file);
@@ -643,10 +645,10 @@ bool stat(T_token token, T_queue *queue, FILE *file, T_func funkce, Tlist *sym_l
         if (token.type == TOKEN_ID)
         {
             // Nasla se definice funkce, napln strukturu pro symtable
-            funkce.param_count = 0;
-            funkce.name = token.value;
+            funkce->param_count = 0;
+            funkce->name = token.value;
             // Zkontoluj jestli již není definovaná
-            bStrom *fun_tmp = bsearch_one(fun_list->first->data, funkce.name);
+            bStrom *fun_tmp = bsearch_one(fun_list->first->data, funkce->name);
             if(fun_tmp != NULL)
             {
                 error_caller(OTHER_ERROR);
@@ -666,7 +668,7 @@ bool stat(T_token token, T_queue *queue, FILE *file, T_func funkce, Tlist *sym_l
             {
                 // <param-list>
                 token = getToken(queue, file);
-                if (param_list(token, queue, file, &funkce, sym_list))
+                if (param_list(token, queue, file, funkce, sym_list))
                 {
                     // )
                     token = getToken(queue, file);
@@ -674,25 +676,25 @@ bool stat(T_token token, T_queue *queue, FILE *file, T_func funkce, Tlist *sym_l
                     {
                         // <f-type>
                         token = getToken(queue, file);
-                        if (f_type(token, queue, file, &funkce, sym_list))
+                        if (f_type(token, queue, file, funkce, sym_list))
                         {
                             // {
                             token = getToken(queue, file);
                             if (token.type == TOKEN_L_CURL)
                             {
                                 // Naplnění stromu s definicemi funkcí
-                                fun_list->first->data = bInsert(fun_list->first->data, funkce.name, (void*)&funkce, 2);
+                                fun_list->first->data = bInsert(fun_list->first->data, funkce->name, (void*)&funkce, 2);
                                 
                                 // KONTROLA jestli již nebyla nějaká funkce s tímto ID volána ještě před definicí
                                 while(1)
                                 {
-                                    ListElement *frame = bSearch_all(fun_call_list, funkce.name);
+                                    ListElement *frame = bSearch_all(fun_call_list, funkce->name);
                                     if(frame == NULL)
                                         break;
                                     // Funkce byla volána, zkontroluj ji (všechna volání, která předcházeli definici)
-                                    bStrom *item = bsearch_one(frame->data, funkce.name);
+                                    bStrom *item = bsearch_one(frame->data, funkce->name);
                                     T_func *fun_called = (T_func*)item->data;
-                                    defined_fun_check(fun_called, funkce);
+                                    defined_fun_check(fun_called, *funkce);
                                     
                                     destroy_Lilfirst(fun_call_list);
                                     set_act_first_Lil(fun_call_list);
@@ -700,12 +702,18 @@ bool stat(T_token token, T_queue *queue, FILE *file, T_func funkce, Tlist *sym_l
                                 
                                 // <body>
                                 token = getToken(queue, file);
-                                if (body(token, queue, file, &funkce, sym_list, fun_list, fun_call_list))
+                                if (body(token, queue, file, funkce, sym_list, fun_list, fun_call_list))
                                 {
                                     // }
                                     token = getToken(queue, file);
                                     if (token.type == TOKEN_R_CURL)
                                     {
+                                        // Kontrola jestli ne-void funkce má příkaz return
+                                        if(!funkce->returned && funkce->returnType != TOKEN_VOID)
+                                        {
+                                            error_caller(PARAM_ERROR);
+                                            exit(PARAM_ERROR);
+                                        }
                                         // Zrušení rámce
                                         destroy_Lilfirst(sym_list);
                                         set_act_first_Lil(sym_list);
@@ -806,36 +814,38 @@ bool stat(T_token token, T_queue *queue, FILE *file, T_func funkce, Tlist *sym_l
 
 // <ret-stat> -> <exp>
 // <ret-stat> -> eps
-bool ret_stat(T_token token, T_queue *queue, FILE *file, T_func funkce, Tlist *sym_list) {
+bool ret_stat(T_token token, T_queue *queue, FILE *file, T_func *funkce, Tlist *sym_list) {
     // <exp>
-    bool is_void = true;  // Predpokladame ze funkce je void
     if (IsTerm(token) || token.type == TOKEN_ID || token.type == TOKEN_ID_EM || token.type == TOKEN_R_CURL || token.type == TOKEN_L_RND)
     {
         // Za return je nějaký expression -> funkce není void
-        is_void = false;
         queue_add(queue, token);
     }
 
-    if(!is_void)
+    // Funkce není void, podívám se co za typ má vracet a co vrátil expression parser
+    T_token_type result = expr_parser(file, queue, sym_list);
+    // Pokud funkce není void, nastaví se return na true
+    if(result != TOKEN_VOID)
+        funkce->returned = true;
+    
+    // Sedí návratový typ? 
+    if(result != funkce->returnType && !IsTokenTypeCheck(funkce->returnType, result))
     {
-        // Funkce není void, podívám se co za typ má vracet a co vrátil expression parser
-        T_token_type result = expr_parser(file, queue, sym_list);
+        if(result == TOKEN_VOID || funkce->returnType == TOKEN_VOID)
+        {
+            // Funkce má vracet výraz, ale za return není žádný výraz
+            // Nebo funkce je typu void, ale za return je výraz
+            error_caller(EXPRESSION_ERROR);
+            exit(EXPRESSION_ERROR);
 
-        // Sedí návratový typ? 
-        if(result != funkce.returnType && !IsTokenTypeCheck(funkce.returnType, result))
+        }
+        else
         {
+            // Nesedí návratové typy
             error_caller(PARAM_ERROR);
             exit(PARAM_ERROR);
         }
-    }
-    else
-    {
-        // Je funkce opravdu void?
-        if(funkce.returnType != TOKEN_VOID)
-        {
-            error_caller(PARAM_ERROR);
-            exit(PARAM_ERROR);
-        }
+
     }
     return true;
 }
