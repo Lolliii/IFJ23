@@ -1012,6 +1012,7 @@ bool call(T_token token, T_queue *queue, FILE *file, T_id id, Tlist *sym_list, T
                     }
                     else
                     {
+                        id.initialized = true;
                         bStrom *not_def_fun = NULL;
                         add_to_Lil(fun_call_list, not_def_fun);
                         set_act_first_Lil(fun_call_list);
