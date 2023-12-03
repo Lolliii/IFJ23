@@ -37,7 +37,7 @@ void reduce_rule(T_stack *stack, T_elem *stack_top, Tlist *sym_list);
    Bez návratové hodnoty*/
 void check_two_operands(T_elem l_op, T_elem r_op);    
 
-void check_e_id(T_elem *element, Tlist *sym_list);    //hledani typu id
+int check_e_id(T_elem *element, Tlist *sym_list);    //hledani typu id
 void check_id_exc(T_elem *element, Tlist *sym_list);  //funkci nepouzivame
 
 //kontroly komatibility
