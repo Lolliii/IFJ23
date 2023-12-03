@@ -14,6 +14,7 @@ IFJ Projekt 2023
 #include "parser_queue.h"
 #include "parser.h"
 #include "symtable.h"
+#include "code_gen.h"
 
 int main(int argc, char *argv[]) {
     (void) argc;
@@ -26,7 +27,11 @@ int main(int argc, char *argv[]) {
 
         T_token token = getNextToken(file);
 // ______ parser
+
+        // codeGenInit();
         prog(token, queue, file);
+        // codeGenFinish();
+        printf("\n");
 
     free(queue);
 

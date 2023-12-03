@@ -18,6 +18,7 @@ PARSER
 #include "parser_queue.h"
 #include "expr_parser.h"
 #include "symtable.h"
+#include "code_gen.h"
 
 // Double, Int, String, ?
 bool IsType(T_token token);

@@ -582,7 +582,7 @@ T_token getNextToken(FILE* file){
                 } else {
                     return_back(c, file);
                     token.type = TOKEN_EXCLAMATION_MARK;
-                    error_caller(SYN_ERROR);
+                    error_caller(SYN_ERROR);                   
                     exit(SYN_ERROR);
                 }
                 break; 

@@ -45,112 +45,101 @@ void printSymb(bool id, int symbFrame, int symbVar, char value[], int type){
 }
 
 
-// Vypise zahlavi .IFJcode23
-int codeGenInit(){
-    printf(".IFJcode23");
-
-    // ??
-    printf("\nCREATEFRAME");
-    printf("\nPUSHFRAME");
-}
-
-// NEMELY BY BRAT PARAMETRY
-
 // Vytvoří nový dočasný rámec a zahodí případný obsah původního dočasného rámce.
-void createFrame(){
+void createFrame(void){
     printf("\nCREATEFRAME");
 }
 
 // Presune TF na zasobnik ramcu, bude k dispozici pres LF
 // Pripadne prekryje ostatni
 // Po teto instrukci je TF nedefinovan, je potreba pouzit CREATEFRAME
-void pushFrame(){
+void pushFrame(void){
     printf("\nPUSHFRAME");
 }
 
 // Presune vrcholovy LF ze zasobniku do TF
-void popFrame(){
+void popFrame(void){
     printf("\nPOPFRAME");
 }
 
 // Vrati se odkud se volalo
-void cReturn(){
+void cReturn(void){
     printf("\nRETURN");
 }
 
 // Smaze datovy zasobnik
-void clears(){
+void clears(void){
     printf("\nCLEARS");
 }
 
 // Zasobnikove ADD
-void adds(){
+void adds(void){
     printf("\nADDS");
 }
 
 // Zasobnikove SUB
-void subs(){
+void subs(void){
     printf("\nSUBS");
 }
 
 // Zasobnikove DIV
-void divs(){
+void divs(void){
     printf("\nDIVS");
 }
 
 // Zasobnikove IDIV
-void idivs(){
+void idivs(void){
     printf("\nIDIVS");
 }
 
 // Zasobnikove LT (<)
-void lts(){
+void lts(void){
     printf("\nLTS");
 }
 
 // Zasobnikove GT (>)
-void gts(){
+void gts(void){
     printf("\nGTS");
 }
 
 // Zasobnikove EQ (==)
-void eqs(){
+void eqs(void){
     printf("\nEQS");
 }
 
 // Zasobnikove AND
-void ands(){
+void ands(void){
     printf("\nANDS");
 }
 
 // Zasobnikove OR
-void ors(){
+void ors(void){
     printf("\nORS");
 }
 
 // Zasobnikove NOT 
-void nots(){
+void nots(void){
     printf("\nNOTS");
 }
 
 // Zasobnikove int -> float
-void int2floats(){
+void int2floats(void){
     printf("\nINT2FLOATS");
 }
 
 // Zasobnikove float -> int
-void float2ints(){
+void float2ints(void){
     printf("\nFLOAT2INTS");
 }
 
 // Zasobnikove prevedeni int na hodnotu ASCII
-void int2chars(){
+void int2chars(void){
     printf("\nINT2CHARS");
 }
 
 // Zasobnikove STRI2INT ⟨var⟩ ⟨symb1⟩ ⟨symb2⟩
 // Do <var> vlozi hodnotu ASCII znaku ze <symb1> na pozici <symb2>
-void stri2ints(){
+void stri2ints(void){
     printf("\nSTRI2INTS");
 }
 
@@ -160,7 +149,7 @@ void label(char label[]){
 }
 
 // Provede skok na navesti (funkce)
-void call(char label[]){
+void callLabel(char label[]){
     printf("\nCALL %s", label);
 }
 
@@ -186,7 +175,7 @@ void jumpIfNEqS(char label[]){
 }
 
 // Vypise stav interpretu v danou chvili na stderr
-void cBreak(){
+void cBreak(void){
     printf("\nBREAK");
 }
 
@@ -298,7 +287,7 @@ void mul(int frame, int var, bool id, int symbVar, int symbframe, char symb[], i
 }
 
 // DIV (stejny typ)
-void div(int frame, int var, bool id, int symbVar, int symbframe, char symb[], int type, bool id2, int symbVar2, int symbframe2, char symb2[], int type2){
+void cDiv(int frame, int var, bool id, int symbVar, int symbframe, char symb[], int type, bool id2, int symbVar2, int symbframe2, char symb2[], int type2){
     printf("\nDIV");
     printVar(frame, var);
     printSymb(id, symbframe, symbVar, symb, type);
@@ -422,5 +411,18 @@ void cRead(int frame, int var, char type[]){
     printf(" %s", type);
 }
 
+// Vypise zahlavi .IFJcode23
+void codeGenInit(void){
+    printf(".IFJcode23");
 
+    // ??
+    createFrame();
+    pushFrame();
+}
+
+// Ukonceni generovani
+void codeGenFinish(void){
+    clears();
+    popFrame();
+}
 

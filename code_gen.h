@@ -40,35 +40,36 @@ CODE GENERATOR
 //      -> jmeno zacina pismenem, nebo specialnim znakem (_, -, $, &, %, *, !, ?) -> (plati i pro label)
 
 // Vypise zahlavi .IFJcode23
-int codeGenInit();
+void codeGenInit(void);
+void codeGenFinish(void);
 
 // NEMELY BY BRAT PARAMETRY
-void createFrame();
-void pushFrame();
-void popFrame();
-void cReturn();
-void clears();
-void adds();
-void subs();
-void divs();
-void idivs();
-void lts();
-void gts();
-void eqs();
-void ands();
-void ors();
-void nots();
-void int2floats();
-void float2ints();
-void int2chars();
-void stri2ints();
+void createFrame(void);
+void pushFrame(void);
+void popFrame(void);
+void cReturn(void);
+void clears(void);
+void adds(void);
+void subs(void);
+void divs(void);
+void idivs(void);
+void lts(void);
+void gts(void);
+void eqs(void);
+void ands(void);
+void ors(void);
+void nots(void);
+void int2floats(void);
+void float2ints(void);
+void int2chars(void);
+void stri2ints(void);
 void label(char label[]);
-void call(char label[]);
+void callLabel(char label[]);
 void jump(char label[]);
 void cExit(int returnCode);
 void jumpIfEqS(char label[]);
 void jumpIfNEqS(char label[]);
-void cBreak();
+void cBreak(void);
 
 void defvar(int frame, int var);
 void pops(int frame, int var);
@@ -86,7 +87,7 @@ void dPrint(bool id, int symbVar, int symbframe, char symb[], int type);
 void add(int frame, int var, bool id, int symbVar, int symbframe, char symb[], int type, bool id2, int symbVar2, int symbframe2, char symb2[], int type2);
 void sub(int frame, int var, bool id, int symbVar, int symbframe, char symb[], int type, bool id2, int symbVar2, int symbframe2, char symb2[], int type2);
 void mul(int frame, int var, bool id, int symbVar, int symbframe, char symb[], int type, bool id2, int symbVar2, int symbframe2, char symb2[], int type2);
-void div(int frame, int var, bool id, int symbVar, int symbframe, char symb[], int type, bool id2, int symbVar2, int symbframe2, char symb2[], int type2);
+void cDiv(int frame, int var, bool id, int symbVar, int symbframe, char symb[], int type, bool id2, int symbVar2, int symbframe2, char symb2[], int type2);
 void idiv(int frame, int var, bool id, int symbVar, int symbframe, char symb[], int type, bool id2, int symbVar2, int symbframe2, char symb2[], int type2);
 
 void lt(int frame, int var, bool id, int symbVar, int symbframe, char symb[], int type, bool id2, int symbVar2, int symbframe2, char symb2[], int type2);
@@ -104,11 +105,5 @@ void cSetChar(int frame, int var, bool id, int symbVar, int symbframe, char symb
 void jumpIfEq(char label[], bool id, int symbVar, int symbframe, char symb[], int type, bool id2, int symbVar2, int symbframe2, char symb2[], int type2);
 void jumpIfNEq(char label[], bool id, int symbVar, int symbframe, char symb[], int type, bool id2, int symbVar2, int symbframe2, char symb2[], int type2);
 void cRead(int frame, int var, char type[]);
-
-
-
-
-
-
 
 #endif
