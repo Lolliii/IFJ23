@@ -549,7 +549,6 @@ void rule_rela_equal(T_stack *stack, Tlist *sym_list)
     {
         if (l_op->symb == e_id || l_op->symb == e_id_exc){
             int l_type = check_e_id(l_op, sym_list);
-            // printf("LLLLL%d\n", l_type);
             // l_op = ID/ID!, r_op != ID/ID!
             if (r_op->symb != e_id && r_op->symb != e_id_exc)
             {
@@ -559,13 +558,10 @@ void rule_rela_equal(T_stack *stack, Tlist *sym_list)
                     r_op->symb = e_dbl;
                 }
 
-
-                // nil
-                if ((l_type == TOKEN_TYPE_INT || l_type == TOKEN_TYPE_FLOAT || l_type == TOKEN_TYPE_STRING) && l_op->symb == e_nil)
+                // l_op je nil
+                if ((l_type == TOKEN_TYPE_INT || l_type == TOKEN_TYPE_FLOAT || l_type == TOKEN_TYPE_STRING)
+                    && l_op->symb == e_nil)
                 {
-                    // printf("asdw\n");
-                    // printf("AAAAAA%d\n", l_op->symb);
-                    // printf("BBBBBB%d\n", r_op->symb);
                     if ((l_op->symb == e_nil && r_op->symb == e_nil) || 
                         (l_type == TOKEN_TYPE_INT && r_op->symb == e_num) || 
                         (l_type == TOKEN_TYPE_FLOAT && r_op->symb == e_dbl) ||
@@ -574,27 +570,54 @@ void rule_rela_equal(T_stack *stack, Tlist *sym_list)
                         l_op->symb = e_bool;
                     } else {
                         error_caller(TYPE_COMP_ERROR);
-                        exit(TYPE_COMP_ERROR);   
+                        exit(TYPE_COMP_ERROR);
                     }
                 }
                 id_rule_rela_equal(l_op, r_op);
                 
             // l_op = ID/ID!, r_op = ID/ID!
             } else if(r_op->symb == e_id || r_op->symb == e_id_exc) {
-                check_e_id(r_op, sym_list);
+                int r_type = check_e_id(r_op, sym_list);
+
+                // l_op a r_op je nil
+                if ((l_type == TOKEN_TYPE_INT && r_type == TOKEN_TYPE_INT) ||
+                    (l_type == TOKEN_TYPE_FLOAT && r_type == TOKEN_TYPE_FLOAT) ||
+                    (l_type == TOKEN_TYPE_STRING && r_type == TOKEN_TYPE_STRING))
+                {
+                    l_op->symb = e_bool;
+                } else {
+                    error_caller(TYPE_COMP_ERROR);
+                    exit(TYPE_COMP_ERROR);
+                }
+                
                 id_rule_rela_equal(l_op, r_op);
             }
         } else if (l_op->symb != e_id && l_op->symb != e_id_exc){
             // l_op != ID/ID!, r_op = ID/ID!
             if (r_op->symb == e_id || r_op->symb == e_id_exc)
             {
-                check_e_id(r_op, sym_list);
+                int r_type = check_e_id(r_op, sym_list);
 
                 // pretypovani l_op na int->double
                 if (l_op->symb == e_num && r_op->symb == e_dbl){
                     l_op->symb = e_dbl;
                 }
 
+                // r_op je nil
+                if ((r_type == TOKEN_TYPE_INT || r_type == TOKEN_TYPE_FLOAT || r_type == TOKEN_TYPE_STRING)
+                    && r_op->symb == e_nil)
+                {
+                    if ((l_op->symb == e_nil && r_op->symb == e_nil) || 
+                        (r_type == TOKEN_TYPE_INT && l_op->symb == e_num) || 
+                        (r_type == TOKEN_TYPE_FLOAT && l_op->symb == e_dbl) ||
+                        (r_type == TOKEN_TYPE_STRING && l_op->symb == e_str))
+                    {
+                        l_op->symb = e_bool;
+                    } else {
+                        error_caller(TYPE_COMP_ERROR);
+                        exit(TYPE_COMP_ERROR);   
+                    }
+                }
                 id_rule_rela_equal(l_op, r_op);
             }
         }
@@ -917,6 +940,6 @@ const char preced_tab [20][20] = {
         token_res = TOKEN_VOID;
         break;
     }
-    //  printf("rrrr%d\n", token_res);
+     printf("rrrr%d\n", token_res);
     return token_res;
 }
