@@ -11,6 +11,20 @@ CODE GENERATOR
 
 #include "code_gen.h"
 
+// Spocita kolikaty je poslany frame
+int count_frames(Tlist *list){
+    int count = 0;
+
+    if(list->act != NULL){
+        while(list->act->rPtr != NULL){
+            count++;
+            list->act = list->act->rPtr;
+        }
+    }
+
+    return (count > 0) ? 1 : 0;
+}
+
 // Vypise var
 void printVar(int frame, int var){
     if(!frame){
@@ -84,6 +98,11 @@ void adds(void){
 // Zasobnikove SUB
 void subs(void){
     printf("\nSUBS");
+}
+
+// Zasobnikove MUL
+void muls(void){
+    printf("\nMULS");
 }
 
 // Zasobnikove DIV
@@ -179,13 +198,13 @@ void cExit(int returnCode){
 }
 
 // Zasobnikovy skok na navesti, pokud rovno
-void jumpIfEqS(char label[]){
-    printf("\nJUMPIFEQS %s", label);
+void jumpIfEqS(int label){
+    printf("\nJUMPIFEQS %d", label);
 }
 
 // Zasobnikovy skok na navesti, pokud nerovno
-void jumpIfNEqS(char label[]){
-    printf("\nJUMPIFNEQS %s", label);
+void jumpIfNEqS(int label){
+    printf("\nJUMPIFNEQS %d", label);
 }
 
 // Vypise stav interpretu v danou chvili na stderr
@@ -207,11 +226,23 @@ void pops(int frame, int var){
     printVar(frame, var);
 }
 
+// Zasobnikove POP pro podminky
+// Pokud neni zasobnik prazdny, ulozi vrchol do var
+void popsCondition(void){
+    printf("\nPOPS GF@_condition");
+}
+
+
 // Zasobnikove PUSH
 // Ulozi <symb> na zasobnik
 void pushs(bool id, int symbVar, int symbframe, char symb[], T_token_type type){
     printf("\nPUSHS");
     printSymb(id, symbframe, symbVar, symb, type);
+}
+
+// Zasobnikove PUSH pro vyhodnoceni podminek
+void pushsCondition(char condition[]){
+    printf("\nPUSHS bool@%s", condition);
 }
 
 // MOVE

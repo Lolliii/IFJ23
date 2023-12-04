@@ -1,6 +1,10 @@
-func a(_ x: Int, _ y: String, _ z: Double) -> Int {
-    var s = 2
-    return s
-}
+var a = 1
 
-var i = a(2, "Klobouk", 1.0)
+while(a <= 1){
+    if(a == 1){
+        var i = 0
+    } else 
+    {
+
+    }
+}

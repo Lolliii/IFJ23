@@ -17,6 +17,7 @@ CODE GENERATOR
 #include <stdbool.h>
 #include <string.h>
 #include "scanner.h"
+#include "symtable.h"
 
 // ! Kod se bude generovat na stdout
 // ! Budu vyuzivat printf
@@ -40,6 +41,8 @@ CODE GENERATOR
 // Identifikator promenne se sklada z FRAME@jmeno
 //      -> jmeno zacina pismenem, nebo specialnim znakem (_, -, $, &, %, *, !, ?) -> (plati i pro label)
 
+int count_frames(Tlist *list);
+
 // Vypise zahlavi .IFJcode23
 void codeGenInit(void);
 void codeGenFinish(void);
@@ -52,6 +55,7 @@ void cReturn(void);
 void clears(void);
 void adds(void);
 void subs(void);
+void muls(void);
 void divs(void);
 void idivs(void);
 void lts(void);
@@ -70,14 +74,16 @@ void callLabel(char label[]);
 void jump(char label[]);
 void ifWhileJump(int label);
 void cExit(int returnCode);
-void jumpIfEqS(char label[]);
-void jumpIfNEqS(char label[]);
+void jumpIfEqS(int label);
+void jumpIfNEqS(int label);
 void cBreak(void);
 
 void defvar(int frame, int var);
 void pops(int frame, int var);
+void popsCondition(void);
 void move(int frame, int var, bool id, int symbVar, int symbframe ,char symb[], int type);
 void pushs(bool id, int symbVar, int symbframe, char symb[], T_token_type type);
+void pushsCondition(char condition[]);
 void int2float(int frame, int var, bool id, int symbVar, int symbframe, char symb[], int type);
 void float2int(int frame, int var, bool id, int symbVar, int symbframe, char symb[], int type);
 void int2char(int frame, int var, bool id, int symbVar, int symbframe, char symb[], int type);

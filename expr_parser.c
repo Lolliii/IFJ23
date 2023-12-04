@@ -101,13 +101,17 @@ void check_id_exc(T_elem *l_op, Tlist *sym_list){
 
 void id_rule_plus(T_elem *l_op, T_elem *r_op) {
     if ((l_op->symb == e_num && r_op->symb == e_num ) ||
-        (l_op->symb == e_dbl && r_op->symb == e_dbl ) ||
-        (l_op->symb == e_str && r_op->symb == e_str ))
+        (l_op->symb == e_dbl && r_op->symb == e_dbl ))
     {
         l_op->symb = r_op->symb;
+        adds();     // *
+    } else if (l_op->symb == e_str && r_op->symb == e_str ){
+        l_op->symb = r_op->symb;
+
     } else if ((l_op->symb == e_num || l_op->symb == e_dbl) &&
-        (r_op->symb == e_num || r_op->symb == e_dbl)){
+               (r_op->symb == e_num || r_op->symb == e_dbl)){
         l_op->symb = e_dbl;
+        adds();      // *
     } else {
         error_caller(TYPE_COMP_ERROR);
         exit(TYPE_COMP_ERROR);
@@ -129,10 +133,12 @@ void id_rule_min_mul(T_elem *l_op, T_elem *r_op){
 }
 
 void id_rule_div(T_elem *l_op, T_elem *r_op){
-    if ((l_op->symb == e_num && r_op->symb == e_num ) ||
-        (l_op->symb == e_dbl && r_op->symb == e_dbl ))
-    {
+    if (l_op->symb == e_num && r_op->symb == e_num ){
         l_op->symb = r_op->symb;
+        idivs();    // *
+    } else if(l_op->symb == e_dbl && r_op->symb == e_dbl ){
+        l_op->symb = r_op->symb;
+        divs();    // *
     } else {
         error_caller(TYPE_COMP_ERROR);
         exit(TYPE_COMP_ERROR);
@@ -273,6 +279,7 @@ void rule_plus(T_stack *stack, Tlist *sym_list)
     {
         //printf("conca ");
         l_op->symb = e_str;
+        // 
     }
     else if((l_op->symb == e_num && r_op->symb == e_num) ||
             (l_op->symb == e_dbl && r_op->symb == e_dbl))
@@ -280,10 +287,7 @@ void rule_plus(T_stack *stack, Tlist *sym_list)
         //printf("+ ");
         l_op->symb = r_op->symb;    //zbytečné, ale pro naznačení
 
-        // Zkouska
-        // * pushs(0, 1, 1, l_op->value, TOKEN_KW_INT);
-        // * pushs(0, 1, 1, r_op->value, TOKEN_KW_INT);
-        // * adds();
+        adds();      // *
 
     }
     else if((l_op->symb == e_num || l_op->symb == e_dbl) &&
@@ -292,6 +296,8 @@ void rule_plus(T_stack *stack, Tlist *sym_list)
         // Provedení konverze jednoho z operandu na DOUBLE
         //printf("+ ");
         l_op->symb = e_dbl;
+
+        adds();      // *
     }
     else if(l_op->symb == e_id || r_op->symb == e_id || l_op->symb == e_id_exc || r_op->symb == e_id_exc)
     {
@@ -401,11 +407,13 @@ void rule_div(T_stack *stack, Tlist *sym_list)
     {
         // Celočíselné dělení
         l_op->symb = e_num;
+        idivs();     // *
     }
     else if((l_op->symb == e_dbl && r_op->symb == e_dbl))
     {
         // Desetinné dělení
         l_op->symb = e_dbl;
+        divs();     // *
     }
     else if(l_op->symb == e_id || r_op->symb == e_id || l_op->symb == e_id_exc || r_op->symb == e_id_exc)
     {
@@ -697,40 +705,51 @@ void reduce_rule(T_stack *stack, T_elem *stack_top, Tlist *sym_list)
         break;
     case prec_sub:
         rule_min_mul(stack, sym_list);
-        //printf("- ");
+        subs();                         // *
+        // printf("- ");
         break;
     case prec_mul:
         rule_min_mul(stack, sym_list);
-        //printf("* ");
+        muls();                         // *
+        // printf("* ");
         break;
     case prec_divi:
-        //printf("/ ");
+        printf("/ ");
         rule_div(stack, sym_list);
         break;
         
     case prec_lt:
-        //printf("< ");
+        printf("< ");
         rule_rela(stack, sym_list);
+        lts();          // *
         break;
     case prec_lt_eq:
-        //printf("<= ");
+        printf("<= ");
         rule_rela(stack, sym_list);
+        gts();          // *
+        nots();         // *
         break;
     case prec_gt:
-        //printf("> ");
+        printf("> ");
         rule_rela(stack, sym_list);
+        gts();          // *
         break;
     case prec_gt_eq:
-        //printf(">= ");
+        printf(">= ");
         rule_rela(stack, sym_list);
+        lts();          // *
+        nots();         // *
         break;
     case prec_eq:
-        //printf("== ");
+        printf("== ");
         rule_rela_equal(stack, sym_list);
+        eqs();          // *
         break;
     case prec_n_eq:
-        //printf("!= ");
+        printf("!= ");
         rule_rela_equal(stack, sym_list);
+        eqs();          // *
+        nots();         // *
         break;
     
     // Pravidlo E->id!
@@ -755,30 +774,48 @@ void reduce_rule(T_stack *stack, T_elem *stack_top, Tlist *sym_list)
         break;
     
     case prec_que:
-        //printf("??");
+        printf("??");
         rule_nil_coal(stack, sym_list);
         break;
     
     // Pravidla typu: E->id, E->int atd, jsou vyřešeny změnou indexu tokenu (stack_top->symb) na vrcholu zásobníku
     case prec_id:
         stack_top->symb = e_id;
-        //printf("%s, ", stack_top->value);
+
+        ListElement *frame = bSearch_all(sym_list, stack_top->value);
+        if(frame != NULL){
+            // hledani v strome
+            bStrom *found = bsearch_one(frame->data, stack_top->value);
+            T_id *id_data = (T_id *)(found->data);
+
+            // set_act_first_Lil(sym_list);
+            pushs(true, id_data->generated_id, count_frames(sym_list), false, 0);       // *
+        } else {
+            error_caller(UNDEF_UNINIT_VARIABLE_ERROR);
+            exit(UNDEF_UNINIT_VARIABLE_ERROR);
+        }
+
+        // printf("%s, ", stack_top->value);
         break;
     case prec_num:
         stack_top->symb = e_num;
-        //printf("%s, ", stack_top->value);
+        pushs(false, 0, 0, stack_top->value, TOKEN_KW_INT);     // *
+        // printf("%s, ", stack_top->value);
         break;
     case prec_dbl:
         stack_top->symb = e_dbl;
-        //printf("%s, ", stack_top->value);
+        pushs(false, 0, 0, stack_top->value, TOKEN_KW_DOUBLE);  // *
+        // printf("%s, ", stack_top->value);
         break;
     case prec_str:
         stack_top->symb = e_str;
-        //printf("%s, ", stack_top->value);
+        pushs(false, 0, 0, stack_top->value, TOKEN_KW_STRING);  // *
+        // printf("%s, ", stack_top->value);
         break;
     case prec_nil:
         stack_top->symb = e_nil;
-        //printf("%s, ", nil);
+        // pushs(false, 0, 0, "nil", TOKEN_KW_NIL);     // *
+        printf("nil, ");
         break;
     
     // Ukončovací symbol
