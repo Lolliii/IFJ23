@@ -39,7 +39,7 @@ typedef struct func {
     char *name;                 // Nazev fuknce
     T_token_type returnType;
     struct param params[20];   // Parametry (je potreba se na ne odkazovat takhle foo.params[0]->pName)
-    int param_count;
+    int param_count;           // Počet parametrů funkce
 }T_func;
 
 typedef struct id{
