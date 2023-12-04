@@ -12,6 +12,8 @@ PARSER
 #include "parser.h"
 
 // ! act_frame??
+// Globální proměnná, pro kontrolu zdali má funkce příkaz return
+bool returned = false;
 
 //treba tu dat list a act ukazujicim kam to chceme ulozit
 void insert_readString(Tlist *list){
@@ -712,6 +714,13 @@ bool stat(T_token token, T_queue *queue, FILE *file, T_func funkce, Tlist *sym_l
                                     token = getToken(queue, file);
                                     if (token.type == TOKEN_R_CURL)
                                     {
+                                        // Kontrola jestli ne-void funkce má příkaz return
+                                        if(!returned && funkce.returnType != TOKEN_VOID)
+                                        {
+                                            error_caller(PARAM_ERROR);
+                                            exit(PARAM_ERROR);
+                                        }
+                                        returned = false;
                                         // Zrušení rámce
                                         destroy_Lilfirst(sym_list);
                                         set_act_first_Lil(sym_list);
@@ -822,7 +831,9 @@ bool ret_stat(T_token token, T_queue *queue, FILE *file, T_func funkce, Tlist *s
 
     // Funkce není void, podívám se co za typ má vracet a co vrátil expression parser
     T_token_type result = expr_parser(file, queue, sym_list);
-    // Pokud funkce není void, nastaví se return na true
+    // Pokud funkce není void, nastaví se returned na true
+    if(result != TOKEN_VOID)
+        returned = true;
     
     // Sedí návratový typ? 
     if(result != funkce.returnType && !IsTokenTypeCheck(funkce.returnType, result))
@@ -841,7 +852,6 @@ bool ret_stat(T_token token, T_queue *queue, FILE *file, T_func funkce, Tlist *s
             error_caller(PARAM_ERROR);
             exit(PARAM_ERROR);
         }
-
     }
     return true;
 }
