@@ -28,9 +28,7 @@ int main(int argc, char *argv[]) {
         T_token token = getNextToken(file);
 // ______ parser
 
-        // codeGenInit();
         prog(token, queue, file);
-        // codeGenFinish();
         printf("\n");
 
     free(queue);

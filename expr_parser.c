@@ -10,6 +10,7 @@ Implementace parseru pro vyhodnocování výrazů
 */
 
 #include "expr_parser.h"
+#include "code_gen.h"   // Zkouska
 
 void check_e_id(T_elem *element, Tlist *list){
     // hledani v listu
@@ -265,6 +266,12 @@ void rule_plus(T_stack *stack, Tlist *sym_list)
     {
         //printf("+ ");
         l_op->symb = r_op->symb;    //zbytečné, ale pro naznačení
+
+        // Zkouska
+        // * pushs(0, 1, 1, l_op->value, TOKEN_KW_INT);
+        // * pushs(0, 1, 1, r_op->value, TOKEN_KW_INT);
+        // * adds();
+
     }
     else if((l_op->symb == e_num || l_op->symb == e_dbl) &&
             (r_op->symb == e_num || r_op->symb == e_dbl))

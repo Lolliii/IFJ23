@@ -27,16 +27,20 @@ void printVar(int frame, int var){
 // Vypise symb
 // ! nil ??
 void printSymb(bool id, int symbFrame, int symbVar, char value[], int type){
-    if(!id){           // Konstanta
-        if(!type){     // INT
-            int val = atoi(value);
-            printf(" int@%d", val);  // ! v zadani je, ze pri zapisu konstant pouzivat hexa, ale %a nadava na int
+    if(!id){   
+        if(type == TOKEN_KW_STRING){
+            printf(" string@%s", value);
         } else {
-            if(type == 1){  // DOUBLE (float)
-                float val = atof(value);
-                printf(" float@%a", val);
+            if(type == TOKEN_KW_INT){
+                int vall = atoi(value);
+                printf(" int@%d", vall);
             } else {
-                printf(" string@%s", value);
+                if(type == TOKEN_KW_DOUBLE){
+                    float val = atof(value);
+                    printf(" float@%a", val);
+                } else {
+                    printf(" nil@nil");
+                }
             }
         }
     } else {           // ID
@@ -144,6 +148,11 @@ void stri2ints(void){
 }
 
 // Vytvori navesti
+void ifWhileLabel(int label){
+    printf("\nLABEL %d", label);
+}
+
+// Vytvori navesti
 void label(char label[]){
     printf("\nLABEL %s", label);
 }
@@ -156,6 +165,11 @@ void callLabel(char label[]){
 // Provede nepodmineny skok na navesti 
 void jump(char label[]){
     printf("\nJUMP %s", label);
+}
+
+// Provede nepodmineny skok na navesti 
+void ifWhileJump(int label){
+    printf("\nJUMP %d", label);
 }
 
 // Ukonci vykonavani programu s navratovym kodem returnCode 
@@ -195,7 +209,7 @@ void pops(int frame, int var){
 
 // Zasobnikove PUSH
 // Ulozi <symb> na zasobnik
-void pushs(bool id, int symbVar, int symbframe, char symb[], int type){
+void pushs(bool id, int symbVar, int symbframe, char symb[], T_token_type type){
     printf("\nPUSHS");
     printSymb(id, symbframe, symbVar, symb, type);
 }

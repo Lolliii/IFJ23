@@ -16,6 +16,7 @@ CODE GENERATOR
 #include <stdlib.h>
 #include <stdbool.h>
 #include <string.h>
+#include "scanner.h"
 
 // ! Kod se bude generovat na stdout
 // ! Budu vyuzivat printf
@@ -63,9 +64,11 @@ void int2floats(void);
 void float2ints(void);
 void int2chars(void);
 void stri2ints(void);
+void ifWhileLabel(int label);
 void label(char label[]);
 void callLabel(char label[]);
 void jump(char label[]);
+void ifWhileJump(int label);
 void cExit(int returnCode);
 void jumpIfEqS(char label[]);
 void jumpIfNEqS(char label[]);
@@ -74,7 +77,7 @@ void cBreak(void);
 void defvar(int frame, int var);
 void pops(int frame, int var);
 void move(int frame, int var, bool id, int symbVar, int symbframe ,char symb[], int type);
-void pushs(bool id, int symbVar, int symbframe, char symb[], int type);
+void pushs(bool id, int symbVar, int symbframe, char symb[], T_token_type type);
 void int2float(int frame, int var, bool id, int symbVar, int symbframe, char symb[], int type);
 void float2int(int frame, int var, bool id, int symbVar, int symbframe, char symb[], int type);
 void int2char(int frame, int var, bool id, int symbVar, int symbframe, char symb[], int type);

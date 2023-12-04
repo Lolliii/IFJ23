@@ -46,27 +46,9 @@ typedef struct id{
     char *name;                 // Nazev promenne
     bool  initialized;          // Je inicializovana?
     T_token_type type;
-    int  modifiable;           // 0 -> let, 1 -> var, -1 -> ani jedno
+    int  modifiable;            // 0 -> let, 1 -> var, -1 -> ani jedno
+    int generated_id;           // Nazev, pod kterym se dane ID vygenerovalo 
 }T_id;
-
-// Priklad 
-// param parameter;
-// parameter.pName = "jebej";
-// parameter.paramId = "klokan";
-// parameter.pType = 1;
-
-// printf("%s\n", parameter.pName);
-// printf("%s\n", parameter.paramId);
-// printf("%d\n", parameter.pType);
-
-// func function;
-// function.name = "zavolej";
-// function.returnType = 1;
-// function.params[0] = &parameter;
-
-// printf("%s\n", function.name);
-// printf("%d\n", function.returnType);
-// printf("%s\n", function.params[0]->pName);
 
 
 int max(int n1, int n2);    //vracia vecsie cislo

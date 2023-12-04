@@ -12,7 +12,21 @@ PARSER
 #include "parser.h"
 
 bool is_def = false;
-// ! act_frame??
+int id_num = 1;
+int label_num = 1;
+
+int count_frames(Tlist *list){
+    int count = 0;
+
+    if(list->act != NULL){
+        while(list->act->rPtr != NULL){
+            count++;
+            list->act = list->act->rPtr;
+        }
+    }
+
+    return (count > 0) ? 1 : 0;
+}
 
 //treba tu dat list a act ukazujicim kam to chceme ulozit
 void insert_readString(Tlist *list){
@@ -431,7 +445,6 @@ T_token_type token_to_keyword(T_token_type tok_type)
     }
 }
 
-
 // <prog> -> <st-list> 
 bool prog(T_token token, T_queue *queue, FILE *file) {
     // Incializace symtable
@@ -455,7 +468,8 @@ bool prog(T_token token, T_queue *queue, FILE *file) {
     // Vložení vestavěných funkcí
     insert_all(fun_list);
 
-
+    codeGenInit();
+    printf("\n");
     if(!st_list(token, queue, file, sym_list, fun_list, fun_call_list)){
         error_caller(SYN_ERROR);
         exit(SYN_ERROR);
@@ -466,7 +480,10 @@ bool prog(T_token token, T_queue *queue, FILE *file) {
         error_caller(UNDEF_REDEF_ERROR);
         exit(UNDEF_REDEF_ERROR);
     }
+    
     // TODO: Zrusit symtable
+    printf("\n");
+    codeGenFinish();
 
     return true;
 }
@@ -522,7 +539,7 @@ bool stat(T_token token, T_queue *queue, FILE *file, T_func funkce, Tlist *sym_l
     // <stat> -> while <exp-stat> { <body> }
     if (token.type == TOKEN_KW_WHILE)
     {
-        // * label(?); ??????
+
         // <exp-stat>
         token = getToken(queue, file);
         if (exp_stat(token, queue, file, sym_list))
@@ -536,8 +553,11 @@ bool stat(T_token token, T_queue *queue, FILE *file, T_func funkce, Tlist *sym_l
                 add_to_Lil(sym_list, sym_table_frame);
                 set_act_first_Lil(sym_list);
 
-                // * createFrame();
-                // * pushFrame();  // ! ??
+
+                // Vytvoreni LF a labelu pro while
+                createFrame(); // *
+                pushFrame();   // *
+                ifWhileLabel(label_num++);     // *
 
                 // <body>
                 token = getToken(queue, file);
@@ -551,8 +571,10 @@ bool stat(T_token token, T_queue *queue, FILE *file, T_func funkce, Tlist *sym_l
                         destroy_Lilfirst(sym_list);
                         set_act_first_Lil(sym_list);
 
-                        // jumpIfEq(?????); ?????
-                        // * popFrame();
+                        // TODO: jumpIfEq(?????); ?????
+
+                        popFrame();     // *
+
                         return true;
                     }
                 }
@@ -562,11 +584,14 @@ bool stat(T_token token, T_queue *queue, FILE *file, T_func funkce, Tlist *sym_l
     
     // <stat> -> if <exp-stat> { <body> } else { <body> }
     } else if (token.type == TOKEN_KW_IF) {
-        // * jumpIfNEq(???????);
         // <exp-stat>
+        int ifLabel = label_num;        // *
+        label_num += 2;                 // *
+        // TODO: jumpos
         token = getToken(queue, file);
         if (exp_stat(token, queue, file, sym_list))
         {
+            // * jumpIfNEq(else);   // *
             // {
             token = getToken(queue, file);
             if (token.type == TOKEN_L_CURL)
@@ -575,6 +600,9 @@ bool stat(T_token token, T_queue *queue, FILE *file, T_func funkce, Tlist *sym_l
                 bStrom *sym_table_frame = NULL;
                 add_to_Lil(sym_list, sym_table_frame);
                 set_act_first_Lil(sym_list);
+
+                createFrame();// *
+                pushFrame();  // *
 
                 // <body>
                 token = getToken(queue, file);
@@ -588,14 +616,12 @@ bool stat(T_token token, T_queue *queue, FILE *file, T_func funkce, Tlist *sym_l
                         destroy_Lilfirst(sym_list);
                         set_act_first_Lil(sym_list);
 
-                        // * popFrame();
-                        // * jump(?if);
+                        ifWhileJump(ifLabel + 1); // *
 
                         // else
                         token = getToken(queue, file);
                         if (token.type == TOKEN_KW_ELSE)
                         {
-                            // * label(?);
                             // {
                             token = getToken(queue, file);
                             if (token.type == TOKEN_L_CURL)
@@ -605,8 +631,10 @@ bool stat(T_token token, T_queue *queue, FILE *file, T_func funkce, Tlist *sym_l
                                 add_to_Lil(sym_list, sym_table_frame);
                                 set_act_first_Lil(sym_list);
 
-                                // * createFrame();
-                                // * pushFrame();  // ! ??
+                                ifWhileLabel(ifLabel);  // *
+                                ifLabel++;              // *
+                                createFrame();          // *
+                                pushFrame();            // *
 
                                 // <body>
                                 token = getToken(queue, file);
@@ -616,12 +644,14 @@ bool stat(T_token token, T_queue *queue, FILE *file, T_func funkce, Tlist *sym_l
                                     token = getToken(queue, file);
                                     if (token.type == TOKEN_R_CURL)
                                     {
-                                        // * label(?if); // Pro jump z true (preskoceni )
+                                        ifWhileLabel(ifLabel);  // * Pro jump z true (preskoceni )
+                                        ifLabel++;              // *
+
                                         // Zrušení rámce
                                         destroy_Lilfirst(sym_list);
                                         set_act_first_Lil(sym_list);
+                                        popFrame();         // *
 
-                                        // * popframe();
                                         return true;
                                     }
                                 }
@@ -655,7 +685,9 @@ bool stat(T_token token, T_queue *queue, FILE *file, T_func funkce, Tlist *sym_l
             add_to_Lil(sym_list, sym_table_frame);
             set_act_first_Lil(sym_list);
 
-            // * label(funkce.name);
+            label(funkce.name);         // * 
+            createFrame();              // *
+            pushFrame();                // *
 
             // (
             token = getToken(queue, file);
@@ -707,8 +739,8 @@ bool stat(T_token token, T_queue *queue, FILE *file, T_func funkce, Tlist *sym_l
                                         destroy_Lilfirst(sym_list);
                                         set_act_first_Lil(sym_list);
 
-                                        // * popFrame();
-                                        // * cReturn();
+                                        popFrame();         // * 
+                                        cReturn();          // * 
 
                                         return true;
                                     }
@@ -741,7 +773,9 @@ bool stat(T_token token, T_queue *queue, FILE *file, T_func funkce, Tlist *sym_l
                 exit(UNDEF_REDEF_ERROR);
             }
 
-            // * defvar(?, ?);
+            defvar(count_frames(sym_list), id_num);
+            id.generated_id = id_num;
+            id_num++;
 
             // <id-type>
             token = getToken(queue, file);
@@ -770,7 +804,9 @@ bool stat(T_token token, T_queue *queue, FILE *file, T_func funkce, Tlist *sym_l
                 exit(UNDEF_REDEF_ERROR);
             }
 
-            // * defvar(?, ?);
+            defvar(count_frames(sym_list), id_num);
+            id.generated_id = id_num;
+            id_num++;
 
             // <id-type>
             token = getToken(queue, file);
@@ -942,6 +978,8 @@ bool id_stat(T_token token, T_queue *queue, FILE *file, T_id id, Tlist *sym_list
                     set_act_first_Lil(fun_call_list);
                     fun_call_list->first->data = bInsert(fun_call_list->first->data, fun_called.name, (void*)&fun_called, 2);
                 }
+
+                callLabel(fun_called.name);     // *
                 return true;
             }
         }
@@ -1020,6 +1058,9 @@ bool call(T_token token, T_queue *queue, FILE *file, T_id id, Tlist *sym_list, T
                         // Vlož proměnnou do tabulky symbolů
                         insert_var_to_symtable(sym_list, id, id.type);
                     }
+
+                    callLabel(fun_called.name);         // * 
+                    // * priradit hodnotu z returnu
                     return true;
                 }
             }
@@ -1031,6 +1072,9 @@ bool call(T_token token, T_queue *queue, FILE *file, T_id id, Tlist *sym_list, T
             queue_add(queue, token);
             queue_add(queue, tmp);
             T_token_type result = expr_parser(file, queue, sym_list);
+            // defvar <var>
+            // pops <var>
+
             id.initialized = true;
             // Nyní mám celou definici proměnné nebo přiřazení do proměnné
 
@@ -1084,7 +1128,7 @@ bool call(T_token token, T_queue *queue, FILE *file, T_id id, Tlist *sym_list, T
 // <exp-stat> -> let id
 bool exp_stat(T_token token, T_queue *queue, FILE *file, Tlist *sym_list){
     // let
-    if(token.type == TOKEN_KW_LET){
+    if(token.type == TOKEN_KW_LET){     // TODO: generovani pro if -> pokud je to nil, udelej else
         // id
         T_token tmp = getToken(queue, file);
         if(tmp.type == TOKEN_ID){
@@ -1099,7 +1143,7 @@ bool exp_stat(T_token token, T_queue *queue, FILE *file, Tlist *sym_list){
         }
         return false;
     // <exp>
-    }else{
+    }else{                              // TODO: jump podle podminek
         if (IsTerm(token) || token.type == TOKEN_ID || token.type == TOKEN_ID_EM || token.type == TOKEN_L_RND)
         {
             queue_add(queue, token);
@@ -1145,6 +1189,8 @@ bool t_list(T_token token, T_queue *queue, FILE *file, Tlist *sym_list, T_func *
         token = getToken(queue, file);
         if (term(token, queue, file, sym_list, fun_called)) {
             // <t-list>
+
+            // * Mela by se vlozit promenna
             token = getToken(queue, file);
             return t_list(token, queue, file, sym_list, fun_called);
         }
@@ -1166,8 +1212,7 @@ bool term(T_token token, T_queue *queue, FILE *file, Tlist *sym_list, T_func *fu
         fun_called->params[fun_called->param_count].pName = token.value;
 
         // * Jsou to parametry volani funkce, dej je do stacku
-        // * pushs(true, ?, ?, false, 0);
-
+        // pushs(true, 1, count_frames(sym_list), false, 0);                       // FUNGUJE, ale musim vyresit frame a jmeno
 
         //token = getToken(queue, file);
         return term_name(token, queue, file, sym_list, fun_called);
@@ -1180,7 +1225,7 @@ bool term(T_token token, T_queue *queue, FILE *file, Tlist *sym_list, T_func *fu
         fun_called->param_count++;
 
         // * Jsou to parametry volani funkce, dej je do stacku
-        // * pushs(false, 0, 0, token.value, fun_called->params[fun_called->param_count - 1].pType);
+        pushs(false, 0, 0, token.value, fun_called->params[fun_called->param_count - 1].pType);    // FUNGUJE
 
         return true;
     } else {
