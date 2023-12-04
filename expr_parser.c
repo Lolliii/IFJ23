@@ -527,20 +527,12 @@ void rule_rela_equal(T_stack *stack, Tlist *sym_list)
     r_op = stack_get_val(stack, 0);
     check_two_operands(*l_op, *r_op);
 
-    if(((l_op->symb == e_num || l_op->symb == e_dbl) && 
-        (r_op->symb == e_num || r_op->symb == e_dbl)) || (l_op->symb == e_str && r_op->symb == e_str)
-                                                      || (l_op->symb == e_nil && r_op->symb == e_nil))
-    {
-        // pretypovani r_op na int->double
-        if (l_op->symb == e_dbl && r_op->symb == e_num)
-        {
-            r_op->symb = e_dbl;
-        }
-        // pretypovani l_op na int->double
-        else if (l_op->symb == e_num && r_op->symb == e_dbl){
-            l_op->symb = e_dbl;
-        }
-
+    if(((l_op->symb == e_num || l_op->symb == e_dbl) && (r_op->symb == e_num || r_op->symb == e_dbl)) ||
+        (l_op->symb == e_str && r_op->symb == e_str) ||
+        (l_op->symb == e_nil && r_op->symb == e_nil) ||
+        ((l_op->symb == e_num || l_op->symb == e_dbl || l_op->symb == e_str) && r_op->symb == e_nil) ||
+        (l_op->symb == e_nil && (r_op->symb == e_num || r_op->symb == e_dbl || r_op->symb == e_str)))
+    {      
         stack_pop(stack);
         stack_pop(stack);
         l_op->symb = e_bool;
@@ -940,6 +932,6 @@ const char preced_tab [20][20] = {
         token_res = TOKEN_VOID;
         break;
     }
-     printf("rrrr%d\n", token_res);
+    //  printf("rrrr%d\n", token_res);
     return token_res;
 }
