@@ -40,7 +40,6 @@ typedef struct func {
     T_token_type returnType;
     struct param params[20];   // Parametry (je potreba se na ne odkazovat takhle foo.params[0]->pName)
     int param_count;           // Počet parametrů funkce
-    bool returned;             // Pro sémantickou analýzu, jestli má funkce return
 }T_func;
 
 typedef struct id{
