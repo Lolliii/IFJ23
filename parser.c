@@ -969,6 +969,7 @@ bool id_stat(T_token token, T_queue *queue, FILE *file, T_id id, Tlist *sym_list
         bStrom *item = bsearch_one(frame->data, id.name);
         T_id *item_id1 = (T_id*)item->data;
         id.type = item_id1->type;
+        id.generated_id = item_id1->generated_id;
 
         // Proměnná je definovaná typu LET -> nemodifikovatelná
         if(!item_id1->modifiable)
