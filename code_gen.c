@@ -194,7 +194,7 @@ void ifWhileJump(int label){
 // Ukonci vykonavani programu s navratovym kodem returnCode 
 // Rozsah <0, 49> (nekontrolovano)
 void cExit(int returnCode){
-    printf("\nEXIT %d", returnCode);
+    printf("\nEXIT int@%d", returnCode);
 }
 
 // Zasobnikovy skok na navesti, pokud rovno
@@ -469,5 +469,6 @@ void codeGenInit(void){
 void codeGenFinish(void){
     clears();
     popFrame();
+    cExit(0);
 }
 

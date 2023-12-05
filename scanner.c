@@ -874,7 +874,15 @@ T_token getNextToken(FILE* file){
                         value[length++] = '2';
                         c = fgetc(file);
                         continue;
+                    } else if(c == '#'){
+                        value[length++] = '\\';
+                        value[length++] = '0';
+                        value[length++] = '3';
+                        value[length++] = '5';
+                        c = fgetc(file);
+                        continue;
                     }
+
                     value[length] = c;
                     length++;
                     c = fgetc(file);
@@ -1130,7 +1138,15 @@ T_token getNextToken(FILE* file){
                         value[length++] = '2';
                         c = fgetc(file);
                         continue;
-                    } 
+                    } else if(c == '#'){
+                        value[length++] = '\\';
+                        value[length++] = '0';
+                        value[length++] = '3';
+                        value[length++] = '5';
+                        c = fgetc(file);
+                        continue;
+                    }
+
                     value[length] = c;
                     length++;
                     c = fgetc(file);
