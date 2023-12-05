@@ -1,24 +1,17 @@
-/*func x(_ a : Int, _ b : Int){
-    var k = a + b
-}
+var a = 3
 
-x(1, 2)*/
-
-/*func a (in x : Double?, jebej y : Double) -> String?
-{
-    var a = 5
-    return nil
-}
-
-var b = 2.0
-let c = a(in: b, jebej: 8.0)
-var A : Int*/
-
-func a(with a: Int) -> Int{
+if(a == 3){
     a = a + 1
-    return a
+    if(a == 4){
+        a = a + 1
+        if(a == 4){
+            a = a + 1
+        } else {
+            a =  a + 20
+        }
+    } else {
+
+    }
+} else {
+
 }
-
-var c = 2
-var b = a(with: c)
-

@@ -854,8 +854,8 @@ void reduce_rule(T_stack *stack, T_elem *stack_top, Tlist *sym_list)
         break;
     case prec_nil:
         stack_top->symb = e_nil;
-        // pushs(false, 0, 0, "nil", TOKEN_KW_NIL);     // *
-        printf("nil, ");
+        pushs(false, 0, 0, "nil", TOKEN_KW_NIL);     // *
+        // printf("nil, ");
         break;
     
     // Ukončovací symbol

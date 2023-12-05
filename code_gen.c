@@ -168,27 +168,27 @@ void stri2ints(void){
 
 // Vytvori navesti
 void ifWhileLabel(int label){
-    printf("\nLABEL %d", label);
+    printf("\nLABEL _%d", label);
 }
 
 // Vytvori navesti
 void label(char label[]){
-    printf("\nLABEL %s", label);
+    printf("\nLABEL _%s", label);
 }
 
 // Provede skok na navesti (funkce)
 void callLabel(char label[]){
-    printf("\nCALL %s", label);
+    printf("\nCALL _%s", label);
 }
 
 // Provede nepodmineny skok na navesti 
 void jump(char label[]){
-    printf("\nJUMP %s", label);
+    printf("\nJUMP _%s", label);
 }
 
 // Provede nepodmineny skok na navesti 
 void ifWhileJump(int label){
-    printf("\nJUMP %d", label);
+    printf("\nJUMP _%d", label);
 }
 
 // Ukonci vykonavani programu s navratovym kodem returnCode 
@@ -199,12 +199,12 @@ void cExit(int returnCode){
 
 // Zasobnikovy skok na navesti, pokud rovno
 void jumpIfEqS(int label){
-    printf("\nJUMPIFEQS %d", label);
+    printf("\nJUMPIFEQS _%d", label);
 }
 
 // Zasobnikovy skok na navesti, pokud nerovno
 void jumpIfNEqS(int label){
-    printf("\nJUMPIFNEQS %d", label);
+    printf("\nJUMPIFNEQS _%d", label);
 }
 
 // Vypise stav interpretu v danou chvili na stderr
@@ -434,7 +434,7 @@ void cSetChar(int frame, int var, bool id, int symbVar, int symbframe, char symb
 // Pokud jsou <symbs> rovny, skoci se na label
 void jumpIfEq(char label[], bool id, int symbVar, int symbframe, char symb[], int type, bool id2, int symbVar2, int symbframe2, char symb2[], int type2){
     printf("\nJUMPIFEQ");
-    printf(" %s", label);
+    printf(" _%s", label);
     printSymb(id, symbframe, symbVar, symb, type);
     printSymb(id2, symbframe2, symbVar2, symb2, type2);
 }
@@ -442,7 +442,7 @@ void jumpIfEq(char label[], bool id, int symbVar, int symbframe, char symb[], in
 // Pokud nejsou <symbs> rovny, skoci se na label
 void jumpIfNEq(char label[], bool id, int symbVar, int symbframe, char symb[], int type, bool id2, int symbVar2, int symbframe2, char symb2[], int type2){
     printf("\nJUMPIFNEQ");
-    printf(" %s", label);
+    printf(" _%s", label);
     printSymb(id, symbframe, symbVar, symb, type);
     printSymb(id2, symbframe2, symbVar2, symb2, type2);
 }

@@ -1053,8 +1053,8 @@ bool call(T_token token, T_queue *queue, FILE *file, T_id id, Tlist *sym_list, T
         {
             T_func fun_called = {.name = token.value, .param_count = 0};
             token = tmp;
-            // <term-list>
             
+            // <term-list>
             token = getToken(queue, file);
             if(term_list(token, queue, file, sym_list, &fun_called))
             {
@@ -1144,7 +1144,7 @@ bool call(T_token token, T_queue *queue, FILE *file, T_id id, Tlist *sym_list, T
             }
             // Vlož proměnnou do tabulky symbolů
             insert_var_to_symtable(sym_list, id, result);
-            set_act_first_Lil(sym_list);                        // *
+            // set_act_first_Lil(sym_list);                        // *
             pops(count_frames(sym_list), id.generated_id);      // *
             return true;
         }
@@ -1268,12 +1268,6 @@ bool term(T_token token, T_queue *queue, FILE *file, Tlist *sym_list, T_func *fu
         // Funkce má nějaký pName
         fun_called->params[fun_called->param_count].pName = token.value;
 
-        // int is_built_in = is_function_built_in(fun_called->name);
-        // if(is_built_in){
-        //     process_built_in_function(is_built_in,);
-        // } else {
-        // }
-
         //token = getToken(queue, file);
         return term_name(token, queue, file, sym_list, fun_called);
 
@@ -1283,6 +1277,8 @@ bool term(T_token token, T_queue *queue, FILE *file, Tlist *sym_list, T_func *fu
         fun_called->params[fun_called->param_count].pType = token.type;
         fun_called->params[fun_called->param_count].pType = token_to_keyword(fun_called->params[fun_called->param_count].pType);
         fun_called->param_count++;
+
+        pushs(false, 0, 0, token.value, fun_called->params[fun_called->param_count - 1].pType);    // *
 
         return true;
     } else {
@@ -1412,10 +1408,9 @@ bool param_list(T_token token, T_queue *queue, FILE *file, T_func *funkce, Tlist
     {
         // <p-list>
         token = getToken(queue, file);
-        // return p_list(token, queue, file, funkce, sym_list); // Pak odkomentovat 
 
-// HOKUS POKUS
-// -------------------------------------------------------
+        // return p_list(token, queue, file, funkce, sym_list);
+// * -------------------------------------------------------
         if(p_list(token, queue, file, funkce, sym_list) == true){
             // Parametry to precetlo a naplnilo v pohode
 
@@ -1429,8 +1424,7 @@ bool param_list(T_token token, T_queue *queue, FILE *file, T_func *funkce, Tlist
         } else {
             return false;
         }
-// -------------------------------------------------------
-
+// * -------------------------------------------------------
 
     // eps
     } else {
