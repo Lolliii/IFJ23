@@ -33,7 +33,7 @@ typedef struct param{
     char *pName;                // Jmeno parametru
     char *paramId;              // ID parametru
     T_token_type pType;
-    // int generated_id;
+    int generated_id;
 }T_param;
 
 typedef struct func {

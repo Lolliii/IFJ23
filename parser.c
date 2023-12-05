@@ -1272,15 +1272,6 @@ bool term(T_token token, T_queue *queue, FILE *file, Tlist *sym_list, T_func *fu
         // if(is_built_in){
         //     process_built_in_function(is_built_in,);
         // } else {
-
-            // * Jsou to parametry (promenne) volani funkce, dej je do stacku
-            // Promenne muzou byt z tohoto / nizsiho framu -> najdi nejblizsi promennou s timto nazvem
-            ListElement *sent_Param = bSearch_all(sym_list, token.value);                   // *
-            bStrom *var_info = bsearch_one(sent_Param->data, token.value);                  // *
-            T_id *param_to_send = (T_id *)var_info->data;                                   // *
-            Tlist *param_frame = find_list_with_id(sym_list, token.value);                  // *
-
-            pushs(true, param_to_send->generated_id, count_frames(param_frame), false, 0);  // *
         // }
 
         //token = getToken(queue, file);
@@ -1292,9 +1283,6 @@ bool term(T_token token, T_queue *queue, FILE *file, Tlist *sym_list, T_func *fu
         fun_called->params[fun_called->param_count].pType = token.type;
         fun_called->params[fun_called->param_count].pType = token_to_keyword(fun_called->params[fun_called->param_count].pType);
         fun_called->param_count++;
-
-        // * Jsou to parametry volani funkce, dej je do stacku
-        pushs(false, 0, 0, token.value, fun_called->params[fun_called->param_count - 1].pType);    // *
 
         return true;
     } else {
@@ -1323,6 +1311,19 @@ bool term_name(T_token token, T_queue *queue, FILE *file, Tlist *sym_list, T_fun
                     T_id *id_data = (T_id *)(found->data);
                     // Nastavím typ proměnné do typu ID ve volání funkce
                     fun_called->params[fun_called->param_count].pType = id_data->type;
+
+                    ListElement *sent_Param = bSearch_all(sym_list, token.value);                               // *
+                    bStrom *var_info = NULL;                                                                    // *
+                    T_id *param_to_send = NULL;                                                                 // *
+                    Tlist *param_frame = NULL;                                                                  // *
+                    if(sent_Param != NULL){                                                                     // *
+                        var_info = bsearch_one(sent_Param->data, token.value);                                  // *
+                        if(var_info != NULL){                                                                   // *
+                            param_to_send = (T_id *)var_info->data;                                             // *
+                            param_frame = find_list_with_id(sym_list, token.value);                             // *
+                            pushs(true, param_to_send->generated_id, count_frames(param_frame), false, 0);      // *
+                        }
+                    }
                 }
                 else
                 {
@@ -1336,6 +1337,8 @@ bool term_name(T_token token, T_queue *queue, FILE *file, Tlist *sym_list, T_fun
                 // Je to literál, nastavím hodnotu token.type jako typ parametru funkce
                 fun_called->params[fun_called->param_count].pType = token.type;
                 fun_called->params[fun_called->param_count].pType = token_to_keyword(fun_called->params[fun_called->param_count].pType);
+
+                pushs(false, 0, 0, token.value, fun_called->params[fun_called->param_count].pType);    // *
             }
             fun_called->param_count++;
             return true;
@@ -1352,6 +1355,19 @@ bool term_name(T_token token, T_queue *queue, FILE *file, Tlist *sym_list, T_fun
             // Nastavím typ proměnné do typu ID ve volání funkce
             fun_called->params[fun_called->param_count].pType = id_data->type;
             fun_called->param_count++;
+
+            ListElement *sent_Param = bSearch_all(sym_list, token.value);                               // *
+            bStrom *var_info = NULL;                                                                    // *
+            T_id *param_to_send = NULL;                                                                 // *
+            Tlist *param_frame = NULL;                                                                  // *
+            if(sent_Param != NULL){                                                                     // *
+                var_info = bsearch_one(sent_Param->data, token.value);                                  // *
+                if(var_info != NULL){                                                                   // *
+                    param_to_send = (T_id *)var_info->data;                                             // *
+                    param_frame = find_list_with_id(sym_list, token.value);                             // *
+                    pushs(true, param_to_send->generated_id, count_frames(param_frame), false, 0);      // *
+                }
+            }
         }
         else
         {
@@ -1396,23 +1412,23 @@ bool param_list(T_token token, T_queue *queue, FILE *file, T_func *funkce, Tlist
     {
         // <p-list>
         token = getToken(queue, file);
-        return p_list(token, queue, file, funkce, sym_list);  
+        // return p_list(token, queue, file, funkce, sym_list); // Pak odkomentovat 
 
 // HOKUS POKUS
 // -------------------------------------------------------
-        // if(p_list(token, queue, file, funkce, sym_list) == true){
-        //     // Parametry to precetlo a naplnilo v pohode
+        if(p_list(token, queue, file, funkce, sym_list) == true){
+            // Parametry to precetlo a naplnilo v pohode
 
-        //     for(int i = funkce->param_count - 1; i >= 0; i--){
-        //         funkce->params[i].generated_id = id_num;
-        //         defvar(1, id_num);
-        //         pops(1, id_num++);
-        //     }
+            for(int i = funkce->param_count - 1; i >= 0; i--){
+                int idos = funkce->params[i].generated_id;
+                defvar(1, idos);
+                pops(1, idos);
+            }
             
-        //     return true;
-        // } else {
-        //     return false;
-        // }
+            return true;
+        } else {
+            return false;
+        }
 // -------------------------------------------------------
 
 
@@ -1473,13 +1489,15 @@ bool param(T_token token, T_queue *queue, FILE *file, T_func *funkce, Tlist *sym
                 {
                     // Typ parametru funkce
                     funkce->params[funkce->param_count].pType = token.type;
+                    funkce->params[funkce->param_count].generated_id = id_num++;                        // MILAN
 
                     /* Protože parametry funkce, jsou zároveň i lokálními proměnnými funkce
                        uložíme je do tabulky symbolů, lokální frame již je vytvořený */
                     T_id id = {.name = funkce->params[funkce->param_count].paramId,
                                .initialized = true,
                                .type = funkce->params[funkce->param_count].pType,
-                               .modifiable = 1};
+                               .modifiable = 1,
+                               .generated_id = funkce->params[funkce->param_count].generated_id};       // MILAN
                     sym_list->first->data = bInsert(sym_list->first->data, id.name, (void*)&id, 3);
                     
                     // Zvýšení počítadla parametrů funkce
