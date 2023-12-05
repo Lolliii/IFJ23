@@ -16,6 +16,25 @@ bool returned = false;
 int id_num = 1;
 int label_num = 1;
 
+// Dostane prvni list, a kontroluje jestli tam neni ID co hledame, vraci Tlist, ve kterym je
+Tlist *find_list_with_id(Tlist *list, char name[]){
+    bool found = false;
+    while(!found){
+        bStrom *possible = bsearch_one(list->act->data, name);
+        if(possible == NULL){
+            if(list->act->rPtr != NULL){
+                list->act = list->act->rPtr;
+            } else {
+                return NULL;
+            }
+        } else {
+            found = true;
+        }
+    }
+
+    return list;
+}
+
 //treba tu dat list a act ukazujicim kam to chceme ulozit
 void insert_readString(Tlist *list){
     if( list != NULL){
