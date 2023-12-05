@@ -39,7 +39,6 @@ void printVar(int frame, int var){
 }
 
 // Vypise symb
-// ! nil ??
 void printSymb(bool id, int symbFrame, int symbVar, char value[], int type){
     if(!id){   
         if(type == TOKEN_KW_STRING){
@@ -460,7 +459,6 @@ void cRead(int frame, int var, char type[]){
 void codeGenInit(void){
     printf(".IFJcode23");
 
-    // ??
     createFrame();
     pushFrame();
 }

@@ -19,23 +19,19 @@ CODE GENERATOR
 #include "scanner.h"
 #include "symtable.h"
 
-// ! Kod se bude generovat na stdout
-// ! Budu vyuzivat printf
 
 // <var>   -> Neterminal -> promenna
 // predava se jako v parametrech jako:
 //           int frame (0 = GF, 1 = LF, 2 = TF)
 //           int var - cislo promenne (ve funkci bude vzdy na zacatek pridano _)
 
-
 // <symb>  -> Konstanta/promenna
 // predava se jako v parametrech jako:
 //           bool id (0 = konstanta, 1 = id)
 //           int symbFrame (same jako u <var>)
 //           int symbVar (same jako u <var>)
-// !!        char symb[] -> hodnoty se ukladaji do token.value jako string
+//           char symb[] -> hodnoty se ukladaji do token.value jako string
 //           int type
-
 
 // <label> -> Navesti
 // Identifikator promenne se sklada z FRAME@jmeno
@@ -47,7 +43,6 @@ int count_frames(Tlist *list);
 void codeGenInit(void);
 void codeGenFinish(void);
 
-// NEMELY BY BRAT PARAMETRY
 void createFrame(void);
 void pushFrame(void);
 void popFrame(void);

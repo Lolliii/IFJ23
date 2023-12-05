@@ -304,7 +304,6 @@ void check_two_operands(T_elem l_op, T_elem r_op)
     if(!((l_op.symb == e_num || l_op.symb == e_dbl || l_op.symb == e_str || l_op.symb == e_id || l_op.symb == e_id_exc || l_op.symb == e_nil) && 
     (r_op.symb == e_num || r_op.symb == e_dbl || r_op.symb == e_str || r_op.symb == e_id || r_op.symb == e_id_exc || r_op.symb == e_nil)))
     {
-        // fprintf(stderr, "ERROR: Syntax error, need 2 literals or ID as operands\n");
         error_caller(SYN_ERROR);
         exit(SYN_ERROR);
     }
@@ -326,7 +325,6 @@ void rule_plus(T_stack *stack, Tlist *sym_list)
     else if((l_op->symb == e_num && r_op->symb == e_num) ||
             (l_op->symb == e_dbl && r_op->symb == e_dbl))
     {
-        //printf("+ ");
         l_op->symb = r_op->symb;    //zbytečné, ale pro naznačení
 
         adds();      // *
@@ -336,7 +334,6 @@ void rule_plus(T_stack *stack, Tlist *sym_list)
             (r_op->symb == e_num || r_op->symb == e_dbl))
     {
         // Provedení konverze jednoho z operandu na DOUBLE
-        //printf("+ ");
         l_op->symb = e_dbl;
 
         adds();      // *
@@ -364,17 +361,9 @@ void rule_plus(T_stack *stack, Tlist *sym_list)
                 id_rule_plus(l_op, r_op);
             }
         }
-        
-
-        // TODO
-        // musí být stejné typy, bez konverze (Int Int, Dbl Dbl, Str Str)
-        // Pro typy s nil ? potřeba předtím operátor !
-        //printf("+ ");
-        // l_op->symb = e_id;
     }
     else
     {
-        // fprintf(stderr, "ERROR: Expression error, invalid data types\n");
         error_caller(TYPE_COMP_ERROR);
         exit(TYPE_COMP_ERROR);
     }
@@ -423,13 +412,9 @@ void rule_min_mul(T_stack *stack, Tlist *sym_list)
                 id_rule_min_mul(l_op, r_op);
             }
         }
-        // TODO
-        // musí být stejné typy, bez konverze (Int Int, Dbl Dbl, Str Str)
-        // Pro typy s nil ? potřeba předtím operátor !
     }
     else
     {
-        // fprintf(stderr, "ERROR: Expression error, invalid data types\n");
         error_caller(TYPE_COMP_ERROR);
         exit(TYPE_COMP_ERROR);
     }
@@ -479,21 +464,15 @@ void rule_div(T_stack *stack, Tlist *sym_list)
                 id_rule_div(l_op, r_op);
             }
         }
-        
-        // TODO
-        // musí být stejné typy, bez konverze (Int Int, Dbl Dbl, Str Str)
-        // Pro typy s nil ? potřeba předtím operátor !
     }
     else
     {
-        // fprintf(stderr, "ERROR: Expression error, invalid data types\n");
         error_caller(TYPE_COMP_ERROR);
         exit(TYPE_COMP_ERROR);
     }
     
     if(strcmp(r_op->value, "0") == 0)
     {
-        // fprintf(stderr, "ERROR: Cannot divide by 0 \n");
         error_caller(OTHER_ERROR);
         exit(OTHER_ERROR);
     }
@@ -509,9 +488,6 @@ void rule_rela(T_stack *stack, Tlist *sym_list)
     r_op = stack_get_val(stack, 0);
     check_two_operands(*l_op, *r_op);
 
-    // if((l_op->symb == e_num && r_op->symb == e_num) || 
-    //    (l_op->symb == e_dbl && r_op->symb == e_dbl) || 
-    //    (l_op->symb == e_str && r_op->symb == e_str))
     if (((l_op->symb == e_num || l_op->symb == e_dbl) && 
         (r_op->symb == e_num || r_op->symb == e_dbl)) || (l_op->symb == e_str && r_op->symb == e_str))
     {
@@ -564,14 +540,12 @@ void rule_rela(T_stack *stack, Tlist *sym_list)
             }
         }
 
-        // TODO: potřeba Tabulky symbolů
-        // můsí být stejné typy a bez nil (takže pro String? musí být před tím !)
+        // musí být stejné typy a bez nil (takže pro String? musí být před tím !)
         stack_pop(stack);
         stack_pop(stack);
     }
     else
     {
-        // fprintf(stderr, "ERROR: Expression error, invalid data types\n");
         error_caller(TYPE_COMP_ERROR);
         exit(TYPE_COMP_ERROR);
     }
@@ -669,14 +643,12 @@ void rule_rela_equal(T_stack *stack, Tlist *sym_list)
             }
         }
 
-        // TODO: potřeba Tabulky symbolů
         // můsí být také stejné typy (bez implicitní konverze) může být NIL type
         stack_pop(stack);
         stack_pop(stack);
     }
     else
     {
-        // fprintf(stderr, "ERROR: Expression error, invalid data types\n");
         error_caller(TYPE_COMP_ERROR);
         exit(TYPE_COMP_ERROR);
     }
@@ -721,14 +693,12 @@ void rule_nil_coal(T_stack *stack, Tlist *sym_list)
             }
         }
 
-        // TODO: potřeba Tabulky symbolů
         stack_pop(stack);
         stack_pop(stack);
         
     }
     else
     {
-        // fprintf(stderr, "ERROR: Expression error, invalid data types\n");
         error_caller(TYPE_COMP_ERROR);
         exit(TYPE_COMP_ERROR);
     }
@@ -746,50 +716,41 @@ void reduce_rule(T_stack *stack, T_elem *stack_top, Tlist *sym_list)
     case prec_sub:
         rule_min_mul(stack, sym_list);
         subs();                         // *
-        // printf("- ");
         break;
     case prec_mul:
         rule_min_mul(stack, sym_list);
         muls();                         // *
-        // printf("* ");
         break;
     case prec_divi:
-        // printf("/ ");
         rule_div(stack, sym_list);
         break;
         
     case prec_lt:
-        // printf("< ");
         rule_rela(stack, sym_list);
-        lts();          // *
+        lts();                          // *
         break;
     case prec_lt_eq:
-        // printf("<= ");
         rule_rela(stack, sym_list);
-        gts();          // *
-        nots();         // *
+        gts();                          // *
+        nots();                         // *
         break;
     case prec_gt:
-        // printf("> ");
         rule_rela(stack, sym_list);
-        gts();          // *
+        gts();                          // *
         break;
     case prec_gt_eq:
-        // printf(">= ");
         rule_rela(stack, sym_list);
-        lts();          // *
-        nots();         // *
+        lts();                          // *
+        nots();                         // *
         break;
     case prec_eq:
-        // printf("== ");
         rule_rela_equal(stack, sym_list);
-        eqs();          // *
+        eqs();                          // *
         break;
     case prec_n_eq:
-        // printf("!= ");
         rule_rela_equal(stack, sym_list);
-        eqs();          // *
-        nots();         // *
+        eqs();                          // *
+        nots();                         // *
         break;
     
     // Pravidlo E->id!
@@ -814,7 +775,6 @@ void reduce_rule(T_stack *stack, T_elem *stack_top, Tlist *sym_list)
         break;
     
     case prec_que:
-        // printf("??");
         rule_nil_coal(stack, sym_list);
         break;
     
@@ -828,34 +788,28 @@ void reduce_rule(T_stack *stack, T_elem *stack_top, Tlist *sym_list)
             bStrom *found = bsearch_one(frame->data, stack_top->value);
             T_id *id_data = (T_id *)(found->data);
 
-            // set_act_first_Lil(sym_list);
-            pushs(true, id_data->generated_id, count_frames(sym_list), false, 0);       // *
+            pushs(true, id_data->generated_id, count_frames(sym_list), false, 0);       // *    pushne id na stack 
         } else {
             error_caller(UNDEF_UNINIT_VARIABLE_ERROR);
             exit(UNDEF_UNINIT_VARIABLE_ERROR);
         }
 
-        // printf("%s, ", stack_top->value);
         break;
     case prec_num:
         stack_top->symb = e_num;
         pushs(false, 0, 0, stack_top->value, TOKEN_KW_INT);     // *
-        // printf("%s, ", stack_top->value);
         break;
     case prec_dbl:
         stack_top->symb = e_dbl;
         pushs(false, 0, 0, stack_top->value, TOKEN_KW_DOUBLE);  // *
-        // printf("%s, ", stack_top->value);
         break;
     case prec_str:
         stack_top->symb = e_str;
         pushs(false, 0, 0, stack_top->value, TOKEN_KW_STRING);  // *
-        // printf("%s, ", stack_top->value);
         break;
     case prec_nil:
         stack_top->symb = e_nil;
         pushs(false, 0, 0, "nil", TOKEN_KW_NIL);     // *
-        // printf("nil, ");
         break;
     
     // Ukončovací symbol
@@ -864,7 +818,6 @@ void reduce_rule(T_stack *stack, T_elem *stack_top, Tlist *sym_list)
         break;
     
     default:
-        // fprintf(stderr, "ERROR: Syntax error\n");
         error_caller(SYN_ERROR);
         exit(SYN_ERROR);
     }
@@ -963,13 +916,11 @@ const char preced_tab [20][20] = {
             if((idx_col == prec_str && (idx_row == prec_sub || idx_row == prec_mul || idx_row == prec_divi)) ||
                (idx_row == prec_str && (idx_col == prec_sub || idx_col == prec_mul || idx_col == prec_divi)))
             {
-                // fprintf(stderr, "ERROR: Expression error, invalid data types\n");
                 error_caller(TYPE_COMP_ERROR);
                 exit(TYPE_COMP_ERROR);
             }
             else
             {
-                // fprintf(stderr, "ERROR: Syntax error, prec table fail\n");
                 error_caller(SYN_ERROR);
                 exit(SYN_ERROR);
             }
@@ -1016,6 +967,5 @@ const char preced_tab [20][20] = {
         token_res = TOKEN_VOID;
         break;
     }
-    // printf("rrrr%d\n", token_res);
     return token_res;
 }
