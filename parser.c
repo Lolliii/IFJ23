@@ -1174,8 +1174,8 @@ bool call(T_token token, T_queue *queue, FILE *file, T_id id, Tlist *sym_list, T
         // Vlož proměnnou do tabulky symbolů
         insert_var_to_symtable(sym_list, id, result);
 
-        set_act_first_Lil(sym_list);
-        pops(count_frames(sym_list), id.generated_id);
+        set_act_first_Lil(sym_list);                        // *
+        pops(count_frames(sym_list), id.generated_id);      // *
         return true;
     }
     return false;
@@ -1294,7 +1294,7 @@ bool term(T_token token, T_queue *queue, FILE *file, Tlist *sym_list, T_func *fu
         fun_called->param_count++;
 
         // * Jsou to parametry volani funkce, dej je do stacku
-        pushs(false, 0, 0, token.value, fun_called->params[fun_called->param_count - 1].pType);    // FUNGUJE
+        pushs(false, 0, 0, token.value, fun_called->params[fun_called->param_count - 1].pType);    // *
 
         return true;
     } else {
@@ -1396,7 +1396,26 @@ bool param_list(T_token token, T_queue *queue, FILE *file, T_func *funkce, Tlist
     {
         // <p-list>
         token = getToken(queue, file);
-        return p_list(token, queue, file, funkce, sym_list);
+        return p_list(token, queue, file, funkce, sym_list);  
+
+// HOKUS POKUS
+// -------------------------------------------------------
+        // if(p_list(token, queue, file, funkce, sym_list) == true){
+        //     // Parametry to precetlo a naplnilo v pohode
+
+        //     for(int i = funkce->param_count - 1; i >= 0; i--){
+        //         funkce->params[i].generated_id = id_num;
+        //         defvar(1, id_num);
+        //         pops(1, id_num++);
+        //     }
+            
+        //     return true;
+        // } else {
+        //     return false;
+        // }
+// -------------------------------------------------------
+
+
     // eps
     } else {
         queue_add(queue, token);
@@ -1442,7 +1461,8 @@ bool param(T_token token, T_queue *queue, FILE *file, T_func *funkce, Tlist *sym
         token = getToken(queue, file);
         if (token.type == TOKEN_ID)
         {
-
+            // Identifikátor parametru v těle funkce
+            funkce->params[funkce->param_count].paramId = token.value;
             // :
             token = getToken(queue, file);
             if (token.type == TOKEN_COLON)

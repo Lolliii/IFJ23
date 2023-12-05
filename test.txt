@@ -1,1 +1,5 @@
-var a = "oalsjncas#"
+func x(_ a : Int, _ b : Int){
+    var k = a + b
+}
+
+x(1, 2)
