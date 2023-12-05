@@ -754,39 +754,39 @@ void reduce_rule(T_stack *stack, T_elem *stack_top, Tlist *sym_list)
         // printf("* ");
         break;
     case prec_divi:
-        printf("/ ");
+        // printf("/ ");
         rule_div(stack, sym_list);
         break;
         
     case prec_lt:
-        printf("< ");
+        // printf("< ");
         rule_rela(stack, sym_list);
         lts();          // *
         break;
     case prec_lt_eq:
-        printf("<= ");
+        // printf("<= ");
         rule_rela(stack, sym_list);
         gts();          // *
         nots();         // *
         break;
     case prec_gt:
-        printf("> ");
+        // printf("> ");
         rule_rela(stack, sym_list);
         gts();          // *
         break;
     case prec_gt_eq:
-        printf(">= ");
+        // printf(">= ");
         rule_rela(stack, sym_list);
         lts();          // *
         nots();         // *
         break;
     case prec_eq:
-        printf("== ");
+        // printf("== ");
         rule_rela_equal(stack, sym_list);
         eqs();          // *
         break;
     case prec_n_eq:
-        printf("!= ");
+        // printf("!= ");
         rule_rela_equal(stack, sym_list);
         eqs();          // *
         nots();         // *
@@ -814,7 +814,7 @@ void reduce_rule(T_stack *stack, T_elem *stack_top, Tlist *sym_list)
         break;
     
     case prec_que:
-        printf("??");
+        // printf("??");
         rule_nil_coal(stack, sym_list);
         break;
     

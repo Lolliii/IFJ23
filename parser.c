@@ -16,19 +16,19 @@ bool returned = false;
 int id_num = 1;
 int label_num = 1;
 
-// int count_frames(Tlist *list){
-//     int count = 0;
-
-//     if(list->act != NULL){
-//         while(list->act->rPtr != NULL){
-//             count++;
-//             list->act = list->act->rPtr;
-//         }
-//     }
-
-//     // return (count > 0) ? 1 : 0;
-//     return count;
-// }
+int is_function_built_in(char function[]){
+    if(strcmp(function, "readString")) return 1;
+    else if(strcmp(function, "readInt")) return 2;
+    else if(strcmp(function, "readDouble")) return 3;
+    else if(strcmp(function, "write")) return 4;
+    else if(strcmp(function, "Int2Double")) return 5;
+    else if(strcmp(function, "Double2Int")) return 6;
+    else if(strcmp(function, "length")) return 7;
+    else if(strcmp(function, "substring")) return 8;
+    else if(strcmp(function, "ord")) return 9;
+    else if(strcmp(function, "chr")) return 10;
+    else return 0;
+}
 
 // Dostane prvni list, a kontroluje jestli tam neni ID co hledame, vraci Tlist, ve kterym je
 Tlist *find_list_with_id(Tlist *list, char name[]){
@@ -570,8 +570,12 @@ bool stat(T_token token, T_queue *queue, FILE *file, T_func funkce, Tlist *sym_l
     // <stat> -> while <exp-stat> { <body> }
     if (token.type == TOKEN_KW_WHILE)
     {
-        int whileLabel = label_num++;       // *
-
+        int whileLabel = label_num;         // *
+        label_num += 2;                     // *
+        
+        createFrame();                // *
+        pushFrame();                  // *
+        ifWhileLabel(whileLabel);
         // <exp-stat>
         token = getToken(queue, file);
         if (exp_stat(token, queue, file, sym_list))
@@ -587,9 +591,8 @@ bool stat(T_token token, T_queue *queue, FILE *file, T_func funkce, Tlist *sym_l
 
 
                 // Vytvoreni LF a labelu pro while
-                createFrame();                // *
-                pushFrame();                  // *
-                ifWhileLabel(whileLabel);     // *
+                pushsCondition("true");       // *
+                jumpIfNEqS(whileLabel + 1);   // *
 
                 // <body>
                 token = getToken(queue, file);
@@ -603,8 +606,8 @@ bool stat(T_token token, T_queue *queue, FILE *file, T_func funkce, Tlist *sym_l
                         destroy_Lilfirst(sym_list);
                         set_act_first_Lil(sym_list);
 
-                        pushsCondition("true");     // *
-                        jumpIfEqS(whileLabel);      // *
+                        ifWhileJump(whileLabel);
+                        ifWhileLabel(whileLabel + 1);   // *
                         popFrame();                 // *
 
                         return true;
@@ -702,6 +705,9 @@ bool stat(T_token token, T_queue *queue, FILE *file, T_func funkce, Tlist *sym_l
         token = getToken(queue, file);
         if (token.type == TOKEN_ID)
         {
+            int func_jump_over = label_num++;           // *
+            ifWhileJump(func_jump_over);                // * kdyby to tam nebylo, pokazde by se ta funkce prosla
+
             // Nasla se definice funkce, napln strukturu pro symtable
             funkce.param_count = 0;
             funkce.name = token.value;
@@ -779,9 +785,9 @@ bool stat(T_token token, T_queue *queue, FILE *file, T_func funkce, Tlist *sym_l
                                         destroy_Lilfirst(sym_list);
                                         set_act_first_Lil(sym_list);
 
-                                        popFrame();         // * 
-                                        cReturn();          // * 
-
+                                        popFrame();                     // * 
+                                        cReturn();                      // * 
+                                        ifWhileLabel(func_jump_over);   // *
                                         return true;
                                     }
                                 }
@@ -1194,7 +1200,7 @@ bool exp_stat(T_token token, T_queue *queue, FILE *file, Tlist *sym_list){
         }
         return false;
     // <exp>
-    }else{                              // TODO: jump podle podminek
+    }else{                            
         if (IsTerm(token) || token.type == TOKEN_ID || token.type == TOKEN_ID_EM || token.type == TOKEN_L_RND)
         {
             queue_add(queue, token);
@@ -1262,14 +1268,20 @@ bool term(T_token token, T_queue *queue, FILE *file, Tlist *sym_list, T_func *fu
         // Funkce má nějaký pName
         fun_called->params[fun_called->param_count].pName = token.value;
 
-        // * Jsou to parametry (promenne) volani funkce, dej je do stacku
-        // Promenne muzou byt z tohoto / nizsiho framu -> najdi nejblizsi promennou s timto nazvem
-        ListElement *sent_Param = bSearch_all(sym_list, token.value);                   // *
-        bStrom *var_info = bsearch_one(sent_Param->data, token.value);                  // *
-        T_id *param_to_send = (T_id *)var_info->data;                                   // *
-        Tlist *param_frame = find_list_with_id(sym_list, token.value);                  // *
+        // int is_built_in = is_function_built_in(fun_called->name);
+        // if(is_built_in){
+        //     process_built_in_function(is_built_in,);
+        // } else {
 
-        pushs(true, param_to_send->generated_id, count_frames(param_frame), false, 0);  // *
+            // * Jsou to parametry (promenne) volani funkce, dej je do stacku
+            // Promenne muzou byt z tohoto / nizsiho framu -> najdi nejblizsi promennou s timto nazvem
+            ListElement *sent_Param = bSearch_all(sym_list, token.value);                   // *
+            bStrom *var_info = bsearch_one(sent_Param->data, token.value);                  // *
+            T_id *param_to_send = (T_id *)var_info->data;                                   // *
+            Tlist *param_frame = find_list_with_id(sym_list, token.value);                  // *
+
+            pushs(true, param_to_send->generated_id, count_frames(param_frame), false, 0);  // *
+        // }
 
         //token = getToken(queue, file);
         return term_name(token, queue, file, sym_list, fun_called);
@@ -1430,8 +1442,7 @@ bool param(T_token token, T_queue *queue, FILE *file, T_func *funkce, Tlist *sym
         token = getToken(queue, file);
         if (token.type == TOKEN_ID)
         {
-            // Identifikátor parametru v těle funkce
-            funkce->params[funkce->param_count].paramId = token.value;
+
             // :
             token = getToken(queue, file);
             if (token.type == TOKEN_COLON)
